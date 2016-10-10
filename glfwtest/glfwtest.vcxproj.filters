@@ -2,6 +2,9 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="DebugAssert.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -21,6 +24,9 @@
     </Filter>
     <Filter Include="includes\glm\simd">
       <UniqueIdentifier>{7389bc55-7981-450f-bf40-c886b1e16397}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="helpers">
+      <UniqueIdentifier>{390904d6-e025-42ba-a281-dd3ef4e19fbe}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -464,6 +470,15 @@
     </ClInclude>
     <ClInclude Include="includes\glm\simd\integer.h">
       <Filter>includes\glm\simd</Filter>
+    </ClInclude>
+    <ClInclude Include="Integer.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugAssert.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers.h">
+      <Filter>helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

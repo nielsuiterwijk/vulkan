@@ -172,9 +172,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DebugAssert.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DebugAssert.h" />
+    <ClInclude Include="Helpers.h" />
     <ClInclude Include="includes\glm\common.hpp" />
     <ClInclude Include="includes\glm\detail\func_common.hpp" />
     <ClInclude Include="includes\glm\detail\func_exponential.hpp" />
@@ -322,6 +325,7 @@
     <ClInclude Include="includes\glm\vec3.hpp" />
     <ClInclude Include="includes\glm\vec4.hpp" />
     <ClInclude Include="includes\glm\vector_relational.hpp" />
+    <ClInclude Include="Integer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl" />
