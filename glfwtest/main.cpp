@@ -1,3 +1,5 @@
+#include "Integer.h"
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/vec4.hpp>
@@ -7,10 +9,15 @@
 #include <GLFW/glfw3.h>
 
 #include "DebugAssert.h"
+#include "Timer.h"
+#include "Helpers.h"
 
 #include <iostream>
 
-int main() {
+int main() 
+{
+	Integer::RunSanityCheck();
+
 	glfwInit();
 	
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -25,8 +32,22 @@ int main() {
 	glm::vec4 vec;
 	auto test = matrix * vec;
 
-	while (!glfwWindowShouldClose(window)) {
+	Timer timer;
+
+	while (!glfwWindowShouldClose(window)) 
+	{
+		timer.Start();
+
 		glfwPollEvents();
+
+		Sleep(5);
+
+		timer.Stop();
+
+
+		std::string windowTitle = std::string("delta time: ") + Helpers::ValueToString(timer.GetTimeInSeconds()*1000.0f);
+
+		glfwSetWindowTitle(window, windowTitle.c_str());
 	}
 
 	glfwDestroyWindow(window);

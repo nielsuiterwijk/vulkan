@@ -5,6 +5,9 @@
     <ClCompile Include="DebugAssert.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -27,6 +30,9 @@
     </Filter>
     <Filter Include="helpers">
       <UniqueIdentifier>{390904d6-e025-42ba-a281-dd3ef4e19fbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base">
+      <UniqueIdentifier>{97537fb6-3577-453e-9365-71bf0dbbcbe6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -479,6 +485,9 @@
     </ClInclude>
     <ClInclude Include="Helpers.h">
       <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
