@@ -173,12 +173,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DebugAssert.cpp" />
+    <ClCompile Include="GraphicsDevice.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RavenApp.cpp" />
     <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugAssert.h" />
+    <ClInclude Include="GraphicsDevice.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="includes\glm\common.hpp" />
     <ClInclude Include="includes\glm\detail\func_common.hpp" />
@@ -327,6 +329,8 @@
     <ClInclude Include="includes\glm\vec3.hpp" />
     <ClInclude Include="includes\glm\vec4.hpp" />
     <ClInclude Include="includes\glm\vector_relational.hpp" />
+    <ClInclude Include="includes\standard.h" />
+    <ClInclude Include="InstanceWrapper.h" />
     <ClInclude Include="Integer.h" />
     <ClInclude Include="RavenApp.h" />
     <ClInclude Include="Timer.h" />

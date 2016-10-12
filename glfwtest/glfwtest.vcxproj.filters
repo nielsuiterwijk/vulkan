@@ -9,6 +9,7 @@
       <Filter>base</Filter>
     </ClCompile>
     <ClCompile Include="RavenApp.cpp" />
+    <ClCompile Include="GraphicsDevice.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -34,6 +35,9 @@
     </Filter>
     <Filter Include="base">
       <UniqueIdentifier>{97537fb6-3577-453e-9365-71bf0dbbcbe6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vulkan">
+      <UniqueIdentifier>{32c43e2c-15f6-4f65-a253-84d8c8180024}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -491,6 +495,13 @@
       <Filter>base</Filter>
     </ClInclude>
     <ClInclude Include="RavenApp.h" />
+    <ClInclude Include="InstanceWrapper.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsDevice.h" />
+    <ClInclude Include="includes\standard.h">
+      <Filter>includes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

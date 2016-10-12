@@ -1,6 +1,7 @@
 #pragma once
 
 class GLFWwindow;
+class GraphicsDevice;
 
 class RavenApp
 {
@@ -21,4 +22,5 @@ public:
 private:
 	GLFWwindow* window;
 
+	GraphicsDevice* device;
 };

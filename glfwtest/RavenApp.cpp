@@ -1,12 +1,6 @@
 #include "RavenApp.h"
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
-
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include "standard.h"
 
 #include <vector>
 #include <iostream>
@@ -14,15 +8,20 @@
 #include "DebugAssert.h"
 #include "Timer.h"
 #include "Helpers.h"
+#include "GraphicsDevice.h"
 
 RavenApp::RavenApp() :
-	window(nullptr)
+	window(nullptr),
+	device(nullptr)
 {
 
 }
 
 RavenApp::~RavenApp()
 {
+	delete device;
+	device = nullptr;
+
 	glfwDestroyWindow(window);
 
 	glfwTerminate();
@@ -50,6 +49,8 @@ void RavenApp::Initialize()
 	{
 		std::cout << "\t" << extension.extensionName << std::endl;
 	}
+
+	device = new GraphicsDevice();
 }
 
 void RavenApp::Run()
