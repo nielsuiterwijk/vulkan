@@ -8,6 +8,7 @@
     <ClCompile Include="Timer.cpp">
       <Filter>base</Filter>
     </ClCompile>
+    <ClCompile Include="RavenApp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -489,6 +490,7 @@
     <ClInclude Include="Timer.h">
       <Filter>base</Filter>
     </ClInclude>
+    <ClInclude Include="RavenApp.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">
