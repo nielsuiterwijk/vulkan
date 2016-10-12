@@ -8,6 +8,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include <vector>
 #include <iostream>
 
 #include "DebugAssert.h"
@@ -32,12 +33,23 @@ void RavenApp::Initialize()
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	window = glfwCreateWindow(800, 600, "Vulkan window", nullptr, nullptr);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+
+	window = glfwCreateWindow(1280, 720, "Vulkan window", nullptr, nullptr);
 
 	uint32_t extensionCount = 0;
 	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
+	std::vector<VkExtensionProperties> extensions(extensionCount);
+	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+
 	std::cout << extensionCount << " extensions supported" << std::endl;
+
+	for (const auto& extension : extensions)
+	{
+		std::cout << "\t" << extension.extensionName << std::endl;
+	}
 }
 
 void RavenApp::Run()
