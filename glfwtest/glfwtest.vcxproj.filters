@@ -39,6 +39,9 @@
     <Filter Include="vulkan">
       <UniqueIdentifier>{32c43e2c-15f6-4f65-a253-84d8c8180024}</UniqueIdentifier>
     </Filter>
+    <Filter Include="threading">
+      <UniqueIdentifier>{52d6df23-77e3-4eeb-b6cf-67074eab8135}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="includes\glm\common.hpp">
@@ -501,6 +504,12 @@
     <ClInclude Include="GraphicsDevice.h" />
     <ClInclude Include="includes\standard.h">
       <Filter>includes</Filter>
+    </ClInclude>
+    <ClInclude Include="Task.h">
+      <Filter>threading</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadPool.h">
+      <Filter>threading</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

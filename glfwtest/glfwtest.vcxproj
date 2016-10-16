@@ -333,6 +333,8 @@
     <ClInclude Include="InstanceWrapper.h" />
     <ClInclude Include="Integer.h" />
     <ClInclude Include="RavenApp.h" />
+    <ClInclude Include="Task.h" />
+    <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
