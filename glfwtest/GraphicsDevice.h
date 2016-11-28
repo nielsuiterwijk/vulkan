@@ -2,6 +2,8 @@
 
 #include "InstanceWrapper.h"
 
+#include <vector>
+
 class GraphicsDevice
 {
 public:
@@ -9,7 +11,10 @@ public:
 
 	~GraphicsDevice();
 
+	bool IsExtensionAvailable(std::string extension);
+
 private:
+	std::vector<VkExtensionProperties> availableExtensions;
 
 	InstanceWrapper<VkInstance> applicationInfo { vkDestroyInstance };
 

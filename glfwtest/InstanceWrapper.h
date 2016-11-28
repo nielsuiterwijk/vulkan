@@ -4,7 +4,8 @@
 
 #include <vulkan/vulkan.h>
 
-
+//The idea behind this class is that if you delete or overwrite the object, it will always call the correct vulkan clean up code
+//to prevent any memory leaks.
 template <typename T>
 class InstanceWrapper
 {

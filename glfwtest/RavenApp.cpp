@@ -27,30 +27,32 @@ RavenApp::~RavenApp()
 	glfwTerminate();
 }
 
-void RavenApp::Initialize()
+bool RavenApp::Initialize()
 {
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-
 	window = glfwCreateWindow(1280, 720, "Vulkan window", nullptr, nullptr);
 
-	uint32_t extensionCount = 0;
-	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+	device = new GraphicsDevice();
 
-	std::vector<VkExtensionProperties> extensions(extensionCount);
-	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+	uint32_t glfwExtensionCount = 0;
+	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-	std::cout << extensionCount << " extensions supported" << std::endl;
+	std::vector<std::string> extensionsNeeded(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-	for (const auto& extension : extensions)
+	for (size_t i = 0; i < glfwExtensionCount; i++)
 	{
-		std::cout << "\t" << extension.extensionName << std::endl;
+		if (!device->IsExtensionAvailable(extensionsNeeded[i]))
+		{
+			std::cout << "Missing " << extensionsNeeded[i] << " extension." << std::endl;
+			return false;
+		}
 	}
 
-	device = new GraphicsDevice();
+	return true;
 }
 
 void RavenApp::Run()

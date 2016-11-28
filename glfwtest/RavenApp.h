@@ -10,7 +10,7 @@ public:
 	RavenApp();
 	~RavenApp();
 
-	void Initialize();
+	bool Initialize();
 
 	void Run();
 
