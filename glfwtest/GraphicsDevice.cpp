@@ -6,21 +6,22 @@
 
 GraphicsDevice::GraphicsDevice()
 {
-	uint32_t extensionCount = 0;
-	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+	CacheExtensions();
+	CacheLayers();
 
-	availableExtensions = std::vector<VkExtensionProperties>(extensionCount);
-
-	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, availableExtensions.data());
-
-	std::cout << extensionCount << " extensions supported" << std::endl;
-
-	for (const VkExtensionProperties& extension : availableExtensions)
+	if (enableValidationLayers && !CheckValidationLayers())
 	{
-		std::cout << "\t" << extension.extensionName << std::endl;
+		throw std::runtime_error("validation layers requested, but not available!");
 	}
+}
 
+GraphicsDevice::~GraphicsDevice()
+{
 
+}
+
+bool GraphicsDevice::CreateVulkanInstance(const std::vector<std::string>& requiredExtensions)
+{
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pApplicationName = "Raven Demo";
@@ -33,27 +34,34 @@ GraphicsDevice::GraphicsDevice()
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
-	unsigned int glfwExtensionCount = 0;
-	const char** glfwExtensions;
+	std::vector<const char *> requiredExtensionsC;
+	requiredExtensionsC.reserve(requiredExtensions.size());
+	for (int i = 0; i < requiredExtensions.size(); i++)
+	{
+		requiredExtensionsC.push_back(requiredExtensions[i].c_str());
+	}
+	createInfo.enabledExtensionCount = requiredExtensionsC.size();
+	createInfo.ppEnabledExtensionNames = requiredExtensionsC.data();
 
-	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-	createInfo.enabledExtensionCount = glfwExtensionCount;
-	createInfo.ppEnabledExtensionNames = glfwExtensions;
-	createInfo.enabledLayerCount = 0;
+	if (enableValidationLayers)
+	{
+		createInfo.enabledLayerCount = validationLayers.size();
+		createInfo.ppEnabledLayerNames = validationLayers.data();
+	}
+	else
+	{
+		createInfo.enabledLayerCount = 0;
+	}
 
 	VkResult result = vkCreateInstance(&createInfo, nullptr, applicationInfo.Replace());
 
 	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create instance!");
+		return false;
 	}
 
-}
-
-GraphicsDevice::~GraphicsDevice()
-{
-
+	return true;
 }
 
 bool GraphicsDevice::IsExtensionAvailable(std::string extension)
@@ -65,4 +73,58 @@ bool GraphicsDevice::IsExtensionAvailable(std::string extension)
 	}
 
 	return false;
+}
+
+std::vector<std::string> GraphicsDevice::GetRequiredInstanceExtensions()
+{
+	if (enableValidationLayers)
+	{
+		return std::vector<std::string> { VK_EXT_DEBUG_REPORT_EXTENSION_NAME };
+	}
+	else
+	{
+		return std::vector<std::string>();
+	}
+}
+
+void GraphicsDevice::CacheExtensions()
+{
+	uint32_t extensionCount = 0;
+	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+
+	availableExtensions = std::vector<VkExtensionProperties>(extensionCount);
+	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, availableExtensions.data());
+}
+
+void GraphicsDevice::CacheLayers()
+{
+	uint32_t layerCount = 0;
+	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+	availableLayers = std::vector<VkLayerProperties>(layerCount);
+	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+}
+
+bool GraphicsDevice::CheckValidationLayers()
+{
+	for (const char* layerName : validationLayers)
+	{
+		bool layerFound = false;
+
+		for (const auto& layerProperties : availableLayers)
+		{
+			if (strcmp(layerName, layerProperties.layerName) == 0)
+			{
+				layerFound = true;
+				break;
+			}
+		}
+
+		if (!layerFound)
+		{
+			return false;
+		}
+	}
+
+	return true;
 }

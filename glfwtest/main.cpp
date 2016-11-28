@@ -9,9 +9,10 @@
 #include <stdexcept>
 
 
+
 int ThreadedCall(int a, int b)
 {
-	::Sleep(100);
+	::Sleep(10);
 	std::cout << a * b << " = a * b" << std::endl;
 
 	return a * b;
@@ -20,6 +21,8 @@ int ThreadedCall(int a, int b)
 int main()
 {
 	Integer::RunSanityCheck();
+
+	std::cout << "size of size_t: " << sizeof(size_t) << std::endl;
 
 	ThreadPool p(8);
 	std::future<int> result = p.Enqueue(ThreadedCall, 3, 7);

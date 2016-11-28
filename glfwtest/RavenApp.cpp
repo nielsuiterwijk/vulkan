@@ -41,16 +41,24 @@ bool RavenApp::Initialize()
 	uint32_t glfwExtensionCount = 0;
 	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-	std::vector<std::string> extensionsNeeded(glfwExtensions, glfwExtensions + glfwExtensionCount);
+	std::vector<std::string> allExtensionsRequired;
 
-	for (size_t i = 0; i < glfwExtensionCount; i++)
+	std::vector<std::string> windowExtensionsNeeded(glfwExtensions, glfwExtensions + glfwExtensionCount);
+	std::vector<std::string> deviceExtensionsNeeded = device->GetRequiredInstanceExtensions();
+
+	allExtensionsRequired.insert(std::end(allExtensionsRequired), std::begin(windowExtensionsNeeded), std::end(windowExtensionsNeeded));
+	allExtensionsRequired.insert(std::end(allExtensionsRequired), std::begin(deviceExtensionsNeeded), std::end(deviceExtensionsNeeded));
+
+	for (size_t i = 0; i < allExtensionsRequired.size(); i++)
 	{
-		if (!device->IsExtensionAvailable(extensionsNeeded[i]))
+		if (!device->IsExtensionAvailable(allExtensionsRequired[i]))
 		{
-			std::cout << "Missing " << extensionsNeeded[i] << " extension." << std::endl;
+			std::cout << "Missing " << allExtensionsRequired[i] << " extension." << std::endl;
 			return false;
 		}
 	}
+
+	device->CreateVulkanInstance(allExtensionsRequired);
 
 	return true;
 }
