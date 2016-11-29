@@ -5,6 +5,16 @@
 #include <vector>
 #include <string>
 
+struct QueueFamilyIndices
+{
+	int graphicsFamily = -1;
+
+	bool IsComplete()
+	{
+		return graphicsFamily >= 0;
+	}
+};
+
 class GraphicsDevice
 {
 public:
@@ -23,12 +33,21 @@ private:
 
 	bool CheckValidationLayers();
 
+	void CreateInstance(const std::vector<std::string>& requiredExtensions);
+	void HookDebugCallback();
+	void CreateDevice();
+	QueueFamilyIndices FindQueueFamilies();
+
 private:
 	std::vector<VkExtensionProperties> availableExtensions;
 	std::vector<VkLayerProperties> availableLayers;
 
-	InstanceWrapper<VkInstance> applicationInfo { vkDestroyInstance };
+	VkPhysicalDevice device;
 
+	InstanceWrapper<VkInstance> applicationInfo;
+	InstanceWrapper<VkDebugReportCallbackEXT> debugCallback;
+
+	//TODO: load from file
 	const std::vector<const char*> validationLayers =
 	{
 		"VK_LAYER_LUNARG_standard_validation"

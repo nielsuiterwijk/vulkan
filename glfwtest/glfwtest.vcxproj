@@ -180,6 +180,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugAssert.h" />
+    <ClInclude Include="VulkanHelpers.h" />
     <ClInclude Include="GraphicsDevice.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="includes\glm\common.hpp" />

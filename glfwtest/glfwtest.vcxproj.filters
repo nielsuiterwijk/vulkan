@@ -511,6 +511,9 @@
     <ClInclude Include="ThreadPool.h">
       <Filter>threading</Filter>
     </ClInclude>
+    <ClInclude Include="VulkanHelpers.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

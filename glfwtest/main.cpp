@@ -34,22 +34,27 @@ int main()
 
 	std::cout << "received result for ThreadedCalled: " << result.get() << std::endl;
 
-	RavenApp app;
+	{
+		RavenApp app;
 
-	if (!app.Initialize())
-	{
-		return EXIT_FAILURE;
+		if (!app.Initialize())
+		{
+			return EXIT_FAILURE;
+		}
+
+		try
+		{
+			app.Run();
+		}
+		catch (const std::runtime_error& e)
+		{
+			std::cerr << e.what() << std::endl;
+			return EXIT_FAILURE;
+		}
 	}
 
-	try
-	{
-		app.Run();
-	}
-	catch (const std::runtime_error& e)
-	{
-		std::cerr << e.what() << std::endl;
-		return EXIT_FAILURE;
-	}
+	int input = 0;
+	std::cin >> input;
 
 	return EXIT_SUCCESS;
 }

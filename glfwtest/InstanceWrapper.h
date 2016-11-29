@@ -22,7 +22,7 @@ public:
 
 	InstanceWrapper(const InstanceWrapper<VkInstance>& instance, std::function<void(VkInstance, T, VkAllocationCallbacks*)> callback)
 	{
-		this->deleteCallback = [&instance, deletef](T obj)
+		this->deleteCallback = [&instance, callback](T obj)
 		{
 			callback(instance, obj, nullptr);
 		};
@@ -30,7 +30,7 @@ public:
 
 	InstanceWrapper(const InstanceWrapper<VkDevice>& device, std::function<void(VkDevice, T, VkAllocationCallbacks*)> callback)
 	{
-		this->deleteCallback = [&device, deletef](T obj)
+		this->deleteCallback = [&device, callback](T obj)
 		{
 			callback(device, obj, nullptr);
 		};
