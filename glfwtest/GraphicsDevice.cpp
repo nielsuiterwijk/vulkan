@@ -9,7 +9,7 @@
 //TODO: Create a "VulkanRenderer" and a "GraphicDevice" class, seperating the abstract concept of a vulkan instance from the physical device handle
 GraphicsDevice::GraphicsDevice():
 	renderer(nullptr),
-	device(VK_NULL_HANDLE)
+	physicalDevice(VK_NULL_HANDLE)
 {
 
 }
@@ -23,10 +23,40 @@ void GraphicsDevice::Initialize(std::shared_ptr<VulkanRenderer> vulkanRenderer)
 {
 	renderer = vulkanRenderer;
 
-	CreateDevice();
+	CreatePhysicalDevice();
+
+	QueueFamilyIndices indices = FindQueueFamilies();
+
+	//TODO: place in its own function
+	VkDeviceQueueCreateInfo queueCreateInfo = {};
+	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	queueCreateInfo.queueFamilyIndex = indices.graphicsFamily;
+	queueCreateInfo.queueCount = 1;
+	float queuePriority = 1.0f;
+	queueCreateInfo.pQueuePriorities = &queuePriority;
+
+	//No need for now
+	VkPhysicalDeviceFeatures deviceFeatures = {};
+
+	VkDeviceCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	createInfo.pQueueCreateInfos = &queueCreateInfo;
+	createInfo.queueCreateInfoCount = 1;
+
+	createInfo.pEnabledFeatures = &deviceFeatures;
+	createInfo.enabledExtensionCount = 0;
+	//Note: logical device validation layers got deprecated see: https://www.khronos.org/registry/vulkan/specs/1.0-extensions/xhtml/vkspec.html 31.1.1 Device Layer Deprecation
+	createInfo.enabledLayerCount = 0;
+
+	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, logicalDevice.Replace()) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create logical device!");
+	}
+
+	vkGetDeviceQueue(logicalDevice, indices.graphicsFamily, 0, &graphicsQueue);
 }
 
-void GraphicsDevice::CreateDevice()
+void GraphicsDevice::CreatePhysicalDevice()
 {
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(renderer->GetInstance(), &deviceCount, nullptr);
@@ -50,15 +80,15 @@ void GraphicsDevice::CreateDevice()
 
 		if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
 		{
-			device = vulkanDevice;
+			physicalDevice = vulkanDevice;
 			if (!FindQueueFamilies().IsComplete())
 			{
-				device = VK_NULL_HANDLE;
+				physicalDevice = VK_NULL_HANDLE;
 			}
 		}
 	}
 
-	if (device == VK_NULL_HANDLE)
+	if (physicalDevice == VK_NULL_HANDLE)
 	{
 		throw std::runtime_error("failed to find a suitable GPU!");
 	}
@@ -69,10 +99,10 @@ QueueFamilyIndices GraphicsDevice::FindQueueFamilies()
 	QueueFamilyIndices indices;
 
 	uint32_t queueFamilyCount = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
 
 	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
 
 	int i = 0;
 	for (const auto& queueFamily : queueFamilies)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include "InstanceWrapper.h"
 
 #include <vector>
 #include <string>
@@ -27,12 +27,16 @@ public:
 	void Initialize(std::shared_ptr<VulkanRenderer> vulkanRenderer);
 
 private:
-	void CreateDevice();
+	void CreatePhysicalDevice();
 	QueueFamilyIndices FindQueueFamilies();
 
 private:
 	std::shared_ptr<VulkanRenderer> renderer;
 
-	VkPhysicalDevice device;
+	VkPhysicalDevice physicalDevice;
+
+	InstanceWrapper<VkDevice> logicalDevice { vkDestroyDevice };
+
+	VkQueue graphicsQueue;
 
 };
