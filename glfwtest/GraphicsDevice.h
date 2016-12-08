@@ -1,9 +1,12 @@
 #pragma once
 
-#include "InstanceWrapper.h"
+#include <vulkan/vulkan.h>
 
 #include <vector>
 #include <string>
+#include <memory>
+
+class VulkanRenderer;
 
 struct QueueFamilyIndices
 {
@@ -21,42 +24,15 @@ public:
 	GraphicsDevice();
 	~GraphicsDevice();
 
-	bool CreateVulkanInstance(const std::vector<std::string>& requiredExtensions);
-
-	bool IsExtensionAvailable(std::string extension);
-
-	std::vector<std::string> GetRequiredInstanceExtensions();
+	void Initialize(std::shared_ptr<VulkanRenderer> vulkanRenderer);
 
 private:
-	void CacheExtensions();
-	void CacheLayers();
-
-	bool CheckValidationLayers();
-
-	void CreateInstance(const std::vector<std::string>& requiredExtensions);
-	void HookDebugCallback();
 	void CreateDevice();
 	QueueFamilyIndices FindQueueFamilies();
 
 private:
-	std::vector<VkExtensionProperties> availableExtensions;
-	std::vector<VkLayerProperties> availableLayers;
+	std::shared_ptr<VulkanRenderer> renderer;
 
 	VkPhysicalDevice device;
-
-	InstanceWrapper<VkInstance> applicationInfo;
-	InstanceWrapper<VkDebugReportCallbackEXT> debugCallback;
-
-	//TODO: load from file
-	const std::vector<const char*> validationLayers =
-	{
-		"VK_LAYER_LUNARG_standard_validation"
-	};
-
-#ifdef NDEBUG
-	const bool enableValidationLayers = false;
-#else
-	const bool enableValidationLayers = true;
-#endif
 
 };

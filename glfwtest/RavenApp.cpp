@@ -9,6 +9,7 @@
 #include "Timer.h"
 #include "Helpers.h"
 #include "GraphicsDevice.h"
+#include "VulkanRenderer.h"
 
 RavenApp::RavenApp() :
 	window(nullptr),
@@ -44,21 +45,22 @@ bool RavenApp::Initialize()
 	std::vector<std::string> allExtensionsRequired;
 
 	std::vector<std::string> windowExtensionsNeeded(glfwExtensions, glfwExtensions + glfwExtensionCount);
-	std::vector<std::string> deviceExtensionsNeeded = device->GetRequiredInstanceExtensions();
 
-	allExtensionsRequired.insert(std::end(allExtensionsRequired), std::begin(windowExtensionsNeeded), std::end(windowExtensionsNeeded));
-	allExtensionsRequired.insert(std::end(allExtensionsRequired), std::begin(deviceExtensionsNeeded), std::end(deviceExtensionsNeeded));
+	std::shared_ptr<VulkanRenderer> vulkanRenderer = std::make_shared<VulkanRenderer>();
 
 	for (size_t i = 0; i < allExtensionsRequired.size(); i++)
 	{
-		if (!device->IsExtensionAvailable(allExtensionsRequired[i]))
+		if (!vulkanRenderer->IsExtensionAvailable(allExtensionsRequired[i]))
 		{
 			std::cout << "Missing " << allExtensionsRequired[i] << " extension." << std::endl;
 			return false;
 		}
 	}
 
-	device->CreateVulkanInstance(allExtensionsRequired);
+	vulkanRenderer->CreateInstance(windowExtensionsNeeded);
+	vulkanRenderer->HookDebugCallback();
+
+	device->Initialize(vulkanRenderer);
 
 	return true;
 }

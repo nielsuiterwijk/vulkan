@@ -177,9 +177,11 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RavenApp.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="VulkanRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugAssert.h" />
+    <ClInclude Include="VulkanDebugHook.h" />
     <ClInclude Include="VulkanHelpers.h" />
     <ClInclude Include="GraphicsDevice.h" />
     <ClInclude Include="Helpers.h" />
@@ -337,6 +339,7 @@
     <ClInclude Include="Task.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="VulkanRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl" />

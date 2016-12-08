@@ -10,6 +10,9 @@
     </ClCompile>
     <ClCompile Include="RavenApp.cpp" />
     <ClCompile Include="GraphicsDevice.cpp" />
+    <ClCompile Include="VulkanRenderer.cpp">
+      <Filter>renderers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -41,6 +44,9 @@
     </Filter>
     <Filter Include="threading">
       <UniqueIdentifier>{52d6df23-77e3-4eeb-b6cf-67074eab8135}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="renderers">
+      <UniqueIdentifier>{851ac35d-fad4-4c4d-8736-83a629c405ce}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -512,6 +518,12 @@
       <Filter>threading</Filter>
     </ClInclude>
     <ClInclude Include="VulkanHelpers.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanRenderer.h">
+      <Filter>renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanDebugHook.h">
       <Filter>vulkan</Filter>
     </ClInclude>
   </ItemGroup>
