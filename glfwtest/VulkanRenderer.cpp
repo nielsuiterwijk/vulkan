@@ -32,6 +32,7 @@ void VulkanRenderer::CreateInstance(std::vector<std::string> requiredExtensions)
 		requiredExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 	}
 
+
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pApplicationName = "Raven Demo";
@@ -147,4 +148,9 @@ bool VulkanRenderer::CheckValidationLayers()
 InstanceWrapper<VkInstance>& VulkanRenderer::GetInstance()
 {
 	return applicationInfo;
+}
+
+InstanceWrapper<VkSurfaceKHR>& VulkanRenderer::GetSurface()
+{
+	return surface;
 }

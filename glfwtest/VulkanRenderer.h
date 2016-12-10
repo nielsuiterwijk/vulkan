@@ -17,6 +17,7 @@ public:
 	bool IsExtensionAvailable(const std::string& extension);
 
 	InstanceWrapper<VkInstance>& GetInstance();
+	InstanceWrapper<VkSurfaceKHR>& GetSurface();
 
 private:
 	void CacheExtensions();
@@ -31,6 +32,8 @@ private:
 	std::vector<VkLayerProperties> availableLayers;
 
 	InstanceWrapper<VkInstance> applicationInfo;
+	InstanceWrapper<VkSurfaceKHR> surface { applicationInfo, vkDestroySurfaceKHR };
+
 	InstanceWrapper<VkDebugReportCallbackEXT> debugCallback;
 
 	//TODO: load from file

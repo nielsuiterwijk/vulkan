@@ -5,6 +5,7 @@
 #include "VulkanRenderer.h"
 
 #include <iostream>
+#include <set>
 
 //TODO: Create a "VulkanRenderer" and a "GraphicDevice" class, seperating the abstract concept of a vulkan instance from the physical device handle
 GraphicsDevice::GraphicsDevice():
@@ -25,26 +26,37 @@ void GraphicsDevice::Initialize(std::shared_ptr<VulkanRenderer> vulkanRenderer)
 
 	CreatePhysicalDevice();
 
-	QueueFamilyIndices indices = FindQueueFamilies();
+	QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
 
 	//TODO: place in its own function
-	VkDeviceQueueCreateInfo queueCreateInfo = {};
-	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	queueCreateInfo.queueFamilyIndex = indices.graphicsFamily;
-	queueCreateInfo.queueCount = 1;
+
+	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+	std::set<int> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily };
+
 	float queuePriority = 1.0f;
-	queueCreateInfo.pQueuePriorities = &queuePriority;
+	for (int queueFamily : uniqueQueueFamilies)
+	{
+		VkDeviceQueueCreateInfo queueCreateInfo = {};
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfo.queueFamilyIndex = queueFamily;
+		queueCreateInfo.queueCount = 1;
+		queueCreateInfo.pQueuePriorities = &queuePriority;
+		queueCreateInfos.push_back(queueCreateInfo);
+	}
 
 	//No need for now
 	VkPhysicalDeviceFeatures deviceFeatures = {};
 
 	VkDeviceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	createInfo.pQueueCreateInfos = &queueCreateInfo;
-	createInfo.queueCreateInfoCount = 1;
+	createInfo.pQueueCreateInfos = queueCreateInfos.data();
+	createInfo.queueCreateInfoCount = queueCreateInfos.size();
 
 	createInfo.pEnabledFeatures = &deviceFeatures;
-	createInfo.enabledExtensionCount = 0;
+
+	createInfo.enabledExtensionCount = deviceExtensions.size();
+	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+
 	//Note: logical device validation layers got deprecated see: https://www.khronos.org/registry/vulkan/specs/1.0-extensions/xhtml/vkspec.html 31.1.1 Device Layer Deprecation
 	createInfo.enabledLayerCount = 0;
 
@@ -54,6 +66,7 @@ void GraphicsDevice::Initialize(std::shared_ptr<VulkanRenderer> vulkanRenderer)
 	}
 
 	vkGetDeviceQueue(logicalDevice, indices.graphicsFamily, 0, &graphicsQueue);
+	vkGetDeviceQueue(logicalDevice, indices.presentFamily, 0, &presentQueue);
 }
 
 void GraphicsDevice::CreatePhysicalDevice()
@@ -69,6 +82,8 @@ void GraphicsDevice::CreatePhysicalDevice()
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(renderer->GetInstance(), &deviceCount, devices.data());
 
+	physicalDevice = VK_NULL_HANDLE;
+
 	for (const auto& vulkanDevice : devices)
 	{
 		VkPhysicalDeviceProperties deviceProperties;
@@ -78,13 +93,15 @@ void GraphicsDevice::CreatePhysicalDevice()
 
 		std::cout << "GPU: " << Vulkan::GetVendorName(deviceProperties.vendorID) << " " << deviceProperties.deviceName << std::endl;
 
-		if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+		bool hasValidQueues = FindQueueFamilies(vulkanDevice).IsComplete();
+		bool hasValidExtensions = HasAllRequiredExtensions(vulkanDevice);
+		bool isDiscreteGPU = deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+
+		std::cout << "hasValidQueues: " << hasValidQueues << " hasValidExtensions: " << hasValidExtensions << " isDiscreteGPU: " << isDiscreteGPU << std::endl;
+
+		if (hasValidQueues && hasValidExtensions && isDiscreteGPU)
 		{
 			physicalDevice = vulkanDevice;
-			if (!FindQueueFamilies().IsComplete())
-			{
-				physicalDevice = VK_NULL_HANDLE;
-			}
 		}
 	}
 
@@ -94,7 +111,7 @@ void GraphicsDevice::CreatePhysicalDevice()
 	}
 }
 
-QueueFamilyIndices GraphicsDevice::FindQueueFamilies()
+QueueFamilyIndices GraphicsDevice::FindQueueFamilies(VkPhysicalDevice physicalDevice)
 {
 	QueueFamilyIndices indices;
 
@@ -112,6 +129,14 @@ QueueFamilyIndices GraphicsDevice::FindQueueFamilies()
 			indices.graphicsFamily = i;
 		}
 
+		VkBool32 presentSupport = false;
+		vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, renderer->GetSurface(), &presentSupport);
+
+		if (queueFamily.queueCount > 0 && presentSupport)
+		{
+			indices.presentFamily = i;
+		}
+
 		if (indices.IsComplete())
 		{
 			break;
@@ -121,4 +146,22 @@ QueueFamilyIndices GraphicsDevice::FindQueueFamilies()
 	}
 
 	return indices;
+}
+
+bool GraphicsDevice::HasAllRequiredExtensions(VkPhysicalDevice physicalDevice)
+{
+	uint32_t extensionCount;
+	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+
+	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
+
+	std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+	for (const auto& extension : availableExtensions)
+	{
+		requiredExtensions.erase(extension.extensionName);
+	}
+
+	return requiredExtensions.empty();
 }

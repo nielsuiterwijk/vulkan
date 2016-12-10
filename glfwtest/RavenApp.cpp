@@ -58,7 +58,14 @@ bool RavenApp::Initialize()
 	}
 
 	vulkanRenderer->CreateInstance(windowExtensionsNeeded);
+
+
 	vulkanRenderer->HookDebugCallback();
+
+	if (glfwCreateWindowSurface(vulkanRenderer->GetInstance(), window, nullptr, vulkanRenderer->GetSurface().Replace()) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create window surface!");
+	}
 
 	device->Initialize(vulkanRenderer);
 

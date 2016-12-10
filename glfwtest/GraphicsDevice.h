@@ -11,10 +11,11 @@ class VulkanRenderer;
 struct QueueFamilyIndices
 {
 	int graphicsFamily = -1;
+	int presentFamily = -1;
 
 	bool IsComplete()
 	{
-		return graphicsFamily >= 0;
+		return graphicsFamily >= 0 && presentFamily >= 0;
 	}
 };
 
@@ -28,7 +29,9 @@ public:
 
 private:
 	void CreatePhysicalDevice();
-	QueueFamilyIndices FindQueueFamilies();
+
+	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice);
+	bool HasAllRequiredExtensions(VkPhysicalDevice device);
 
 private:
 	std::shared_ptr<VulkanRenderer> renderer;
@@ -38,5 +41,8 @@ private:
 	InstanceWrapper<VkDevice> logicalDevice { vkDestroyDevice };
 
 	VkQueue graphicsQueue;
+	VkQueue presentQueue;
+
+	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME	};
 
 };

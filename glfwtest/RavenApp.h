@@ -22,5 +22,6 @@ public:
 private:
 	GLFWwindow* window;
 
+
 	GraphicsDevice* device;
 };
