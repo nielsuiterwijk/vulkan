@@ -2,8 +2,18 @@
 
 #include "InstanceWrapper.h"
 
+#include <glm/fwd.hpp>
+
 #include <vector>
 #include <string>
+
+//TODO: Create a Swapchain class?
+struct SwapChainSupportDetails
+{
+	VkSurfaceCapabilitiesKHR capabilities;
+	std::vector<VkSurfaceFormatKHR> formats;
+	std::vector<VkPresentModeKHR> presentModes;
+};
 
 class VulkanRenderer
 {
@@ -19,13 +29,18 @@ public:
 	InstanceWrapper<VkInstance>& GetInstance();
 	InstanceWrapper<VkSurfaceKHR>& GetSurface();
 
+	SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice physicalDevice);
+
 private:
 	void CacheExtensions();
 	void CacheLayers();
 
 	bool CheckValidationLayers();
 
-
+	//TODO: SwapChain class?
+	VkSurfaceFormatKHR GetSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+	VkPresentModeKHR GetSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes, bool waitForVSync);
+	VkExtent2D GetSwapExtents(const VkSurfaceCapabilitiesKHR& capabilities, const glm::u32vec2& windowSize);
 
 private:
 	std::vector<VkExtensionProperties> availableExtensions;

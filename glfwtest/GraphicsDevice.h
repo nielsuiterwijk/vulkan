@@ -19,6 +19,8 @@ struct QueueFamilyIndices
 	}
 };
 
+
+
 class GraphicsDevice
 {
 public:
@@ -27,10 +29,16 @@ public:
 
 	void Initialize(std::shared_ptr<VulkanRenderer> vulkanRenderer);
 
+
+
 private:
 	void CreatePhysicalDevice();
+	void CreateLogicalDevice(const QueueFamilyIndices & indices);
+
+	void CreateSwapChain();
 
 	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice);
+
 	bool HasAllRequiredExtensions(VkPhysicalDevice device);
 
 private:

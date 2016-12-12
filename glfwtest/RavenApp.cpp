@@ -46,6 +46,7 @@ bool RavenApp::Initialize()
 
 	std::vector<std::string> windowExtensionsNeeded(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
+	//Note: Ownership given to GraphicsDevice
 	std::shared_ptr<VulkanRenderer> vulkanRenderer = std::make_shared<VulkanRenderer>();
 
 	for (size_t i = 0; i < allExtensionsRequired.size(); i++)

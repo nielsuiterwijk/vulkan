@@ -28,8 +28,25 @@ void GraphicsDevice::Initialize(std::shared_ptr<VulkanRenderer> vulkanRenderer)
 
 	QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
 
-	//TODO: place in its own function
+	CreateLogicalDevice(indices);
 
+	vkGetDeviceQueue(logicalDevice, indices.graphicsFamily, 0, &graphicsQueue);
+	vkGetDeviceQueue(logicalDevice, indices.presentFamily, 0, &presentQueue);
+
+	CreateSwapChain();
+}
+
+void GraphicsDevice::CreateSwapChain()
+{
+	SwapChainSupportDetails swapChainSupport = renderer->QuerySwapChainSupport(physicalDevice);
+
+	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
+	VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
+	VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
+}
+
+void GraphicsDevice::CreateLogicalDevice(const QueueFamilyIndices& indices)
+{
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 	std::set<int> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily };
 
@@ -64,9 +81,6 @@ void GraphicsDevice::Initialize(std::shared_ptr<VulkanRenderer> vulkanRenderer)
 	{
 		throw std::runtime_error("failed to create logical device!");
 	}
-
-	vkGetDeviceQueue(logicalDevice, indices.graphicsFamily, 0, &graphicsQueue);
-	vkGetDeviceQueue(logicalDevice, indices.presentFamily, 0, &presentQueue);
 }
 
 void GraphicsDevice::CreatePhysicalDevice()
@@ -84,24 +98,32 @@ void GraphicsDevice::CreatePhysicalDevice()
 
 	physicalDevice = VK_NULL_HANDLE;
 
-	for (const auto& vulkanDevice : devices)
+	for (const auto& vulkanPhysicalDevice : devices)
 	{
 		VkPhysicalDeviceProperties deviceProperties;
 		VkPhysicalDeviceFeatures deviceFeatures;
-		vkGetPhysicalDeviceProperties(vulkanDevice, &deviceProperties);
-		vkGetPhysicalDeviceFeatures(vulkanDevice, &deviceFeatures);
+		vkGetPhysicalDeviceProperties(vulkanPhysicalDevice, &deviceProperties);
+		vkGetPhysicalDeviceFeatures(vulkanPhysicalDevice, &deviceFeatures);
 
 		std::cout << "GPU: " << Vulkan::GetVendorName(deviceProperties.vendorID) << " " << deviceProperties.deviceName << std::endl;
 
-		bool hasValidQueues = FindQueueFamilies(vulkanDevice).IsComplete();
-		bool hasValidExtensions = HasAllRequiredExtensions(vulkanDevice);
+		bool hasValidQueues = FindQueueFamilies(vulkanPhysicalDevice).IsComplete();
+		bool hasValidExtensions = HasAllRequiredExtensions(vulkanPhysicalDevice);
 		bool isDiscreteGPU = deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+		bool hasValidSwapchain = false;
 
-		std::cout << "hasValidQueues: " << hasValidQueues << " hasValidExtensions: " << hasValidExtensions << " isDiscreteGPU: " << isDiscreteGPU << std::endl;
-
-		if (hasValidQueues && hasValidExtensions && isDiscreteGPU)
+		if (hasValidExtensions)
 		{
-			physicalDevice = vulkanDevice;
+			SwapChainSupportDetails swapChainSupport = renderer->QuerySwapChainSupport(vulkanPhysicalDevice);
+			hasValidSwapchain = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+		}
+
+
+		std::cout << "hasValidQueues: " << hasValidQueues << " hasValidExtensions: " << hasValidExtensions << " isDiscreteGPU: " << isDiscreteGPU << " hasValidSwapchain: " << hasValidSwapchain << std::endl;
+
+		if (hasValidQueues && hasValidExtensions && isDiscreteGPU && hasValidSwapchain)
+		{
+			physicalDevice = vulkanPhysicalDevice;
 		}
 	}
 
@@ -165,3 +187,4 @@ bool GraphicsDevice::HasAllRequiredExtensions(VkPhysicalDevice physicalDevice)
 
 	return requiredExtensions.empty();
 }
+
