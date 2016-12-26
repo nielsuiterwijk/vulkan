@@ -40,9 +40,9 @@ void GraphicsDevice::CreateSwapChain()
 {
 	SwapChainSupportDetails swapChainSupport = renderer->QuerySwapChainSupport(physicalDevice);
 
-	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
-	VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-	VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
+	//VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
+	//VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
+	//VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 }
 
 void GraphicsDevice::CreateLogicalDevice(const QueueFamilyIndices& indices)

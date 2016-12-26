@@ -5,11 +5,11 @@
 #include <vector>
 #include <iostream>
 
-#include "DebugAssert.h"
-#include "Timer.h"
-#include "Helpers.h"
-#include "GraphicsDevice.h"
-#include "VulkanRenderer.h"
+#include "helpers/DebugAssert.h"
+#include "helpers/Timer.h"
+#include "helpers/Helpers.h"
+#include "graphics/GraphicsDevice.h"
+#include "graphics/VulkanRenderer.h"
 
 RavenApp::RavenApp() :
 	window(nullptr),

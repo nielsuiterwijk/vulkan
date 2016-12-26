@@ -2,16 +2,16 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="DebugAssert.cpp">
+    <ClCompile Include="RavenApp.cpp" />
+    <ClCompile Include="graphics\VulkanRenderer.cpp">
+      <Filter>renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\GraphicsDevice.cpp" />
+    <ClCompile Include="helpers\DebugAssert.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
-    <ClCompile Include="Timer.cpp">
+    <ClCompile Include="helpers\Timer.cpp">
       <Filter>base</Filter>
-    </ClCompile>
-    <ClCompile Include="RavenApp.cpp" />
-    <ClCompile Include="GraphicsDevice.cpp" />
-    <ClCompile Include="VulkanRenderer.cpp">
-      <Filter>renderers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -491,40 +491,40 @@
     <ClInclude Include="includes\glm\simd\integer.h">
       <Filter>includes\glm\simd</Filter>
     </ClInclude>
-    <ClInclude Include="Integer.h">
-      <Filter>helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugAssert.h">
-      <Filter>helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="Helpers.h">
-      <Filter>helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="Timer.h">
-      <Filter>base</Filter>
-    </ClInclude>
     <ClInclude Include="RavenApp.h" />
-    <ClInclude Include="InstanceWrapper.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsDevice.h" />
     <ClInclude Include="includes\standard.h">
       <Filter>includes</Filter>
     </ClInclude>
-    <ClInclude Include="Task.h">
-      <Filter>threading</Filter>
-    </ClInclude>
-    <ClInclude Include="ThreadPool.h">
-      <Filter>threading</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanHelpers.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanRenderer.h">
+    <ClInclude Include="graphics\VulkanRenderer.h">
       <Filter>renderers</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanDebugHook.h">
+    <ClInclude Include="graphics\VulkanDebugHook.h">
       <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\VulkanHelpers.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\InstanceWrapper.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\GraphicsDevice.h" />
+    <ClInclude Include="threading\ThreadPool.h">
+      <Filter>threading</Filter>
+    </ClInclude>
+    <ClInclude Include="threading\Task.h">
+      <Filter>threading</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\DebugAssert.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\Helpers.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\Integer.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\Timer.h">
+      <Filter>base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

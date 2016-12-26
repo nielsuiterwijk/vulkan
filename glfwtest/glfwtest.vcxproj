@@ -172,19 +172,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DebugAssert.cpp" />
-    <ClCompile Include="GraphicsDevice.cpp" />
+    <ClCompile Include="helpers\DebugAssert.cpp" />
+    <ClCompile Include="graphics\GraphicsDevice.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RavenApp.cpp" />
-    <ClCompile Include="Timer.cpp" />
-    <ClCompile Include="VulkanRenderer.cpp" />
+    <ClCompile Include="helpers\Timer.cpp" />
+    <ClCompile Include="graphics\VulkanRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DebugAssert.h" />
-    <ClInclude Include="VulkanDebugHook.h" />
-    <ClInclude Include="VulkanHelpers.h" />
-    <ClInclude Include="GraphicsDevice.h" />
-    <ClInclude Include="Helpers.h" />
+    <ClInclude Include="helpers\DebugAssert.h" />
+    <ClInclude Include="graphics\VulkanDebugHook.h" />
+    <ClInclude Include="graphics\VulkanHelpers.h" />
+    <ClInclude Include="graphics\GraphicsDevice.h" />
+    <ClInclude Include="helpers\Helpers.h" />
     <ClInclude Include="includes\glm\common.hpp" />
     <ClInclude Include="includes\glm\detail\func_common.hpp" />
     <ClInclude Include="includes\glm\detail\func_exponential.hpp" />
@@ -333,13 +333,13 @@
     <ClInclude Include="includes\glm\vec4.hpp" />
     <ClInclude Include="includes\glm\vector_relational.hpp" />
     <ClInclude Include="includes\standard.h" />
-    <ClInclude Include="InstanceWrapper.h" />
-    <ClInclude Include="Integer.h" />
+    <ClInclude Include="graphics\InstanceWrapper.h" />
+    <ClInclude Include="helpers\Integer.h" />
     <ClInclude Include="RavenApp.h" />
-    <ClInclude Include="Task.h" />
-    <ClInclude Include="ThreadPool.h" />
-    <ClInclude Include="Timer.h" />
-    <ClInclude Include="VulkanRenderer.h" />
+    <ClInclude Include="threading\Task.h" />
+    <ClInclude Include="threading\ThreadPool.h" />
+    <ClInclude Include="helpers\Timer.h" />
+    <ClInclude Include="graphics\VulkanRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl" />

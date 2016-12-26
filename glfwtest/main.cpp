@@ -1,8 +1,8 @@
-#include "Integer.h"
+#include "helpers/Integer.h"
 
 #include "RavenApp.h"
-#include "Task.h"
-#include "ThreadPool.h"
+#include "threading/Task.h"
+#include "threading/ThreadPool.h"
 
 #include <windows.h>
 #include <iostream>
