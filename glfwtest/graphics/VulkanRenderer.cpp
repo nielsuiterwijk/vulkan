@@ -1,8 +1,8 @@
 #include "VulkanRenderer.h"
 
 #include "standard.h"
-#include "VulkanHelpers.h"
-#include "VulkanDebugHook.h"
+#include "helpers/VulkanHelpers.h"
+#include "helpers/VulkanDebugHook.h"
 
 #include <iostream>
 #include <algorithm>
@@ -66,7 +66,9 @@ void VulkanRenderer::CreateInstance(std::vector<std::string> requiredExtensions)
 		createInfo.enabledLayerCount = 0;
 	}
 
-	VkResult result = vkCreateInstance(&createInfo, nullptr, applicationInfo.Replace());
+	VkAllocationCallbacks allocatorCallback = vulkanAllocator;
+
+	VkResult result = vkCreateInstance(&createInfo, &allocatorCallback, applicationInfo.Replace());
 
 	if (result != VK_SUCCESS)
 	{

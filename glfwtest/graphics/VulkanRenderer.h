@@ -1,6 +1,7 @@
 #pragma once
 
-#include "InstanceWrapper.h"
+#include "helpers/InstanceWrapper.h"
+#include "helpers/Allocator.h"
 
 #include <glm/fwd.hpp>
 
@@ -45,6 +46,8 @@ private:
 private:
 	std::vector<VkExtensionProperties> availableExtensions;
 	std::vector<VkLayerProperties> availableLayers;
+
+	Allocator vulkanAllocator;
 
 	InstanceWrapper<VkInstance> applicationInfo;
 	InstanceWrapper<VkSurfaceKHR> surface { applicationInfo, vkDestroySurfaceKHR };

@@ -172,6 +172,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="graphics\helpers\Allocator.cpp" />
     <ClCompile Include="helpers\DebugAssert.cpp" />
     <ClCompile Include="graphics\GraphicsDevice.cpp" />
     <ClCompile Include="main.cpp" />
@@ -180,9 +181,11 @@
     <ClCompile Include="graphics\VulkanRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="graphics\helpers\Allocator.h" />
+    <ClInclude Include="graphics\VulkanSwapChain.h" />
     <ClInclude Include="helpers\DebugAssert.h" />
-    <ClInclude Include="graphics\VulkanDebugHook.h" />
-    <ClInclude Include="graphics\VulkanHelpers.h" />
+    <ClInclude Include="graphics\helpers\VulkanDebugHook.h" />
+    <ClInclude Include="graphics\helpers\VulkanHelpers.h" />
     <ClInclude Include="graphics\GraphicsDevice.h" />
     <ClInclude Include="helpers\Helpers.h" />
     <ClInclude Include="includes\glm\common.hpp" />
@@ -333,7 +336,7 @@
     <ClInclude Include="includes\glm\vec4.hpp" />
     <ClInclude Include="includes\glm\vector_relational.hpp" />
     <ClInclude Include="includes\standard.h" />
-    <ClInclude Include="graphics\InstanceWrapper.h" />
+    <ClInclude Include="graphics\helpers\InstanceWrapper.h" />
     <ClInclude Include="helpers\Integer.h" />
     <ClInclude Include="RavenApp.h" />
     <ClInclude Include="threading\Task.h" />

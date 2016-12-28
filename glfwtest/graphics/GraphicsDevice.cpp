@@ -1,7 +1,7 @@
 #include "GraphicsDevice.h"
 
 #include "standard.h"
-#include "VulkanHelpers.h"
+#include "helpers/VulkanHelpers.h"
 #include "VulkanRenderer.h"
 
 #include <iostream>

@@ -13,6 +13,7 @@
     <ClCompile Include="helpers\Timer.cpp">
       <Filter>base</Filter>
     </ClCompile>
+    <ClCompile Include="graphics\helpers\Allocator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -498,15 +499,6 @@
     <ClInclude Include="graphics\VulkanRenderer.h">
       <Filter>renderers</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\VulkanDebugHook.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="graphics\VulkanHelpers.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="graphics\InstanceWrapper.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="graphics\GraphicsDevice.h" />
     <ClInclude Include="threading\ThreadPool.h">
       <Filter>threading</Filter>
@@ -526,6 +518,16 @@
     <ClInclude Include="helpers\Timer.h">
       <Filter>base</Filter>
     </ClInclude>
+    <ClInclude Include="graphics\helpers\InstanceWrapper.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\helpers\VulkanDebugHook.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\helpers\VulkanHelpers.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\helpers\Allocator.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

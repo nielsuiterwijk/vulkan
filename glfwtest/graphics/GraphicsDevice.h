@@ -1,6 +1,6 @@
 #pragma once
 
-#include "InstanceWrapper.h"
+#include "helpers/InstanceWrapper.h"
 
 #include <vector>
 #include <string>
