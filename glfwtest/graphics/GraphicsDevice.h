@@ -42,7 +42,7 @@ private:
 	bool HasAllRequiredExtensions(VkPhysicalDevice device);
 
 private:
-	std::shared_ptr<VulkanInstance> renderer;
+	std::shared_ptr<VulkanInstance> vulkanInstance;
 	std::shared_ptr<VulkanSwapChain> swapChain;
 
 	VkPhysicalDevice physicalDevice;

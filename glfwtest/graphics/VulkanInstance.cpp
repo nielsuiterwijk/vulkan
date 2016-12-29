@@ -65,9 +65,7 @@ void VulkanInstance::CreateInstance(std::vector<std::string> requiredExtensions)
 		createInfo.enabledLayerCount = 0;
 	}
 
-	VkAllocationCallbacks callbacks = GlobalAllocator::GetInstance();
-
-	VkResult result = vkCreateInstance(&createInfo, &callbacks, applicationInfo.Replace());
+	VkResult result = vkCreateInstance(&createInfo, &((VkAllocationCallbacks)applicationInfo.AllocationCallbacks()), applicationInfo.Replace());
 
 	if (result != VK_SUCCESS)
 	{
@@ -87,7 +85,7 @@ void VulkanInstance::HookDebugCallback()
 	createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
 	createInfo.pfnCallback = VulkanDebug::DebugCallback;
 
-	if (VulkanDebug::CreateDebugReportCallbackEXT(applicationInfo, &createInfo, nullptr, debugCallback.Replace()) != VK_SUCCESS)
+	if (VulkanDebug::CreateDebugReportCallbackEXT(applicationInfo, &createInfo, &((VkAllocationCallbacks)debugCallback.AllocationCallbacks()), debugCallback.Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to set up debug callback!");
 	}

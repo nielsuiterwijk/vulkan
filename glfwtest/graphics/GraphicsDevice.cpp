@@ -9,7 +9,7 @@
 #include <set>
 
 GraphicsDevice::GraphicsDevice(glm::u32vec2 windowSize) :
-	renderer(nullptr),
+	vulkanInstance(nullptr),
 	physicalDevice(VK_NULL_HANDLE),
 	windowSize(windowSize)
 {
@@ -18,12 +18,12 @@ GraphicsDevice::GraphicsDevice(glm::u32vec2 windowSize) :
 
 GraphicsDevice::~GraphicsDevice()
 {
-
+	//TODO: order of deletion is incorrect!
 }
 
 void GraphicsDevice::Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, std::shared_ptr<VulkanSwapChain> vulkanSwapChain)
 {
-	renderer = vulkanRenderer;
+	vulkanInstance = vulkanRenderer;
 	swapChain = vulkanSwapChain;
 
 	CreatePhysicalDevice(swapChain->GetSurface());
@@ -76,7 +76,7 @@ void GraphicsDevice::CreateLogicalDevice(const QueueFamilyIndices& indices)
 	//Note: logical device validation layers got deprecated see: https://www.khronos.org/registry/vulkan/specs/1.0-extensions/xhtml/vkspec.html 31.1.1 Device Layer Deprecation
 	createInfo.enabledLayerCount = 0;
 
-	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, logicalDevice.Replace()) != VK_SUCCESS)
+	if (vkCreateDevice(physicalDevice, &createInfo, &((VkAllocationCallbacks)logicalDevice.AllocationCallbacks()), logicalDevice.Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create logical device!");
 	}
@@ -85,7 +85,7 @@ void GraphicsDevice::CreateLogicalDevice(const QueueFamilyIndices& indices)
 void GraphicsDevice::CreatePhysicalDevice(const VkSurfaceKHR& surface)
 {
 	uint32_t deviceCount = 0;
-	vkEnumeratePhysicalDevices(renderer->Get(), &deviceCount, nullptr);
+	vkEnumeratePhysicalDevices(vulkanInstance->Get(), &deviceCount, nullptr);
 
 	if (deviceCount == 0)
 	{
@@ -93,7 +93,7 @@ void GraphicsDevice::CreatePhysicalDevice(const VkSurfaceKHR& surface)
 	}
 
 	std::vector<VkPhysicalDevice> devices(deviceCount);
-	vkEnumeratePhysicalDevices(renderer->Get(), &deviceCount, devices.data());
+	vkEnumeratePhysicalDevices(vulkanInstance->Get(), &deviceCount, devices.data());
 
 	physicalDevice = VK_NULL_HANDLE;
 

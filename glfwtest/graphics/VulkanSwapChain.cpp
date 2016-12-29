@@ -69,7 +69,7 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const VkPhysicalDe
 
 	swapChain = InstanceWrapper<VkSwapchainKHR>(logicalDevice, vkDestroySwapchainKHR);
 
-	if (vkCreateSwapchainKHR(logicalDevice, &createInfo, nullptr, swapChain.Replace()) != VK_SUCCESS)
+	if (vkCreateSwapchainKHR(logicalDevice, &createInfo, &((VkAllocationCallbacks)swapChain.AllocationCallbacks()), swapChain.Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create swap chain!");
 	}

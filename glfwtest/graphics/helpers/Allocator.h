@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <iostream>
 
 #include "helpers/Singleton.h"
 
@@ -8,8 +9,15 @@
 class Allocator
 {
 public:
-	Allocator() {}
-	~Allocator() {}
+	Allocator()
+	{
+		std::cout << "Allocator" << std::endl;
+	}
+
+	~Allocator()
+	{
+		std::cout << "~Allocator" << std::endl;
+	}
 
 	inline operator VkAllocationCallbacks() const
 	{
