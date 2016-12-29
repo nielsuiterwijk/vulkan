@@ -2,9 +2,15 @@
 
 #include <vulkan/vulkan.h>
 
+#include "helpers/Singleton.h"
+
+
 class Allocator
 {
 public:
+	Allocator() {}
+	~Allocator() {}
+
 	inline operator VkAllocationCallbacks() const
 	{
 		VkAllocationCallbacks result;
@@ -57,5 +63,27 @@ private:
 	void InternalFree(size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope scope);
 
 
+
+};
+
+class GlobalAllocator : public Singleton<GlobalAllocator>
+{
+	friend class Singleton<GlobalAllocator>;
+public:
+	const VkAllocationCallbacks* Callbacks()
+	{
+		return &((VkAllocationCallbacks)allocator);
+	}
+
+	inline operator VkAllocationCallbacks() const
+	{
+		return allocator;
+	}
+
+private:
+	GlobalAllocator() {}
+
+private:
+	Allocator allocator;
 
 };

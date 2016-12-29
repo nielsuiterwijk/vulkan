@@ -2,11 +2,14 @@
 
 #include "helpers/InstanceWrapper.h"
 
+#include "standard.h"
+
 #include <vector>
 #include <string>
 #include <memory>
 
-class VulkanRenderer;
+class VulkanInstance;
+class VulkanSwapChain;
 
 struct QueueFamilyIndices
 {
@@ -19,30 +22,28 @@ struct QueueFamilyIndices
 	}
 };
 
-
-
 class GraphicsDevice
 {
 public:
-	GraphicsDevice();
+	GraphicsDevice(glm::u32vec2 windowSize);
 	~GraphicsDevice();
 
-	void Initialize(std::shared_ptr<VulkanRenderer> vulkanRenderer);
+	void Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, std::shared_ptr<VulkanSwapChain> vulkanSwapChain);
 
-
+	const VkPhysicalDevice& GetPhysicalDevice() const;
+	std::shared_ptr<VulkanSwapChain> GetSwapChain() const;
 
 private:
-	void CreatePhysicalDevice();
+	void CreatePhysicalDevice(const VkSurfaceKHR& surface);
 	void CreateLogicalDevice(const QueueFamilyIndices & indices);
 
-	void CreateSwapChain();
-
-	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice);
+	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice, const VkSurfaceKHR& surface);
 
 	bool HasAllRequiredExtensions(VkPhysicalDevice device);
 
 private:
-	std::shared_ptr<VulkanRenderer> renderer;
+	std::shared_ptr<VulkanInstance> renderer;
+	std::shared_ptr<VulkanSwapChain> swapChain;
 
 	VkPhysicalDevice physicalDevice;
 
@@ -52,5 +53,7 @@ private:
 	VkQueue presentQueue;
 
 	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME	};
+
+	glm::u32vec2 windowSize;
 
 };

@@ -49,12 +49,12 @@ int main()
 		catch (const std::runtime_error& e)
 		{
 			std::cerr << e.what() << std::endl;
+			int input = 0;
+			std::cin >> input;
+
 			return EXIT_FAILURE;
 		}
 	}
-
-	int input = 0;
-	std::cin >> input;
 
 	return EXIT_SUCCESS;
 }

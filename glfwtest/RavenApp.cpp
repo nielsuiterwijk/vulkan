@@ -9,7 +9,8 @@
 #include "helpers/Timer.h"
 #include "helpers/Helpers.h"
 #include "graphics/GraphicsDevice.h"
-#include "graphics/VulkanRenderer.h"
+#include "graphics/VulkanInstance.h"
+#include "graphics\VulkanSwapChain.h"
 
 RavenApp::RavenApp() :
 	window(nullptr),
@@ -37,7 +38,7 @@ bool RavenApp::Initialize()
 
 	window = glfwCreateWindow(1280, 720, "Vulkan window", nullptr, nullptr);
 
-	device = new GraphicsDevice();
+	device = new GraphicsDevice(glm::u32vec2(1280, 720));
 
 	uint32_t glfwExtensionCount = 0;
 	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -47,28 +48,29 @@ bool RavenApp::Initialize()
 	std::vector<std::string> windowExtensionsNeeded(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
 	//Note: Ownership given to GraphicsDevice
-	std::shared_ptr<VulkanRenderer> vulkanRenderer = std::make_shared<VulkanRenderer>();
+	std::shared_ptr<VulkanInstance> vulkanInstance = std::make_shared<VulkanInstance>();
 
 	for (size_t i = 0; i < allExtensionsRequired.size(); i++)
 	{
-		if (!vulkanRenderer->IsExtensionAvailable(allExtensionsRequired[i]))
+		if (!vulkanInstance->IsExtensionAvailable(allExtensionsRequired[i]))
 		{
 			std::cout << "Missing " << allExtensionsRequired[i] << " extension." << std::endl;
 			return false;
 		}
 	}
 
-	vulkanRenderer->CreateInstance(windowExtensionsNeeded);
+	vulkanInstance->CreateInstance(windowExtensionsNeeded);
+	vulkanInstance->HookDebugCallback();
 
+	//Note: Ownership given to GraphicsDevice
+	std::shared_ptr<VulkanSwapChain> vulkanSwapChain = std::make_shared<VulkanSwapChain>(vulkanInstance->Get());
 
-	vulkanRenderer->HookDebugCallback();
-
-	if (glfwCreateWindowSurface(vulkanRenderer->GetInstance(), window, nullptr, vulkanRenderer->GetSurface().Replace()) != VK_SUCCESS)
+	if (glfwCreateWindowSurface(vulkanInstance->Get(), window, nullptr, vulkanSwapChain->GetSurface().Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create window surface!");
 	}
 
-	device->Initialize(vulkanRenderer);
+	device->Initialize(vulkanInstance, vulkanSwapChain);
 
 	return true;
 }

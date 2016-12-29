@@ -3,9 +3,6 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RavenApp.cpp" />
-    <ClCompile Include="graphics\VulkanRenderer.cpp">
-      <Filter>renderers</Filter>
-    </ClCompile>
     <ClCompile Include="graphics\GraphicsDevice.cpp" />
     <ClCompile Include="helpers\DebugAssert.cpp">
       <Filter>helpers</Filter>
@@ -14,6 +11,10 @@
       <Filter>base</Filter>
     </ClCompile>
     <ClCompile Include="graphics\helpers\Allocator.cpp" />
+    <ClCompile Include="graphics\VulkanSwapChain.cpp" />
+    <ClCompile Include="graphics\VulkanInstance.cpp">
+      <Filter>renderers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -496,9 +497,6 @@
     <ClInclude Include="includes\standard.h">
       <Filter>includes</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\VulkanRenderer.h">
-      <Filter>renderers</Filter>
-    </ClInclude>
     <ClInclude Include="graphics\GraphicsDevice.h" />
     <ClInclude Include="threading\ThreadPool.h">
       <Filter>threading</Filter>
@@ -528,6 +526,11 @@
       <Filter>vulkan</Filter>
     </ClInclude>
     <ClInclude Include="graphics\helpers\Allocator.h" />
+    <ClInclude Include="graphics\VulkanSwapChain.h" />
+    <ClInclude Include="graphics\VulkanInstance.h">
+      <Filter>renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\Singleton.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">
