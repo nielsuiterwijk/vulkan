@@ -22,7 +22,8 @@ VulkanInstance::VulkanInstance() :
 
 VulkanInstance::~VulkanInstance()
 {
-
+	debugCallback = nullptr;
+	applicationInfo = nullptr;
 }
 
 void VulkanInstance::CreateInstance(std::vector<std::string> requiredExtensions)

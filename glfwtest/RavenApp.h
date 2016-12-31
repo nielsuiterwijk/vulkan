@@ -1,5 +1,7 @@
 #pragma once
 
+#include "standard.h"
+
 struct GLFWwindow;
 class GraphicsDevice;
 
@@ -22,6 +24,5 @@ public:
 private:
 	GLFWwindow* window;
 
-
-	GraphicsDevice* device;
+	std::shared_ptr<GraphicsDevice> device;
 };

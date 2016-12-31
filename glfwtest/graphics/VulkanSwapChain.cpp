@@ -2,6 +2,7 @@
 
 #include "GraphicsDevice.h"
 #include "VulkanInstance.h"
+#include "helpers\VulkanHelpers.h"
 
 #include <algorithm>
 #include "vec2.hpp"
@@ -15,7 +16,8 @@ VulkanSwapChain::VulkanSwapChain(const InstanceWrapper<VkInstance>& applicationI
 
 VulkanSwapChain::~VulkanSwapChain()
 {
-
+	swapChain = nullptr;
+	surface = nullptr;
 }
 
 
@@ -25,7 +27,7 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const VkPhysicalDe
 
 	VkSurfaceFormatKHR surfaceFormat = GetSwapSurfaceFormat(details.formats);
 	VkPresentModeKHR presentMode = GetSwapPresentMode(details.presentModes, false);
-	VkExtent2D extent = GetSwapExtents(details.capabilities, windowSize);
+	extent = GetSwapExtents(details.capabilities, windowSize);
 
 	//Triple buffering!
 	uint32_t imageCount = 3;
@@ -73,6 +75,14 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const VkPhysicalDe
 	{
 		throw std::runtime_error("failed to create swap chain!");
 	}
+
+	vkGetSwapchainImagesKHR(logicalDevice, swapChain, &imageCount, nullptr); //The implementation is allowed to create more images, which is why we need to explicitly query the amount again.
+	images.resize(imageCount);
+	vkGetSwapchainImagesKHR(logicalDevice, swapChain, &imageCount, images.data());
+
+	imageFormat = surfaceFormat.format;
+
+	std::cout << "Created " << imageCount << " images of " << extent.width << " x " << extent.height << " format: " << Vulkan::GetFormatName(imageFormat) << std::endl;
 }
 
 

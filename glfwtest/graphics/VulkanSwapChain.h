@@ -41,4 +41,9 @@ private:
 	InstanceWrapper<VkSwapchainKHR> swapChain;
 
 	VulkanSwapChainDetails details;
+
+	std::vector<VkImage> images;
+	VkFormat imageFormat;
+	VkExtent2D extent;
+
 };

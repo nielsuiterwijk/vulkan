@@ -1,6 +1,5 @@
 #include "RavenApp.h"
 
-#include "standard.h"
 
 #include <vector>
 #include <iostream>
@@ -21,7 +20,6 @@ RavenApp::RavenApp() :
 
 RavenApp::~RavenApp()
 {
-	delete device;
 	device = nullptr;
 
 	glfwDestroyWindow(window);
@@ -38,7 +36,7 @@ bool RavenApp::Initialize()
 
 	window = glfwCreateWindow(1280, 720, "Vulkan window", nullptr, nullptr);
 
-	device = new GraphicsDevice(glm::u32vec2(1280, 720));
+	device = std::make_shared<GraphicsDevice>(glm::u32vec2(1280, 720));
 
 	uint32_t glfwExtensionCount = 0;
 	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);

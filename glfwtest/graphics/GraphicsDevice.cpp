@@ -18,7 +18,10 @@ GraphicsDevice::GraphicsDevice(glm::u32vec2 windowSize) :
 
 GraphicsDevice::~GraphicsDevice()
 {
-	//TODO: order of deletion is incorrect!
+	swapChain = nullptr;
+	logicalDevice = nullptr;
+	vulkanInstance = nullptr;
+
 }
 
 void GraphicsDevice::Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, std::shared_ptr<VulkanSwapChain> vulkanSwapChain)
