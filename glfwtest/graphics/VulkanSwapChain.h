@@ -43,6 +43,8 @@ private:
 	VulkanSwapChainDetails details;
 
 	std::vector<VkImage> images;
+	std::vector< InstanceWrapper<VkImageView> > imageViews;
+
 	VkFormat imageFormat;
 	VkExtent2D extent;
 

@@ -340,6 +340,7 @@
     <ClInclude Include="includes\standard.h" />
     <ClInclude Include="graphics\helpers\InstanceWrapper.h" />
     <ClInclude Include="helpers\Integer.h" />
+    <ClInclude Include="io\FileSystem.h" />
     <ClInclude Include="RavenApp.h" />
     <ClInclude Include="threading\Task.h" />
     <ClInclude Include="threading\ThreadPool.h" />

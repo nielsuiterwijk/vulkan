@@ -531,6 +531,7 @@
       <Filter>renderers</Filter>
     </ClInclude>
     <ClInclude Include="helpers\Singleton.h" />
+    <ClInclude Include="io\FileSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

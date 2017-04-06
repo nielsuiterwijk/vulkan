@@ -55,6 +55,8 @@ int main()
 			return EXIT_FAILURE;
 		}
 	}
+	int input = 0;
+	std::cin >> input;
 
 	return EXIT_SUCCESS;
 }

@@ -16,6 +16,13 @@ VulkanSwapChain::VulkanSwapChain(const InstanceWrapper<VkInstance>& applicationI
 
 VulkanSwapChain::~VulkanSwapChain()
 {
+	for (int i = 0; i < imageViews.size(); i++)
+	{
+		imageViews[i] = nullptr;
+	}
+
+	imageViews.clear();
+
 	swapChain = nullptr;
 	surface = nullptr;
 }
@@ -83,6 +90,35 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const VkPhysicalDe
 	imageFormat = surfaceFormat.format;
 
 	std::cout << "Created " << imageCount << " images of " << extent.width << " x " << extent.height << " format: " << Vulkan::GetFormatName(imageFormat) << std::endl;
+
+	imageViews.resize(images.size(), InstanceWrapper<VkImageView> { logicalDevice, vkDestroyImageView });
+
+	for (int i = 0; i < images.size(); i++)
+	{
+		VkImageViewCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		createInfo.image = images[i];
+		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		createInfo.format = imageFormat;
+
+		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		createInfo.subresourceRange.baseMipLevel = 0;
+		createInfo.subresourceRange.levelCount = 1;
+		createInfo.subresourceRange.baseArrayLayer = 0;
+		createInfo.subresourceRange.layerCount = 1;
+
+		//This is a typical view setup (for a frame buffer). No mipmaps, just color
+
+		if (vkCreateImageView(logicalDevice, &createInfo, &((VkAllocationCallbacks)imageViews[i].AllocationCallbacks()), imageViews[i].Replace()) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create image views!");
+		}
+	}
 }
 
 
