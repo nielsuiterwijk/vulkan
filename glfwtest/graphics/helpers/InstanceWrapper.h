@@ -7,7 +7,8 @@
 
 //The idea behind this class is that if you delete or overwrite the object, it will always call the correct vulkan clean up code
 //to prevent any memory leaks.
-//TODO: Add the Allocator code to this call
+
+//TODO: Add reference counting.. probably a good idea :)
 template <typename T>
 class InstanceWrapper
 {
@@ -18,7 +19,7 @@ public:
 	{
 		this->deleteCallback = [ = ](T obj)
 		{
-			callback(obj, &((VkAllocationCallbacks)allocator));
+			callback(obj, allocator.Get());
 		};
 	}
 
@@ -26,7 +27,7 @@ public:
 	{
 		this->deleteCallback = [this, &instance, callback](T obj)
 		{
-			callback(instance, obj, &((VkAllocationCallbacks)allocator));
+			callback(instance, obj, allocator.Get());
 		};
 	}
 
@@ -34,7 +35,7 @@ public:
 	{
 		this->deleteCallback = [this, &device, callback](T obj)
 		{
-			callback(device, obj, &((VkAllocationCallbacks)allocator));
+			callback(device, obj, allocator.Get());
 		};
 	}
 
@@ -54,9 +55,9 @@ public:
 		return &vulkanObject;
 	}
 
-	const Allocator& AllocationCallbacks()
+	const VkAllocationCallbacks* AllocationCallbacks()
 	{
-		return allocator;
+		return allocator.Get();
 	}
 
 	operator T() const

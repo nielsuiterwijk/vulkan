@@ -15,6 +15,7 @@
     <ClCompile Include="graphics\VulkanInstance.cpp">
       <Filter>renderers</Filter>
     </ClCompile>
+    <ClCompile Include="graphics\shaders\Material.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -532,6 +533,9 @@
     </ClInclude>
     <ClInclude Include="helpers\Singleton.h" />
     <ClInclude Include="io\FileSystem.h" />
+    <ClInclude Include="graphics\shaders\Material.h" />
+    <ClInclude Include="graphics\shaders\VertexShader.h" />
+    <ClInclude Include="graphics\shaders\FragmentShader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

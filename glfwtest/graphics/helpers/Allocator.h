@@ -9,8 +9,16 @@
 class Allocator
 {
 public:
-	Allocator()
+	Allocator() :
+		vulkanAllocator()
 	{
+		vulkanAllocator.pUserData = (void*)this;
+		vulkanAllocator.pfnAllocation = &Allocator::Allocate;
+		vulkanAllocator.pfnReallocation = &Allocator::Reallocate;
+		vulkanAllocator.pfnFree = &Allocator::Free;
+		vulkanAllocator.pfnInternalAllocation = &Allocator::InternalAllocationNotification;
+		vulkanAllocator.pfnInternalFree = &Allocator::InternalFreeNotification;
+
 		std::cout << "Allocator" << std::endl;
 	}
 
@@ -19,19 +27,10 @@ public:
 		std::cout << "~Allocator" << std::endl;
 	}
 
-	inline operator VkAllocationCallbacks() const
+	VkAllocationCallbacks* Get()
 	{
-		VkAllocationCallbacks result;
-
-		result.pUserData = (void*)this;
-		result.pfnAllocation = &Allocator::Allocate;
-		result.pfnReallocation = &Allocator::Reallocate;
-		result.pfnFree = &Allocator::Free;
-		result.pfnInternalAllocation = &Allocator::InternalAllocationNotification;
-		result.pfnInternalFree = &Allocator::InternalFreeNotification;
-
-		return result;
-	};
+		return &vulkanAllocator;
+	}
 
 private:
 	static void* VKAPI_CALL Allocate(void* userData, size_t size, size_t alignment, VkSystemAllocationScope scope)
@@ -70,28 +69,8 @@ private:
 	void InternalAllocation(size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope scope);
 	void InternalFree(size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope scope);
 
-
-
-};
-
-class GlobalAllocator : public Singleton<GlobalAllocator>
-{
-	friend class Singleton<GlobalAllocator>;
-public:
-	const VkAllocationCallbacks* Callbacks()
-	{
-		return &((VkAllocationCallbacks)allocator);
-	}
-
-	inline operator VkAllocationCallbacks() const
-	{
-		return allocator;
-	}
-
 private:
-	GlobalAllocator() {}
+	VkAllocationCallbacks vulkanAllocator;
 
-private:
-	Allocator allocator;
 
 };

@@ -78,7 +78,7 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const VkPhysicalDe
 
 	swapChain = InstanceWrapper<VkSwapchainKHR>(logicalDevice, vkDestroySwapchainKHR);
 
-	if (vkCreateSwapchainKHR(logicalDevice, &createInfo, &((VkAllocationCallbacks)swapChain.AllocationCallbacks()), swapChain.Replace()) != VK_SUCCESS)
+	if (vkCreateSwapchainKHR(logicalDevice, &createInfo, swapChain.AllocationCallbacks(), swapChain.Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create swap chain!");
 	}
@@ -114,7 +114,7 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const VkPhysicalDe
 
 		//This is a typical view setup (for a frame buffer). No mipmaps, just color
 
-		if (vkCreateImageView(logicalDevice, &createInfo, &((VkAllocationCallbacks)imageViews[i].AllocationCallbacks()), imageViews[i].Replace()) != VK_SUCCESS)
+		if (vkCreateImageView(logicalDevice, &createInfo, imageViews[i].AllocationCallbacks(), imageViews[i].Replace()) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create image views!");
 		}

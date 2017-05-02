@@ -2,6 +2,8 @@
 
 #include "helpers/InstanceWrapper.h"
 
+#include "shaders\Material.h"
+
 #include "standard.h"
 
 #include <vector>
@@ -10,6 +12,7 @@
 
 class VulkanInstance;
 class VulkanSwapChain;
+
 
 struct QueueFamilyIndices
 {
@@ -32,6 +35,8 @@ public:
 
 	const VkPhysicalDevice& GetPhysicalDevice() const;
 	std::shared_ptr<VulkanSwapChain> GetSwapChain() const;
+
+	std::shared_ptr<Material> CreateMaterial(const std::string& fileName);
 
 private:
 	void CreatePhysicalDevice(const VkSurfaceKHR& surface);

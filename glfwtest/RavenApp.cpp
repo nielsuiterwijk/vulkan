@@ -63,7 +63,7 @@ bool RavenApp::Initialize()
 	//Note: Ownership given to GraphicsDevice
 	std::shared_ptr<VulkanSwapChain> vulkanSwapChain = std::make_shared<VulkanSwapChain>(vulkanInstance->Get());
 
-	if (glfwCreateWindowSurface(vulkanInstance->Get(), window, &((VkAllocationCallbacks)vulkanSwapChain->GetSurface().AllocationCallbacks()), vulkanSwapChain->GetSurface().Replace()) != VK_SUCCESS)
+	if (glfwCreateWindowSurface(vulkanInstance->Get(), window, vulkanSwapChain->GetSurface().AllocationCallbacks(), vulkanSwapChain->GetSurface().Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create window surface!");
 	}

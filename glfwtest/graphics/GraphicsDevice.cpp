@@ -40,6 +40,14 @@ void GraphicsDevice::Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, 
 
 	swapChain->Connect(windowSize, physicalDevice, indices, logicalDevice);
 
+	std::shared_ptr<Material> fixedMaterial = CreateMaterial("fixed");
+}
+
+std::shared_ptr<Material> GraphicsDevice::CreateMaterial(const std::string& fileName)
+{
+	std::shared_ptr<Material> material = std::make_shared<Material>(fileName, logicalDevice);
+
+	return material;
 }
 
 const VkPhysicalDevice& GraphicsDevice::GetPhysicalDevice() const
@@ -79,7 +87,7 @@ void GraphicsDevice::CreateLogicalDevice(const QueueFamilyIndices& indices)
 	//Note: logical device validation layers got deprecated see: https://www.khronos.org/registry/vulkan/specs/1.0-extensions/xhtml/vkspec.html 31.1.1 Device Layer Deprecation
 	createInfo.enabledLayerCount = 0;
 
-	if (vkCreateDevice(physicalDevice, &createInfo, &((VkAllocationCallbacks)logicalDevice.AllocationCallbacks()), logicalDevice.Replace()) != VK_SUCCESS)
+	if (vkCreateDevice(physicalDevice, &createInfo, logicalDevice.AllocationCallbacks(), logicalDevice.Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create logical device!");
 	}
