@@ -115,7 +115,7 @@ void GraphicsDevice::CreatePhysicalDevice(const VkSurfaceKHR& surface)
 		vkGetPhysicalDeviceProperties(vulkanPhysicalDevice, &deviceProperties);
 		vkGetPhysicalDeviceFeatures(vulkanPhysicalDevice, &deviceFeatures);
 
-		std::cout << "GPU: " << Vulkan::GetVendorName(deviceProperties.vendorID) << " " << deviceProperties.deviceName << std::endl;
+		std::cout << "Vendor: " << Vulkan::GetVendorName(deviceProperties.vendorID) << " GPU: " << deviceProperties.deviceName << std::endl;
 
 		bool hasValidExtensions = HasAllRequiredExtensions(vulkanPhysicalDevice);
 

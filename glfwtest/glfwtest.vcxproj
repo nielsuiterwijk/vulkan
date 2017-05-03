@@ -71,7 +71,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>$(VULKAN_SDK)\bin32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Lib32;libs\glfw-3.2.1\Win32;$(LibraryPath)</LibraryPath>
     <IncludePath>$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
@@ -80,14 +80,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VULKAN_SDK)\bin;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Lib;libs\glfw-3.2.1\x64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <LibraryPath>$(VULKAN_SDK)\bin32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Lib32;libs\glfw-3.2.1\Win32;$(LibraryPath)</LibraryPath>
     <IncludePath>$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
@@ -95,7 +95,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(VULKAN_SDK)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VULKAN_SDK)\bin;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Lib;libs\glfw-3.2.1\x64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -106,13 +106,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)glfwtest\includes;$(SolutionDir)glfwtest\includes\glm;%(AdditionalIncludeDirectories);$(SolutionDir)glfwtest\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)glfwtest\includes\;$(SolutionDir)glfwtest\includes\glm;%(AdditionalIncludeDirectories);$(SolutionDir)glfwtest\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)glfwtest\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -127,7 +127,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)glfwtest\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -148,7 +148,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)glfwtest\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -167,7 +167,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)glfwtest\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

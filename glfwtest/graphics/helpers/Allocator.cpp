@@ -6,7 +6,7 @@
 
 void* Allocator::Allocate(size_t size, size_t alignment, VkSystemAllocationScope scope)
 {
-	std::cout << "[Vulkan]Allocated " << size << " bytes. scope: " << scope << std::endl;
+	//std::cout << "[Vulkan]Allocated " << size << " bytes. scope: " << scope << std::endl;
 
 	return _aligned_malloc(size, alignment);
 }

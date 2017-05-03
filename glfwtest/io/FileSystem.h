@@ -17,6 +17,10 @@ public:
 		{
 			throw std::runtime_error("failed to open file!");
 		}
+		else
+		{
+			std::cout << "[FileSystem] Reading " << filename << std::endl;
+		}
 
 		size_t fileSize = (size_t)file.tellg();
 		std::vector<char> buffer(fileSize);
