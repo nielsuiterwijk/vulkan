@@ -34,6 +34,7 @@ public:
 	void Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, std::shared_ptr<VulkanSwapChain> vulkanSwapChain);
 
 	const VkPhysicalDevice& GetPhysicalDevice() const;
+	const VkDevice& GetDevice() const;
 	std::shared_ptr<VulkanSwapChain> GetSwapChain() const;
 
 	std::shared_ptr<Material> CreateMaterial(const std::string& fileName);

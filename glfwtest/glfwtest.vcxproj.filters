@@ -16,6 +16,7 @@
       <Filter>renderers</Filter>
     </ClCompile>
     <ClCompile Include="graphics\shaders\Material.cpp" />
+    <ClCompile Include="graphics\PipelineStateObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -536,6 +537,7 @@
     <ClInclude Include="graphics\shaders\Material.h" />
     <ClInclude Include="graphics\shaders\VertexShader.h" />
     <ClInclude Include="graphics\shaders\FragmentShader.h" />
+    <ClInclude Include="graphics\PipelineStateObject.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

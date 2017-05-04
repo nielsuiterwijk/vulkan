@@ -31,7 +31,23 @@ public:
 		};
 	}
 
+	InstanceWrapper(const VkInstance& instance, std::function<void(VkInstance, T, VkAllocationCallbacks*)> callback)
+	{
+		this->deleteCallback = [this, &instance, callback](T obj)
+		{
+			callback(instance, obj, allocator.Get());
+		};
+	}
+
 	InstanceWrapper(const InstanceWrapper<VkDevice>& device, std::function<void(VkDevice, T, VkAllocationCallbacks*)> callback)
+	{
+		this->deleteCallback = [this, &device, callback](T obj)
+		{
+			callback(device, obj, allocator.Get());
+		};
+	}
+
+	InstanceWrapper(const VkDevice& device, std::function<void(VkDevice, T, VkAllocationCallbacks*)> callback)
 	{
 		this->deleteCallback = [this, &device, callback](T obj)
 		{

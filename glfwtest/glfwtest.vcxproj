@@ -173,6 +173,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="graphics\helpers\Allocator.cpp" />
+    <ClCompile Include="graphics\PipelineStateObject.cpp" />
     <ClCompile Include="graphics\shaders\Material.cpp" />
     <ClCompile Include="graphics\VulkanSwapChain.cpp" />
     <ClCompile Include="helpers\DebugAssert.cpp" />
@@ -184,6 +185,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="graphics\helpers\Allocator.h" />
+    <ClInclude Include="graphics\PipelineStateObject.h" />
     <ClInclude Include="graphics\shaders\FragmentShader.h" />
     <ClInclude Include="graphics\shaders\Material.h" />
     <ClInclude Include="graphics\shaders\VertexShader.h" />

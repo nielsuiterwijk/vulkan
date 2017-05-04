@@ -55,6 +55,11 @@ const VkPhysicalDevice& GraphicsDevice::GetPhysicalDevice() const
 	return physicalDevice;
 }
 
+const VkDevice& GraphicsDevice::GetDevice() const
+{
+	return logicalDevice;
+}
+
 void GraphicsDevice::CreateLogicalDevice(const QueueFamilyIndices& indices)
 {
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;

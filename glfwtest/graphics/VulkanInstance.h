@@ -39,7 +39,11 @@ private:
 	//TODO: load from file
 	const std::vector<const char*> validationLayers =
 	{
-		"VK_LAYER_LUNARG_standard_validation"
+		"VK_LAYER_LUNARG_standard_validation",
+		"VK_LAYER_LUNARG_mem_tracker",
+		"VK_LAYER_LUNARG_param_checker",
+		"VK_LAYER_LUNARG_swapchain",
+		"VK_LAYER_LUNARG_image"
 	};
 
 #ifdef NDEBUG
