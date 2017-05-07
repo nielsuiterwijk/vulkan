@@ -28,8 +28,8 @@ PipelineStateObject::PipelineStateObject(GraphicsDevice* graphicsDevice, const M
 
 	VkRect2D scissor = {};
 	scissor.offset = { 0, 0 };
-	scissor.extent.width = 1280.0f;
-	scissor.extent.height = 720.0f;
+	scissor.extent.width = 1280;
+	scissor.extent.height = 720;
 
 	VkPipelineViewportStateCreateInfo viewportState = {};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

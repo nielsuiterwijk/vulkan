@@ -19,7 +19,7 @@ public:
 		}
 		else
 		{
-			std::cout << "[FileSystem] Reading " << filename << std::endl;
+			std::cout << "[FileSystem] Reading " << filename.c_str() << std::endl;
 		}
 
 		size_t fileSize = (size_t)file.tellg();

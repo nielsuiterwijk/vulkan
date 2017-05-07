@@ -5,17 +5,17 @@
 #include <string>
 #include <vector>
 
+class VertexShader;
+class FragmentShader;
+
+//.material file, which is a meta file to the textures and shaders needed.
 class Material
 {
 public:
-
-	Material(const std::string& fileName, InstanceWrapper<VkDevice>& device);
+	Material(const std::string& fileName);
 	~Material();
 
 private:
-	void BuildShaderModule(const std::vector<char>& code, InstanceWrapper<VkShaderModule>& shaderModule, InstanceWrapper<VkDevice>& device);
-
-private:
-	InstanceWrapper<VkShaderModule> vertexShaderModule;
-	InstanceWrapper<VkShaderModule> fragmentShaderModule;
+	VertexShader* vertex;
+	FragmentShader* fragment;
 };

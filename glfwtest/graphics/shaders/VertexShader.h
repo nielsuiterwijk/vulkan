@@ -1,7 +1,12 @@
 #pragma once
 
+#include "Shader.h"
 
-class VertexShader
+class VertexShader : Shader
 {
-	//VkPipelineShaderStageCreateInfo
+public:
+	VertexShader(const std::string& fileName, const VkDevice& device);
+	virtual ~VertexShader();
+
+private:
 };

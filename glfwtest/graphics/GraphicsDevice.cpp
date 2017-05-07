@@ -45,7 +45,7 @@ void GraphicsDevice::Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, 
 
 std::shared_ptr<Material> GraphicsDevice::CreateMaterial(const std::string& fileName)
 {
-	std::shared_ptr<Material> material = std::make_shared<Material>(fileName, logicalDevice);
+	std::shared_ptr<Material> material = std::make_shared<Material>(fileName);
 
 	return material;
 }
