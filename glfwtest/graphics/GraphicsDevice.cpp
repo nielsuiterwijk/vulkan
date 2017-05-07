@@ -8,18 +8,27 @@
 #include <iostream>
 #include <set>
 
-GraphicsDevice::GraphicsDevice(glm::u32vec2 windowSize) :
-	vulkanInstance(nullptr),
-	physicalDevice(VK_NULL_HANDLE),
-	windowSize(windowSize)
-{
+//TODO: Seperate file?
 
+VkPhysicalDevice GraphicsContext::PhysicalDevice = VK_NULL_HANDLE;
+
+InstanceWrapper<VkDevice> GraphicsContext::LogicalDevice = { vkDestroyDevice };
+
+VkQueue GraphicsContext::GraphicsQueue = {};
+VkQueue GraphicsContext::PresentQueue = {};
+
+glm::u32vec2 GraphicsContext::WindowSize = glm::uvec2(0, 0);
+
+GraphicsDevice::GraphicsDevice(glm::u32vec2 windowSize) :
+	vulkanInstance(nullptr)
+{
+	GraphicsContext::WindowSize = windowSize;
 }
 
 GraphicsDevice::~GraphicsDevice()
 {
 	swapChain = nullptr;
-	logicalDevice = nullptr;
+	GraphicsContext::LogicalDevice = nullptr;
 	vulkanInstance = nullptr;
 
 }
@@ -31,14 +40,14 @@ void GraphicsDevice::Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, 
 
 	CreatePhysicalDevice(swapChain->GetSurface());
 
-	QueueFamilyIndices indices = FindQueueFamilies(physicalDevice, swapChain->GetSurface());
+	QueueFamilyIndices indices = FindQueueFamilies(GraphicsContext::PhysicalDevice, swapChain->GetSurface());
 
 	CreateLogicalDevice(indices);
 
-	vkGetDeviceQueue(logicalDevice, indices.graphicsFamily, 0, &graphicsQueue);
-	vkGetDeviceQueue(logicalDevice, indices.presentFamily, 0, &presentQueue);
+	vkGetDeviceQueue(GraphicsContext::LogicalDevice, indices.graphicsFamily, 0, &GraphicsContext::GraphicsQueue);
+	vkGetDeviceQueue(GraphicsContext::LogicalDevice, indices.presentFamily, 0, &GraphicsContext::PresentQueue);
 
-	swapChain->Connect(windowSize, physicalDevice, indices, logicalDevice);
+	swapChain->Connect(GraphicsContext::WindowSize, GraphicsContext::PhysicalDevice, indices, GraphicsContext::LogicalDevice);
 
 	std::shared_ptr<Material> fixedMaterial = CreateMaterial("fixed");
 }
@@ -48,16 +57,6 @@ std::shared_ptr<Material> GraphicsDevice::CreateMaterial(const std::string& file
 	std::shared_ptr<Material> material = std::make_shared<Material>(fileName);
 
 	return material;
-}
-
-const VkPhysicalDevice& GraphicsDevice::GetPhysicalDevice() const
-{
-	return physicalDevice;
-}
-
-const VkDevice& GraphicsDevice::GetDevice() const
-{
-	return logicalDevice;
 }
 
 void GraphicsDevice::CreateLogicalDevice(const QueueFamilyIndices& indices)
@@ -92,7 +91,7 @@ void GraphicsDevice::CreateLogicalDevice(const QueueFamilyIndices& indices)
 	//Note: logical device validation layers got deprecated see: https://www.khronos.org/registry/vulkan/specs/1.0-extensions/xhtml/vkspec.html 31.1.1 Device Layer Deprecation
 	createInfo.enabledLayerCount = 0;
 
-	if (vkCreateDevice(physicalDevice, &createInfo, logicalDevice.AllocationCallbacks(), logicalDevice.Replace()) != VK_SUCCESS)
+	if (vkCreateDevice(GraphicsContext::PhysicalDevice, &createInfo, GraphicsContext::LogicalDevice.AllocationCallbacks(), GraphicsContext::LogicalDevice.Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create logical device!");
 	}
@@ -111,7 +110,7 @@ void GraphicsDevice::CreatePhysicalDevice(const VkSurfaceKHR& surface)
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(vulkanInstance->Get(), &deviceCount, devices.data());
 
-	physicalDevice = VK_NULL_HANDLE;
+	GraphicsContext::PhysicalDevice = VK_NULL_HANDLE;
 
 	for (const auto& vulkanPhysicalDevice : devices)
 	{
@@ -140,11 +139,11 @@ void GraphicsDevice::CreatePhysicalDevice(const VkSurfaceKHR& surface)
 
 		if (hasValidQueues && hasValidExtensions && isDiscreteGPU && hasValidSwapchain)
 		{
-			physicalDevice = vulkanPhysicalDevice;
+			GraphicsContext::PhysicalDevice = vulkanPhysicalDevice;
 		}
 	}
 
-	if (physicalDevice == VK_NULL_HANDLE)
+	if (GraphicsContext::PhysicalDevice == VK_NULL_HANDLE)
 	{
 		throw std::runtime_error("failed to find a suitable GPU!");
 	}

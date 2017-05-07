@@ -25,6 +25,20 @@ struct QueueFamilyIndices
 	}
 };
 
+class GraphicsContext
+{
+public:
+
+	static VkPhysicalDevice PhysicalDevice;
+
+	static InstanceWrapper<VkDevice> LogicalDevice;
+
+	static VkQueue GraphicsQueue;
+	static VkQueue PresentQueue;
+
+	static glm::u32vec2 WindowSize;
+};
+
 class GraphicsDevice
 {
 public:
@@ -33,8 +47,6 @@ public:
 
 	void Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, std::shared_ptr<VulkanSwapChain> vulkanSwapChain);
 
-	const VkPhysicalDevice& GetPhysicalDevice() const;
-	const VkDevice& GetDevice() const;
 	std::shared_ptr<VulkanSwapChain> GetSwapChain() const;
 
 	std::shared_ptr<Material> CreateMaterial(const std::string& fileName);
@@ -50,16 +62,7 @@ private:
 private:
 	std::shared_ptr<VulkanInstance> vulkanInstance;
 	std::shared_ptr<VulkanSwapChain> swapChain;
-
-	VkPhysicalDevice physicalDevice;
-
-	InstanceWrapper<VkDevice> logicalDevice { vkDestroyDevice };
-
-	VkQueue graphicsQueue;
-	VkQueue presentQueue;
-
+	
 	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME	};
-
-	glm::u32vec2 windowSize;
-
+	
 };

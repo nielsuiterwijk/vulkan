@@ -3,8 +3,8 @@
 #include "GraphicsDevice.h"
 
 PipelineStateObject::PipelineStateObject(GraphicsDevice* graphicsDevice, const Material& material) :
-	pipelineLayout(graphicsDevice->GetDevice(), vkDestroyPipelineLayout),
-	graphicsPipeline(graphicsDevice->GetDevice(), vkDestroyPipeline)
+	pipelineLayout(GraphicsContext::LogicalDevice, vkDestroyPipelineLayout),
+	graphicsPipeline(GraphicsContext::LogicalDevice, vkDestroyPipeline)
 {
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -93,7 +93,7 @@ PipelineStateObject::PipelineStateObject(GraphicsDevice* graphicsDevice, const M
 	pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
 	pipelineLayoutInfo.pPushConstantRanges = 0; // Optional
 
-	if (vkCreatePipelineLayout(graphicsDevice->GetDevice(), &pipelineLayoutInfo, pipelineLayout.AllocationCallbacks(), pipelineLayout.Replace()) != VK_SUCCESS)
+	if (vkCreatePipelineLayout(GraphicsContext::LogicalDevice, &pipelineLayoutInfo, pipelineLayout.AllocationCallbacks(), pipelineLayout.Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
@@ -116,7 +116,7 @@ PipelineStateObject::PipelineStateObject(GraphicsDevice* graphicsDevice, const M
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
 
-	if (vkCreateGraphicsPipelines(graphicsDevice->GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, graphicsPipeline.AllocationCallbacks(), graphicsPipeline.Replace()) != VK_SUCCESS)
+	if (vkCreateGraphicsPipelines(GraphicsContext::LogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, graphicsPipeline.AllocationCallbacks(), graphicsPipeline.Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
