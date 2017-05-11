@@ -69,6 +69,8 @@ bool RavenApp::Initialize()
 	}
 
 	device->Initialize(vulkanInstance, vulkanSwapChain);
+	vulkanSwapChain = nullptr;
+	device->DestroySwapChain();
 
 	return true;
 }
@@ -95,4 +97,6 @@ void RavenApp::Run()
 
 		glfwSetWindowTitle(window, windowTitle.c_str());
 	}
+
+	Sleep(2000);
 }

@@ -1,5 +1,6 @@
 #include "GraphicsDevice.h"
 
+#include "shaders\ShaderCache.h"
 #include "standard.h"
 #include "helpers/VulkanHelpers.h"
 #include "VulkanInstance.h"
@@ -18,6 +19,7 @@ VkQueue GraphicsContext::GraphicsQueue = {};
 VkQueue GraphicsContext::PresentQueue = {};
 
 glm::u32vec2 GraphicsContext::WindowSize = glm::uvec2(0, 0);
+
 
 GraphicsDevice::GraphicsDevice(glm::u32vec2 windowSize) :
 	vulkanInstance(nullptr)
@@ -47,9 +49,11 @@ void GraphicsDevice::Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, 
 	vkGetDeviceQueue(GraphicsContext::LogicalDevice, indices.graphicsFamily, 0, &GraphicsContext::GraphicsQueue);
 	vkGetDeviceQueue(GraphicsContext::LogicalDevice, indices.presentFamily, 0, &GraphicsContext::PresentQueue);
 
-	swapChain->Connect(GraphicsContext::WindowSize, GraphicsContext::PhysicalDevice, indices, GraphicsContext::LogicalDevice);
+	swapChain->Connect(GraphicsContext::WindowSize, indices);
 
-	std::shared_ptr<Material> fixedMaterial = CreateMaterial("fixed");
+	/*std::shared_ptr<Material> fixedMaterial = CreateMaterial("fixed");
+	fixedMaterial = nullptr;
+	ShaderCache::Destroy();*/
 }
 
 std::shared_ptr<Material> GraphicsDevice::CreateMaterial(const std::string& fileName)
@@ -97,7 +101,7 @@ void GraphicsDevice::CreateLogicalDevice(const QueueFamilyIndices& indices)
 	}
 }
 
-void GraphicsDevice::CreatePhysicalDevice(const VkSurfaceKHR& surface)
+void GraphicsDevice::CreatePhysicalDevice(const InstanceWrapper<VkSurfaceKHR>&  surface)
 {
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(vulkanInstance->Get(), &deviceCount, nullptr);
@@ -149,7 +153,7 @@ void GraphicsDevice::CreatePhysicalDevice(const VkSurfaceKHR& surface)
 	}
 }
 
-QueueFamilyIndices GraphicsDevice::FindQueueFamilies(VkPhysicalDevice physicalDevice, const VkSurfaceKHR& surface)
+QueueFamilyIndices GraphicsDevice::FindQueueFamilies(VkPhysicalDevice physicalDevice, const InstanceWrapper<VkSurfaceKHR>&  surface)
 {
 	QueueFamilyIndices indices;
 

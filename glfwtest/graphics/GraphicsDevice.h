@@ -25,6 +25,7 @@ struct QueueFamilyIndices
 	}
 };
 
+///Static class so everyone can access it who needs..
 class GraphicsContext
 {
 public:
@@ -51,18 +52,23 @@ public:
 
 	std::shared_ptr<Material> CreateMaterial(const std::string& fileName);
 
+	void DestroySwapChain()
+	{
+		swapChain = nullptr;
+	}
+
 private:
-	void CreatePhysicalDevice(const VkSurfaceKHR& surface);
+	void CreatePhysicalDevice(const InstanceWrapper<VkSurfaceKHR>& surface);
 	void CreateLogicalDevice(const QueueFamilyIndices & indices);
 
-	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice, const VkSurfaceKHR& surface);
+	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice, const InstanceWrapper<VkSurfaceKHR>&  surface);
 
 	bool HasAllRequiredExtensions(VkPhysicalDevice device);
 
 private:
 	std::shared_ptr<VulkanInstance> vulkanInstance;
 	std::shared_ptr<VulkanSwapChain> swapChain;
-	
+
 	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME	};
-	
+
 };

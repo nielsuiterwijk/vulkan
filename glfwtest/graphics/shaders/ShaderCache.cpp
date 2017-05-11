@@ -3,20 +3,58 @@
 #include "graphics\GraphicsDevice.h"
 #include "VertexShader.h"
 
-VertexShader* ShaderCache::GetVertexShader(const std::string& filename)
+std::map<std::string, std::shared_ptr<VertexShader>> ShaderCache::vertexShaders;
+std::map<std::string, std::shared_ptr<FragmentShader>> ShaderCache::fragmentShaders;
+
+const std::shared_ptr<VertexShader> ShaderCache::GetVertexShader(const std::string& filename)
 {
-	VertexShader* vertexShader = new VertexShader(filename, GraphicsContext::LogicalDevice);
+	std::map<std::string, std::shared_ptr<VertexShader>>::iterator it = vertexShaders.find(filename);
 
-	//vertexShaders.insert(std::pair<std::string, VertexShader*>(filename, vertexShader));
+	if (it != vertexShaders.end())
+	{
+		return it->second;
+	}
+	else
+	{
+		std::shared_ptr<VertexShader> vertexShader = std::make_shared<VertexShader>(filename);
 
-	return vertexShader;
+		vertexShaders.insert(std::pair<std::string, std::shared_ptr<VertexShader>>(filename, vertexShader));
+
+		return vertexShader;
+	}
 }
 
-FragmentShader* ShaderCache::GetFragmentShader(const std::string& filename)
+const std::shared_ptr<FragmentShader> ShaderCache::GetFragmentShader(const std::string& filename)
 {
-	FragmentShader* fragmentShader = new FragmentShader(filename, GraphicsContext::LogicalDevice);
+	std::map<std::string, std::shared_ptr<FragmentShader>>::iterator it = fragmentShaders.find(filename);
 
-	//fragmentShaders.insert(std::pair<std::string, FragmentShader*>(filename, fragmentShader));
+	if (it != fragmentShaders.end())
+	{
+		return it->second;
+	}
+	else
+	{
+		std::shared_ptr<FragmentShader> fragmentShader = std::make_shared<FragmentShader>(filename);
 
-	return fragmentShader;
+		fragmentShaders.insert(std::pair<std::string, std::shared_ptr<FragmentShader>>(filename, fragmentShader));
+
+		return fragmentShader;
+	}
+}
+
+void ShaderCache::Destroy()
+{
+	std::map<std::string, std::shared_ptr<FragmentShader>>::iterator fragments;
+	for (fragments = fragmentShaders.begin(); fragments != fragmentShaders.end(); fragments++)
+	{
+		fragments->second = nullptr;
+	}
+	fragmentShaders.clear();
+
+	std::map<std::string, std::shared_ptr<VertexShader>>::iterator vertices;
+	for (vertices = vertexShaders.begin(); vertices != vertexShaders.end(); vertices++)
+	{
+		vertices->second = nullptr;
+	}
+	vertexShaders.clear();
 }

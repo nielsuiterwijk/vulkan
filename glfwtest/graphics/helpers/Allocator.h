@@ -24,6 +24,13 @@ public:
 
 	~Allocator()
 	{
+		vulkanAllocator.pUserData = nullptr;
+		vulkanAllocator.pfnAllocation = nullptr;
+		vulkanAllocator.pfnReallocation = nullptr;
+		vulkanAllocator.pfnFree = nullptr;
+		vulkanAllocator.pfnInternalAllocation = nullptr;
+		vulkanAllocator.pfnInternalFree = nullptr;
+
 		std::cout << "~Allocator" << std::endl;
 	}
 

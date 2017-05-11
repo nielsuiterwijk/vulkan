@@ -4,8 +4,8 @@
 #include <vector>
 
 
-VertexShader::VertexShader(const std::string& fileName, const VkDevice& device) :
-	Shader(device)
+VertexShader::VertexShader(const std::string& fileName) :
+	Shader()
 {
 	auto code = FileSystem::ReadFile("shaders/" + fileName + ".vert.spv");
 
@@ -17,7 +17,7 @@ VertexShader::VertexShader(const std::string& fileName, const VkDevice& device) 
 	std::memcpy(codeAligned.data(), code.data(), code.size());
 	createInfo.pCode = codeAligned.data();
 
-	if (vkCreateShaderModule(device, &createInfo, shaderModule.AllocationCallbacks(), shaderModule.Replace()) != VK_SUCCESS)
+	if (vkCreateShaderModule(GraphicsContext::LogicalDevice, &createInfo, shaderModule.AllocationCallbacks(), shaderModule.Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create shader module!");
 	}

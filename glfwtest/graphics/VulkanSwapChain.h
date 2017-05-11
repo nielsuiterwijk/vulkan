@@ -12,7 +12,7 @@ class GraphicsDevice;
 struct VulkanSwapChainDetails
 {
 public:
-	void Initialize(const VkPhysicalDevice& physicalDevice, const VkSurfaceKHR& surface);
+	void Initialize(const VkPhysicalDevice& physicalDevice, const InstanceWrapper<VkSurfaceKHR>& surface);
 	bool IsValid() const;
 
 public:
@@ -27,7 +27,7 @@ public:
 	VulkanSwapChain(const InstanceWrapper<VkInstance>& applicationInfo);
 	~VulkanSwapChain();
 
-	void Connect(const glm::u32vec2& windowSize, const VkPhysicalDevice& physicalDevice, const QueueFamilyIndices& indices, const InstanceWrapper<VkDevice>& logicalDevice);
+	void Connect(const glm::u32vec2& windowSize, const QueueFamilyIndices& indices);
 
 	InstanceWrapper<VkSurfaceKHR>& GetSurface();
 

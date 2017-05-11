@@ -1,17 +1,18 @@
 #pragma once
 
 #include "../helpers/InstanceWrapper.h"
+#include "graphics\GraphicsDevice.h"
 
 //TODO: Add ref counting
 class Shader
 {
 protected:
-	Shader(const VkDevice& device) :
-		shaderModule(device, vkDestroyShaderModule)
+	Shader() :
+		shaderModule(GraphicsContext::LogicalDevice, vkDestroyShaderModule)
 	{
 	}
 
-	virtual ~Shader() 
+	virtual ~Shader()
 	{
 		shaderModule = nullptr;
 	}

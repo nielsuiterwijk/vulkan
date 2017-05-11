@@ -5,7 +5,7 @@
 class FragmentShader : Shader
 {
 public:
-	FragmentShader(const std::string& fileName, const VkDevice& device);
+	FragmentShader(const std::string& fileName);
 	virtual ~FragmentShader();
 
 private:

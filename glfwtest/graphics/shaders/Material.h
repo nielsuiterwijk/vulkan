@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 class VertexShader;
 class FragmentShader;
@@ -16,6 +17,6 @@ public:
 	~Material();
 
 private:
-	VertexShader* vertex;
-	FragmentShader* fragment;
+	std::shared_ptr<VertexShader> vertex;
+	std::shared_ptr<FragmentShader> fragment;
 };

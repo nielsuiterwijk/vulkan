@@ -3,8 +3,8 @@
 
 #include <string>
 
-FragmentShader::FragmentShader(const std::string& fileName, const VkDevice& device) :
-	Shader(device)
+FragmentShader::FragmentShader(const std::string& fileName) :
+	Shader()
 {
 	auto code = FileSystem::ReadFile("shaders/" + fileName + ".frag.spv");
 
@@ -16,7 +16,7 @@ FragmentShader::FragmentShader(const std::string& fileName, const VkDevice& devi
 	std::memcpy(codeAligned.data(), code.data(), code.size());
 	createInfo.pCode = codeAligned.data();
 
-	if (vkCreateShaderModule(device, &createInfo, shaderModule.AllocationCallbacks(), shaderModule.Replace()) != VK_SUCCESS)
+	if (vkCreateShaderModule(GraphicsContext::LogicalDevice, &createInfo, shaderModule.AllocationCallbacks(), shaderModule.Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create shader module!");
 	}
@@ -29,5 +29,5 @@ FragmentShader::FragmentShader(const std::string& fileName, const VkDevice& devi
 
 FragmentShader::~FragmentShader()
 {
-	
+
 }

@@ -28,9 +28,9 @@ VulkanSwapChain::~VulkanSwapChain()
 }
 
 
-void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const VkPhysicalDevice& physicalDevice, const QueueFamilyIndices& indices, const InstanceWrapper<VkDevice>& logicalDevice)
+void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyIndices& indices)
 {
-	details.Initialize(physicalDevice, surface);
+	details.Initialize(GraphicsContext::PhysicalDevice, surface);
 
 	VkSurfaceFormatKHR surfaceFormat = GetSwapSurfaceFormat(details.formats);
 	VkPresentModeKHR presentMode = GetSwapPresentMode(details.presentModes, false);
@@ -76,22 +76,22 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const VkPhysicalDe
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	swapChain = InstanceWrapper<VkSwapchainKHR>(logicalDevice, vkDestroySwapchainKHR);
+	swapChain = InstanceWrapper<VkSwapchainKHR>(GraphicsContext::LogicalDevice, vkDestroySwapchainKHR);
 
-	if (vkCreateSwapchainKHR(logicalDevice, &createInfo, swapChain.AllocationCallbacks(), swapChain.Replace()) != VK_SUCCESS)
+	if (vkCreateSwapchainKHR(GraphicsContext::LogicalDevice, &createInfo, swapChain.AllocationCallbacks(), swapChain.Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create swap chain!");
 	}
 
-	vkGetSwapchainImagesKHR(logicalDevice, swapChain, &imageCount, nullptr); //The implementation is allowed to create more images, which is why we need to explicitly query the amount again.
+	vkGetSwapchainImagesKHR(GraphicsContext::LogicalDevice, swapChain, &imageCount, nullptr); //The implementation is allowed to create more images, which is why we need to explicitly query the amount again.
 	images.resize(imageCount);
-	vkGetSwapchainImagesKHR(logicalDevice, swapChain, &imageCount, images.data());
+	vkGetSwapchainImagesKHR(GraphicsContext::LogicalDevice, swapChain, &imageCount, images.data());
 
 	imageFormat = surfaceFormat.format;
 
 	std::cout << "Created " << imageCount << " images of " << extent.width << " x " << extent.height << " format: " << Vulkan::GetFormatName(imageFormat) << std::endl;
 
-	imageViews.resize(images.size(), InstanceWrapper<VkImageView> { logicalDevice, vkDestroyImageView });
+	imageViews.resize(images.size());
 
 	for (int i = 0; i < images.size(); i++)
 	{
@@ -113,12 +113,17 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const VkPhysicalDe
 		createInfo.subresourceRange.layerCount = 1;
 
 		//This is a typical view setup (for a frame buffer). No mipmaps, just color
+		imageViews[i] = InstanceWrapper<VkImageView> { GraphicsContext::LogicalDevice, vkDestroyImageView, true };
 
-		if (vkCreateImageView(logicalDevice, &createInfo, imageViews[i].AllocationCallbacks(), imageViews[i].Replace()) != VK_SUCCESS)
+		if (vkCreateImageView(GraphicsContext::LogicalDevice, &createInfo, imageViews[i].AllocationCallbacks(), imageViews[i].Replace()) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create image views!");
 		}
+
+
 	}
+
+	int asd = 0;
 }
 
 
@@ -194,7 +199,7 @@ InstanceWrapper<VkSurfaceKHR>& VulkanSwapChain::GetSurface()
 	return surface;
 }
 
-void VulkanSwapChainDetails::Initialize(const VkPhysicalDevice& physicalDevice, const VkSurfaceKHR& surface)
+void VulkanSwapChainDetails::Initialize(const VkPhysicalDevice& physicalDevice, const InstanceWrapper<VkSurfaceKHR>& surface)
 {
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &capabilities);
 
