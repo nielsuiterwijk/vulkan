@@ -39,26 +39,18 @@ public:
 		};
 	}
 
-	InstanceWrapper(const InstanceWrapper<VkDevice>& device, std::function<void(VkDevice, T, VkAllocationCallbacks*)> callback, bool noAllocator)
-	{
-		this->deleteCallback = [this, &device, callback, noAllocator](T obj)
-		{
-			if (noAllocator)
-			{
-				callback(device, obj, nullptr);
-			}
-			else
-			{
-				callback(device, obj, allocator.Get());
-			}
-
-		};
-	}
-
 	~InstanceWrapper()
 	{
 		Cleanup();
 		deleteCallback = nullptr;
+	}
+
+	void Initialize(const InstanceWrapper<VkDevice>& device, std::function<void(VkDevice, T, VkAllocationCallbacks*)> callback)
+	{
+		this->deleteCallback = [this, &device, callback](T obj)
+		{
+			callback(device, obj, allocator.Get());
+		};
 	}
 
 	const T* operator &() const

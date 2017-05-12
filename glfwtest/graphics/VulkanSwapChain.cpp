@@ -9,7 +9,8 @@
 
 
 VulkanSwapChain::VulkanSwapChain(const InstanceWrapper<VkInstance>& applicationInfo) :
-	surface(applicationInfo, vkDestroySurfaceKHR)
+	surface(applicationInfo, vkDestroySurfaceKHR),
+	swapChain(nullptr)
 {
 
 }
@@ -76,7 +77,7 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	swapChain = InstanceWrapper<VkSwapchainKHR>(GraphicsContext::LogicalDevice, vkDestroySwapchainKHR);
+	swapChain.Initialize(GraphicsContext::LogicalDevice, vkDestroySwapchainKHR);
 
 	if (vkCreateSwapchainKHR(GraphicsContext::LogicalDevice, &createInfo, swapChain.AllocationCallbacks(), swapChain.Replace()) != VK_SUCCESS)
 	{
@@ -113,7 +114,7 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 		createInfo.subresourceRange.layerCount = 1;
 
 		//This is a typical view setup (for a frame buffer). No mipmaps, just color
-		imageViews[i] = InstanceWrapper<VkImageView> { GraphicsContext::LogicalDevice, vkDestroyImageView, true };
+		imageViews[i].Initialize(GraphicsContext::LogicalDevice, vkDestroyImageView);
 
 		if (vkCreateImageView(GraphicsContext::LogicalDevice, &createInfo, imageViews[i].AllocationCallbacks(), imageViews[i].Replace()) != VK_SUCCESS)
 		{

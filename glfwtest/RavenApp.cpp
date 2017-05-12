@@ -70,7 +70,6 @@ bool RavenApp::Initialize()
 
 	device->Initialize(vulkanInstance, vulkanSwapChain);
 	vulkanSwapChain = nullptr;
-	device->DestroySwapChain();
 
 	return true;
 }
