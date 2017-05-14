@@ -1,6 +1,8 @@
 #include "Material.h"
 #include "io\FileSystem.h"
 #include "ShaderCache.h"
+#include "VertexShader.h"
+#include "FragmentShader.h"
 
 Material::Material(const std::string& fileName)
 {
@@ -18,4 +20,16 @@ Material::~Material()
 {
 	vertex = nullptr;
 	fragment = nullptr;
+
+	std::cout << "Destroyed material" << std::endl;
+}
+
+std::vector<VkPipelineShaderStageCreateInfo> Material::GetShaderStages() const
+{
+	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+
+	shaderStages.push_back(vertex->GetShaderStageCreateInfo());
+	shaderStages.push_back(fragment->GetShaderStageCreateInfo());
+
+	return shaderStages;
 }

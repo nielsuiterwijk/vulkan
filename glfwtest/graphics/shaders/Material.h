@@ -16,6 +16,8 @@ public:
 	Material(const std::string& fileName);
 	~Material();
 
+	std::vector<VkPipelineShaderStageCreateInfo> GetShaderStages() const;
+
 private:
 	std::shared_ptr<VertexShader> vertex;
 	std::shared_ptr<FragmentShader> fragment;

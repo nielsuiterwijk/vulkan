@@ -1,5 +1,7 @@
 #include "GraphicsDevice.h"
 
+#include "PipelineStateObject.h"
+#include "RenderPass.h"
 #include "shaders\ShaderCache.h"
 #include "standard.h"
 #include "helpers/VulkanHelpers.h"
@@ -29,6 +31,7 @@ GraphicsDevice::GraphicsDevice(glm::u32vec2 windowSize) :
 
 GraphicsDevice::~GraphicsDevice()
 {
+	ShaderCache::Destroy();
 	swapChain = nullptr;
 	GraphicsContext::LogicalDevice = nullptr;
 	vulkanInstance = nullptr;
@@ -51,9 +54,12 @@ void GraphicsDevice::Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, 
 
 	swapChain->Connect(GraphicsContext::WindowSize, indices);
 
-	/*std::shared_ptr<Material> fixedMaterial = CreateMaterial("fixed");
-	fixedMaterial = nullptr;
-	ShaderCache::Destroy();*/
+	//Temporary..
+	std::shared_ptr<Material> fixedMaterial = CreateMaterial("fixed");
+	std::shared_ptr<RenderPass> renderPass = std::make_shared<RenderPass>(this);
+
+	PipelineStateObject pso(fixedMaterial, renderPass);
+
 }
 
 std::shared_ptr<Material> GraphicsDevice::CreateMaterial(const std::string& fileName)

@@ -2,7 +2,7 @@
 
 #include "Shader.h"
 
-class FragmentShader : Shader
+class FragmentShader : public Shader
 {
 public:
 	FragmentShader(const std::string& fileName);

@@ -52,10 +52,6 @@ public:
 
 	std::shared_ptr<Material> CreateMaterial(const std::string& fileName);
 
-	void DestroySwapChain()
-	{
-		swapChain = nullptr;
-	}
 
 private:
 	void CreatePhysicalDevice(const InstanceWrapper<VkSurfaceKHR>& surface);

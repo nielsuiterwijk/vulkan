@@ -31,14 +31,20 @@ public:
 
 	InstanceWrapper<VkSurfaceKHR>& GetSurface();
 
+	const VkSurfaceFormatKHR& GetSurfaceFormat() const;
+	const VkPresentModeKHR& GetPresentMode() const;
+
 private:
-	VkSurfaceFormatKHR GetSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-	VkPresentModeKHR GetSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes, bool waitForVSync);
+	VkSurfaceFormatKHR PickSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+	VkPresentModeKHR PickSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes, bool waitForVSync);
 	VkExtent2D GetSwapExtents(const VkSurfaceCapabilitiesKHR& capabilities, const glm::u32vec2& windowSize);
 
 private:
 	InstanceWrapper<VkSurfaceKHR> surface;
 	InstanceWrapper<VkSwapchainKHR> swapChain;
+
+	VkSurfaceFormatKHR surfaceFormat;
+	VkPresentModeKHR presentMode;
 
 	VulkanSwapChainDetails details;
 

@@ -33,8 +33,8 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 {
 	details.Initialize(GraphicsContext::PhysicalDevice, surface);
 
-	VkSurfaceFormatKHR surfaceFormat = GetSwapSurfaceFormat(details.formats);
-	VkPresentModeKHR presentMode = GetSwapPresentMode(details.presentModes, false);
+	surfaceFormat = PickSwapSurfaceFormat(details.formats);
+	presentMode = PickSwapPresentMode(details.presentModes, false);
 	extent = GetSwapExtents(details.capabilities, windowSize);
 
 	//Triple buffering!
@@ -128,7 +128,7 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 }
 
 
-VkSurfaceFormatKHR VulkanSwapChain::GetSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+VkSurfaceFormatKHR VulkanSwapChain::PickSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
 	//Best case scenario, our surface accepts any format, lets pick the best combination
 	if (availableFormats.size() == 1 && availableFormats[0].format == VK_FORMAT_UNDEFINED)
@@ -149,7 +149,7 @@ VkSurfaceFormatKHR VulkanSwapChain::GetSwapSurfaceFormat(const std::vector<VkSur
 	return availableFormats[0];
 }
 
-VkPresentModeKHR VulkanSwapChain::GetSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes, bool waitForVSync)
+VkPresentModeKHR VulkanSwapChain::PickSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes, bool waitForVSync)
 {
 	//These are explained here: https://harrylovescode.gitbooks.io/vulkan-api/content/chap06/chap06.html
 	if (waitForVSync)
@@ -198,6 +198,17 @@ VkExtent2D VulkanSwapChain::GetSwapExtents(const VkSurfaceCapabilitiesKHR& capab
 InstanceWrapper<VkSurfaceKHR>& VulkanSwapChain::GetSurface()
 {
 	return surface;
+}
+
+
+const VkSurfaceFormatKHR& VulkanSwapChain::GetSurfaceFormat() const
+{
+	return surfaceFormat;
+}
+
+const VkPresentModeKHR& VulkanSwapChain::GetPresentMode() const
+{
+	return presentMode;
 }
 
 void VulkanSwapChainDetails::Initialize(const VkPhysicalDevice& physicalDevice, const InstanceWrapper<VkSurfaceKHR>& surface)

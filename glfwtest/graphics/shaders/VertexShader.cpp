@@ -26,6 +26,7 @@ VertexShader::VertexShader(const std::string& fileName) :
 	shaderInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
 	shaderInfo.module = shaderModule;
 	shaderInfo.pName = "main";
+
 }
 
 

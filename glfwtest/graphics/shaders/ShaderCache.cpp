@@ -3,8 +3,8 @@
 #include "graphics\GraphicsDevice.h"
 #include "VertexShader.h"
 
-std::map<std::string, std::shared_ptr<VertexShader>> ShaderCache::vertexShaders;
-std::map<std::string, std::shared_ptr<FragmentShader>> ShaderCache::fragmentShaders;
+std::map<std::string, std::shared_ptr<VertexShader> > ShaderCache::vertexShaders;
+std::map<std::string, std::shared_ptr<FragmentShader> > ShaderCache::fragmentShaders;
 
 const std::shared_ptr<VertexShader> ShaderCache::GetVertexShader(const std::string& filename)
 {
@@ -18,7 +18,7 @@ const std::shared_ptr<VertexShader> ShaderCache::GetVertexShader(const std::stri
 	{
 		std::shared_ptr<VertexShader> vertexShader = std::make_shared<VertexShader>(filename);
 
-		vertexShaders.insert(std::pair<std::string, std::shared_ptr<VertexShader>>(filename, vertexShader));
+		vertexShaders.insert(std::make_pair(filename, vertexShader));
 
 		return vertexShader;
 	}
@@ -36,7 +36,7 @@ const std::shared_ptr<FragmentShader> ShaderCache::GetFragmentShader(const std::
 	{
 		std::shared_ptr<FragmentShader> fragmentShader = std::make_shared<FragmentShader>(filename);
 
-		fragmentShaders.insert(std::pair<std::string, std::shared_ptr<FragmentShader>>(filename, fragmentShader));
+		fragmentShaders.insert(std::make_pair(filename, fragmentShader));
 
 		return fragmentShader;
 	}

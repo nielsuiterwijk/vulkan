@@ -2,7 +2,7 @@
 
 #include "GraphicsDevice.h"
 
-PipelineStateObject::PipelineStateObject(GraphicsDevice* graphicsDevice, const Material& material) :
+PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material, std::shared_ptr<RenderPass> renderpass) :
 	pipelineLayout(GraphicsContext::LogicalDevice, vkDestroyPipelineLayout),
 	graphicsPipeline(GraphicsContext::LogicalDevice, vkDestroyPipeline)
 {
@@ -98,10 +98,12 @@ PipelineStateObject::PipelineStateObject(GraphicsDevice* graphicsDevice, const M
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
+	std::vector<VkPipelineShaderStageCreateInfo> shaderStages = material->GetShaderStages();
+
 	VkGraphicsPipelineCreateInfo pipelineInfo = {};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.stageCount = 2;
-	pipelineInfo.pStages = nullptr; //TODO: Get the shaders that are needed
+	pipelineInfo.pStages = shaderStages.data();
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
 	pipelineInfo.pInputAssemblyState = &inputAssembly;
 	pipelineInfo.pViewportState = &viewportState;
@@ -111,7 +113,7 @@ PipelineStateObject::PipelineStateObject(GraphicsDevice* graphicsDevice, const M
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = nullptr; // Optional
 	pipelineInfo.layout = pipelineLayout;
-	pipelineInfo.renderPass = nullptr; //TODO: Get the renderpass that is needed
+	pipelineInfo.renderPass = renderpass->GetRenderPass();
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
@@ -124,5 +126,7 @@ PipelineStateObject::PipelineStateObject(GraphicsDevice* graphicsDevice, const M
 
 PipelineStateObject::~PipelineStateObject()
 {
-
+	pipelineLayout = nullptr;
+	graphicsPipeline = nullptr;
+	std::cout << "Destroyed PSO" << std::endl;
 }

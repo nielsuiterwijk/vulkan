@@ -8,7 +8,8 @@ class Shader
 {
 protected:
 	Shader() :
-		shaderModule(GraphicsContext::LogicalDevice, vkDestroyShaderModule)
+		shaderModule(GraphicsContext::LogicalDevice, vkDestroyShaderModule),
+		shaderInfo()
 	{
 	}
 
@@ -16,9 +17,16 @@ protected:
 	{
 		shaderModule = nullptr;
 	}
+public:
+
+	const VkPipelineShaderStageCreateInfo& GetShaderStageCreateInfo() const
+	{
+		return shaderInfo;
+	}
 
 protected:
 
 	VkPipelineShaderStageCreateInfo shaderInfo;
 	InstanceWrapper<VkShaderModule> shaderModule;
+
 };
