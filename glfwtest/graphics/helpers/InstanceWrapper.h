@@ -13,29 +13,32 @@ template <typename T>
 class InstanceWrapper
 {
 public:
-	InstanceWrapper() : InstanceWrapper([](T, VkAllocationCallbacks*) {}) {}
+	InstanceWrapper() : InstanceWrapper([](T, const VkAllocationCallbacks*) {}, nullptr) {}
 
-	InstanceWrapper(std::function<void(T, VkAllocationCallbacks*)> callback)
+	InstanceWrapper(std::function<void(T, const VkAllocationCallbacks*)> callback, const VkAllocationCallbacks* allocator) :
+		allocationCallbacks(allocator)
 	{
 		this->deleteCallback = [ = ](T obj)
 		{
-			callback(obj, allocator.Get());
+			callback(obj, allocator);
 		};
 	}
 
-	InstanceWrapper(const InstanceWrapper<VkInstance>& instance, std::function<void(VkInstance, T, VkAllocationCallbacks*)> callback)
+	InstanceWrapper(const InstanceWrapper<VkInstance>& instance, std::function<void(VkInstance, T, const VkAllocationCallbacks*)> callback, const VkAllocationCallbacks* allocator) :
+		allocationCallbacks(allocator)
 	{
-		this->deleteCallback = [this, &instance, callback](T obj)
+		this->deleteCallback = [this, &instance, callback, allocator](T obj)
 		{
-			callback(instance, obj, allocator.Get());
+			callback(instance, obj, allocator);
 		};
 	}
 
-	InstanceWrapper(const InstanceWrapper<VkDevice>& device, std::function<void(VkDevice, T, VkAllocationCallbacks*)> callback)
+	InstanceWrapper(const InstanceWrapper<VkDevice>& device, std::function<void(VkDevice, T, const VkAllocationCallbacks*)> callback, const VkAllocationCallbacks* allocator) :
+		allocationCallbacks(allocator)
 	{
-		this->deleteCallback = [this, &device, callback](T obj)
+		this->deleteCallback = [this, &device, callback, allocator](T obj)
 		{
-			callback(device, obj, allocator.Get());
+			callback(device, obj, allocator);
 		};
 	}
 
@@ -43,13 +46,23 @@ public:
 	{
 		Cleanup();
 		deleteCallback = nullptr;
+		allocationCallbacks = nullptr;
 	}
 
-	void Initialize(const InstanceWrapper<VkDevice>& device, std::function<void(VkDevice, T, VkAllocationCallbacks*)> callback)
+	//This is used in case of having a std::vector of InstanceWrappers. The vector calls the default constructor
+	void Initialize(const InstanceWrapper<VkDevice>& device, std::function<void(VkDevice, T, const VkAllocationCallbacks*)> callback, const VkAllocationCallbacks* allocator)
 	{
-		this->deleteCallback = [this, &device, callback](T obj)
 		{
-			callback(device, obj, allocator.Get());
+			Cleanup();
+			deleteCallback = nullptr;
+			allocationCallbacks = nullptr;
+		}
+
+		allocationCallbacks = allocator;
+
+		this->deleteCallback = [this, &device, callback, allocator](T obj)
+		{
+			callback(device, obj, allocator);
 		};
 	}
 
@@ -66,7 +79,7 @@ public:
 
 	const VkAllocationCallbacks* AllocationCallbacks()
 	{
-		return allocator.Get();
+		return allocationCallbacks;
 	}
 
 	operator T() const
@@ -104,7 +117,5 @@ private:
 	T vulkanObject { VK_NULL_HANDLE };
 
 	std::function<void(T)> deleteCallback;
-
-	Allocator allocator;
-
+	const VkAllocationCallbacks* allocationCallbacks;
 };

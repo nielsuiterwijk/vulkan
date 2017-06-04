@@ -2,6 +2,7 @@
 
 #include "helpers\InstanceWrapper.h"
 #include "GraphicsDevice.h"
+#include "RenderPass.h"
 
 #include <vector>
 #include <glm/fwd.hpp>
@@ -29,6 +30,8 @@ public:
 
 	void Connect(const glm::u32vec2& windowSize, const QueueFamilyIndices& indices);
 
+	void SetupFrameBuffers(std::shared_ptr<RenderPass> renderPass);
+
 	InstanceWrapper<VkSurfaceKHR>& GetSurface();
 
 	const VkSurfaceFormatKHR& GetSurfaceFormat() const;
@@ -50,6 +53,7 @@ private:
 
 	std::vector<VkImage> images;
 	std::vector< InstanceWrapper<VkImageView> > imageViews;
+	std::vector< InstanceWrapper<VkFramebuffer> > framebuffers;
 
 	VkFormat imageFormat;
 	VkExtent2D extent;

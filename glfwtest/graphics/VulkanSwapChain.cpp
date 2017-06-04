@@ -9,14 +9,21 @@
 
 
 VulkanSwapChain::VulkanSwapChain(const InstanceWrapper<VkInstance>& applicationInfo) :
-	surface(applicationInfo, vkDestroySurfaceKHR),
-	swapChain(nullptr)
+	surface(applicationInfo, vkDestroySurfaceKHR, GraphicsContext::GlobalAllocator.Get()),
+	swapChain()
 {
 
 }
 
 VulkanSwapChain::~VulkanSwapChain()
 {
+	for (size_t i = 0; i < framebuffers.size(); i++)
+	{
+		framebuffers[i] = nullptr;
+	}
+
+	framebuffers.clear();
+
 	for (int i = 0; i < imageViews.size(); i++)
 	{
 		imageViews[i] = nullptr;
@@ -77,7 +84,7 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	swapChain.Initialize(GraphicsContext::LogicalDevice, vkDestroySwapchainKHR);
+	swapChain.Initialize(GraphicsContext::LogicalDevice, vkDestroySwapchainKHR, GraphicsContext::GlobalAllocator.Get());
 
 	if (vkCreateSwapchainKHR(GraphicsContext::LogicalDevice, &createInfo, swapChain.AllocationCallbacks(), swapChain.Replace()) != VK_SUCCESS)
 	{
@@ -114,17 +121,42 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 		createInfo.subresourceRange.layerCount = 1;
 
 		//This is a typical view setup (for a frame buffer). No mipmaps, just color
-		imageViews[i].Initialize(GraphicsContext::LogicalDevice, vkDestroyImageView);
+		imageViews[i].Initialize(GraphicsContext::LogicalDevice, vkDestroyImageView, GraphicsContext::GlobalAllocator.Get());
 
 		if (vkCreateImageView(GraphicsContext::LogicalDevice, &createInfo, imageViews[i].AllocationCallbacks(), imageViews[i].Replace()) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create image views!");
 		}
-
-
 	}
+}
 
-	int asd = 0;
+void VulkanSwapChain::SetupFrameBuffers(std::shared_ptr<RenderPass> renderPass)
+{
+	framebuffers.resize(imageViews.size());
+
+	for (size_t i = 0; i < framebuffers.size(); i++)
+	{
+		VkImageView attachments[] =
+		{
+			imageViews[i]
+		};
+
+		VkFramebufferCreateInfo framebufferInfo = {};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass = renderPass->GetRenderPass();
+		framebufferInfo.attachmentCount = 1;
+		framebufferInfo.pAttachments = attachments;
+		framebufferInfo.width = extent.width;
+		framebufferInfo.height = extent.height;
+		framebufferInfo.layers = 1;
+
+		framebuffers[i].Initialize(GraphicsContext::LogicalDevice, vkDestroyFramebuffer, GraphicsContext::GlobalAllocator.Get());
+
+		if (vkCreateFramebuffer(GraphicsContext::LogicalDevice, &framebufferInfo, GraphicsContext::GlobalAllocator.Get(), framebuffers[i].Replace()) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create framebuffer!");
+		}
+	}
 }
 
 

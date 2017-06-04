@@ -3,13 +3,14 @@
 #include "standard.h"
 #include "helpers/VulkanHelpers.h"
 #include "helpers/VulkanDebugHook.h"
+#include "GraphicsDevice.h"
 
 #include <iostream>
 #include <algorithm>
 
 VulkanInstance::VulkanInstance() :
-	applicationInfo(vkDestroyInstance),
-	debugCallback(applicationInfo, VulkanDebug::DestroyDebugReportCallbackEXT)
+	applicationInfo(vkDestroyInstance, GraphicsContext::GlobalAllocator.Get()),
+	debugCallback(applicationInfo, VulkanDebug::DestroyDebugReportCallbackEXT, GraphicsContext::GlobalAllocator.Get())
 {
 	CacheExtensions();
 	CacheLayers();

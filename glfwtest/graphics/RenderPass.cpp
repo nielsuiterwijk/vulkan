@@ -5,7 +5,7 @@
 #include <vulkan\vulkan.h>
 
 RenderPass::RenderPass(GraphicsDevice* device) :
-	renderPass(GraphicsContext::LogicalDevice, vkDestroyRenderPass),
+	renderPass(GraphicsContext::LogicalDevice, vkDestroyRenderPass, GraphicsContext::GlobalAllocator.Get()),
 	subpass(),
 	colorAttachment(),
 	colorAttachmentRef()

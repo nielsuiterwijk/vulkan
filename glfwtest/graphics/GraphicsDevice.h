@@ -29,6 +29,7 @@ struct QueueFamilyIndices
 class GraphicsContext
 {
 public:
+	static Allocator GlobalAllocator;
 
 	static VkPhysicalDevice PhysicalDevice;
 

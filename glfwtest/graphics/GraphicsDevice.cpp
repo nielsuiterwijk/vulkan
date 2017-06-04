@@ -15,7 +15,9 @@
 
 VkPhysicalDevice GraphicsContext::PhysicalDevice = VK_NULL_HANDLE;
 
-InstanceWrapper<VkDevice> GraphicsContext::LogicalDevice = { vkDestroyDevice };
+Allocator GraphicsContext::GlobalAllocator = Allocator();
+
+InstanceWrapper<VkDevice> GraphicsContext::LogicalDevice = { vkDestroyDevice, GraphicsContext::GlobalAllocator.Get() };
 
 VkQueue GraphicsContext::GraphicsQueue = {};
 VkQueue GraphicsContext::PresentQueue = {};
@@ -54,11 +56,17 @@ void GraphicsDevice::Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, 
 
 	swapChain->Connect(GraphicsContext::WindowSize, indices);
 
+	GraphicsContext::GlobalAllocator.PrintStats();
+
 	//Temporary..
 	std::shared_ptr<Material> fixedMaterial = CreateMaterial("fixed");
 	std::shared_ptr<RenderPass> renderPass = std::make_shared<RenderPass>(this);
 
 	PipelineStateObject pso(fixedMaterial, renderPass);
+
+	swapChain->SetupFrameBuffers(renderPass);
+
+	GraphicsContext::GlobalAllocator.PrintStats();
 
 }
 

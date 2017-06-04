@@ -3,8 +3,8 @@
 #include "GraphicsDevice.h"
 
 PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material, std::shared_ptr<RenderPass> renderpass) :
-	pipelineLayout(GraphicsContext::LogicalDevice, vkDestroyPipelineLayout),
-	graphicsPipeline(GraphicsContext::LogicalDevice, vkDestroyPipeline)
+	pipelineLayout(GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::GlobalAllocator.Get()),
+	graphicsPipeline(GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get())
 {
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
