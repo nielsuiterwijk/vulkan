@@ -10,7 +10,7 @@ class GraphicsDevice;
 class PipelineStateObject
 {
 public:
-	PipelineStateObject(std::shared_ptr<Material> material, std::shared_ptr<RenderPass> renderpass);
+	PipelineStateObject(std::shared_ptr<Material> material);
 	~PipelineStateObject();
 
 private:

@@ -4,13 +4,13 @@
 
 #include <vulkan\vulkan.h>
 
-RenderPass::RenderPass(GraphicsDevice* device) :
+RenderPass::RenderPass(VkFormat format) :
 	renderPass(GraphicsContext::LogicalDevice, vkDestroyRenderPass, GraphicsContext::GlobalAllocator.Get()),
 	subpass(),
 	colorAttachment(),
 	colorAttachmentRef()
 {
-	colorAttachment.format = device->GetSwapChain()->GetSurfaceFormat().format;
+	colorAttachment.format = format;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;

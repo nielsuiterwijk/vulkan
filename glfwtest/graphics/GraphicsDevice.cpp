@@ -17,7 +17,12 @@ VkPhysicalDevice GraphicsContext::PhysicalDevice = VK_NULL_HANDLE;
 
 Allocator GraphicsContext::GlobalAllocator = Allocator();
 
+std::shared_ptr<CommandBufferPool> GraphicsContext::CmdBufferPool = nullptr;
+std::shared_ptr<RenderPass> GraphicsContext::RenderPass = nullptr;
+
 InstanceWrapper<VkDevice> GraphicsContext::LogicalDevice = { vkDestroyDevice, GraphicsContext::GlobalAllocator.Get() };
+
+QueueFamilyIndices GraphicsContext::FamilyIndices = {};
 
 VkQueue GraphicsContext::GraphicsQueue = {};
 VkQueue GraphicsContext::PresentQueue = {};
@@ -33,6 +38,7 @@ GraphicsDevice::GraphicsDevice(glm::u32vec2 windowSize) :
 
 GraphicsDevice::~GraphicsDevice()
 {
+	GraphicsContext::CmdBufferPool = nullptr;
 	ShaderCache::Destroy();
 	swapChain = nullptr;
 	GraphicsContext::LogicalDevice = nullptr;
@@ -47,26 +53,20 @@ void GraphicsDevice::Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, 
 
 	CreatePhysicalDevice(swapChain->GetSurface());
 
-	QueueFamilyIndices indices = FindQueueFamilies(GraphicsContext::PhysicalDevice, swapChain->GetSurface());
+	GraphicsContext::FamilyIndices = FindQueueFamilies(GraphicsContext::PhysicalDevice, swapChain->GetSurface());
 
-	CreateLogicalDevice(indices);
+	CreateLogicalDevice();
 
-	vkGetDeviceQueue(GraphicsContext::LogicalDevice, indices.graphicsFamily, 0, &GraphicsContext::GraphicsQueue);
-	vkGetDeviceQueue(GraphicsContext::LogicalDevice, indices.presentFamily, 0, &GraphicsContext::PresentQueue);
+	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.graphicsFamily, 0, &GraphicsContext::GraphicsQueue);
+	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.presentFamily, 0, &GraphicsContext::PresentQueue);
 
-	swapChain->Connect(GraphicsContext::WindowSize, indices);
+	swapChain->Connect(GraphicsContext::WindowSize, GraphicsContext::FamilyIndices);
 
-	GraphicsContext::GlobalAllocator.PrintStats();
+	GraphicsContext::RenderPass = std::make_shared<RenderPass>(swapChain->GetSurfaceFormat().format);
+	swapChain->SetupFrameBuffers();
+	GraphicsContext::CmdBufferPool = std::make_shared<CommandBufferPool>();
 
-	//Temporary..
-	std::shared_ptr<Material> fixedMaterial = CreateMaterial("fixed");
-	std::shared_ptr<RenderPass> renderPass = std::make_shared<RenderPass>(this);
-
-	PipelineStateObject pso(fixedMaterial, renderPass);
-
-	swapChain->SetupFrameBuffers(renderPass);
-
-	GraphicsContext::GlobalAllocator.PrintStats();
+	swapChain->CreateCommandBuffers();
 
 }
 
@@ -77,10 +77,10 @@ std::shared_ptr<Material> GraphicsDevice::CreateMaterial(const std::string& file
 	return material;
 }
 
-void GraphicsDevice::CreateLogicalDevice(const QueueFamilyIndices& indices)
+void GraphicsDevice::CreateLogicalDevice()
 {
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::set<int> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily };
+	std::set<int> uniqueQueueFamilies = { GraphicsContext::FamilyIndices.graphicsFamily, GraphicsContext::FamilyIndices.presentFamily };
 
 	float queuePriority = 1.0f;
 	for (int queueFamily : uniqueQueueFamilies)

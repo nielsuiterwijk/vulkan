@@ -3,6 +3,8 @@
 #include "helpers/InstanceWrapper.h"
 
 #include "shaders\Material.h"
+#include "graphics\buffers\CommandBufferPool.h"
+#include "graphics\PipelineStateObject.h"
 
 #include "standard.h"
 
@@ -31,9 +33,14 @@ class GraphicsContext
 public:
 	static Allocator GlobalAllocator;
 
+	static std::shared_ptr<CommandBufferPool> CmdBufferPool; //Need to use a different name..
+	static std::shared_ptr<RenderPass> RenderPass;
+
 	static VkPhysicalDevice PhysicalDevice;
 
 	static InstanceWrapper<VkDevice> LogicalDevice;
+
+	static QueueFamilyIndices FamilyIndices;
 
 	static VkQueue GraphicsQueue;
 	static VkQueue PresentQueue;
@@ -56,7 +63,7 @@ public:
 
 private:
 	void CreatePhysicalDevice(const InstanceWrapper<VkSurfaceKHR>& surface);
-	void CreateLogicalDevice(const QueueFamilyIndices & indices);
+	void CreateLogicalDevice();
 
 	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice, const InstanceWrapper<VkSurfaceKHR>&  surface);
 
@@ -67,5 +74,8 @@ private:
 	std::shared_ptr<VulkanSwapChain> swapChain;
 
 	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME	};
+
+
+	std::vector< std::shared_ptr<PipelineStateObject> > pipleStateObjects;
 
 };

@@ -20,6 +20,9 @@
     <ClCompile Include="graphics\shaders\VertexShader.cpp" />
     <ClCompile Include="graphics\shaders\FragmentShader.cpp" />
     <ClCompile Include="graphics\shaders\ShaderCache.cpp" />
+    <ClCompile Include="graphics\RenderPass.cpp" />
+    <ClCompile Include="graphics\buffers\CommandBufferPool.cpp" />
+    <ClCompile Include="graphics\buffers\CommandBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -543,6 +546,9 @@
     <ClInclude Include="graphics\PipelineStateObject.h" />
     <ClInclude Include="graphics\shaders\Shader.h" />
     <ClInclude Include="graphics\shaders\ShaderCache.h" />
+    <ClInclude Include="graphics\RenderPass.h" />
+    <ClInclude Include="graphics\buffers\CommandBuffer.h" />
+    <ClInclude Include="graphics\buffers\CommandBufferPool.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

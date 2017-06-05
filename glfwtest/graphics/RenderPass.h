@@ -2,12 +2,14 @@
 
 #include "helpers\InstanceWrapper.h"
 
+#include "standard.h"
+
 class GraphicsDevice;
 
 class RenderPass
 {
 public:
-	RenderPass(GraphicsDevice* device);
+	RenderPass(VkFormat format);
 	~RenderPass();
 
 	const InstanceWrapper<VkRenderPass>& GetRenderPass() const;

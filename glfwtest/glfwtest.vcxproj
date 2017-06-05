@@ -172,6 +172,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="graphics\buffers\CommandBuffer.cpp" />
+    <ClCompile Include="graphics\buffers\CommandBufferPool.cpp" />
     <ClCompile Include="graphics\helpers\Allocator.cpp" />
     <ClCompile Include="graphics\PipelineStateObject.cpp" />
     <ClCompile Include="graphics\RenderPass.cpp" />
@@ -188,6 +190,8 @@
     <ClCompile Include="graphics\VulkanInstance.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="graphics\buffers\CommandBuffer.h" />
+    <ClInclude Include="graphics\buffers\CommandBufferPool.h" />
     <ClInclude Include="graphics\helpers\Allocator.h" />
     <ClInclude Include="graphics\PipelineStateObject.h" />
     <ClInclude Include="graphics\RenderPass.h" />

@@ -2,6 +2,7 @@
 
 #include "helpers\InstanceWrapper.h"
 #include "GraphicsDevice.h"
+#include "graphics\buffers\CommandBuffer.h"
 #include "RenderPass.h"
 
 #include <vector>
@@ -30,7 +31,9 @@ public:
 
 	void Connect(const glm::u32vec2& windowSize, const QueueFamilyIndices& indices);
 
-	void SetupFrameBuffers(std::shared_ptr<RenderPass> renderPass);
+	void SetupFrameBuffers();
+
+	void CreateCommandBuffers();
 
 	InstanceWrapper<VkSurfaceKHR>& GetSurface();
 
@@ -54,6 +57,8 @@ private:
 	std::vector<VkImage> images;
 	std::vector< InstanceWrapper<VkImageView> > imageViews;
 	std::vector< InstanceWrapper<VkFramebuffer> > framebuffers;
+	std::vector< std::shared_ptr<CommandBuffer> > commandBuffers;
+
 
 	VkFormat imageFormat;
 	VkExtent2D extent;

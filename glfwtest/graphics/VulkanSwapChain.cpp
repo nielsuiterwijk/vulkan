@@ -130,7 +130,7 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 	}
 }
 
-void VulkanSwapChain::SetupFrameBuffers(std::shared_ptr<RenderPass> renderPass)
+void VulkanSwapChain::SetupFrameBuffers()
 {
 	framebuffers.resize(imageViews.size());
 
@@ -143,7 +143,7 @@ void VulkanSwapChain::SetupFrameBuffers(std::shared_ptr<RenderPass> renderPass)
 
 		VkFramebufferCreateInfo framebufferInfo = {};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = renderPass->GetRenderPass();
+		framebufferInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
 		framebufferInfo.attachmentCount = 1;
 		framebufferInfo.pAttachments = attachments;
 		framebufferInfo.width = extent.width;
@@ -157,6 +157,13 @@ void VulkanSwapChain::SetupFrameBuffers(std::shared_ptr<RenderPass> renderPass)
 			throw std::runtime_error("failed to create framebuffer!");
 		}
 	}
+}
+
+void VulkanSwapChain::CreateCommandBuffers()
+{
+	commandBuffers.resize(framebuffers.size());
+
+	GraphicsContext::CmdBufferPool->Create(commandBuffers);
 }
 
 

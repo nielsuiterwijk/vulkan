@@ -76,7 +76,7 @@ public:
 		{
 			int64_t memoryAllocated = trackers[i].totalMemoryAllocated;
 			int64_t previousMemoryAllocated = trackers[i].previousTotalMemoryAllocated;
-			int32_t delta = memoryAllocated - previousMemoryAllocated;
+			int64_t delta = memoryAllocated - previousMemoryAllocated;
 
 			//Feels like a waste, but nice formatting is nice.
 			if (delta > 0)

@@ -2,7 +2,7 @@
 
 #include "GraphicsDevice.h"
 
-PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material, std::shared_ptr<RenderPass> renderpass) :
+PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material) :
 	pipelineLayout(GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::GlobalAllocator.Get()),
 	graphicsPipeline(GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get())
 {
@@ -113,7 +113,7 @@ PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material, std
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = nullptr; // Optional
 	pipelineInfo.layout = pipelineLayout;
-	pipelineInfo.renderPass = renderpass->GetRenderPass();
+	pipelineInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional

@@ -10,6 +10,7 @@
 #include "graphics/GraphicsDevice.h"
 #include "graphics/VulkanInstance.h"
 #include "graphics\VulkanSwapChain.h"
+#include "graphics\PipelineStateObject.h"
 
 RavenApp::RavenApp() :
 	window(nullptr),
@@ -71,6 +72,8 @@ bool RavenApp::Initialize()
 	device->Initialize(vulkanInstance, vulkanSwapChain);
 	vulkanSwapChain = nullptr;
 
+	GraphicsContext::GlobalAllocator.PrintStats();
+
 	return true;
 }
 
@@ -82,11 +85,23 @@ void RavenApp::Run()
 
 	Timer timer;
 
+
+	{
+		std::shared_ptr<Material> fixedMaterial = device->CreateMaterial("fixed");
+
+		PipelineStateObject pso(fixedMaterial);
+
+
+		GraphicsContext::GlobalAllocator.PrintStats();
+	}
+
 	while (!glfwWindowShouldClose(window))
 	{
 		timer.Start();
 
 		glfwPollEvents();
+
+
 
 		Sleep(5);
 
