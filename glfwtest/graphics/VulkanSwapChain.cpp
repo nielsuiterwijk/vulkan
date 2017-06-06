@@ -159,14 +159,6 @@ void VulkanSwapChain::SetupFrameBuffers()
 	}
 }
 
-void VulkanSwapChain::CreateCommandBuffers()
-{
-	commandBuffers.resize(framebuffers.size());
-
-	GraphicsContext::CmdBufferPool->Create(commandBuffers);
-}
-
-
 VkSurfaceFormatKHR VulkanSwapChain::PickSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
 	//Best case scenario, our surface accepts any format, lets pick the best combination
@@ -239,6 +231,10 @@ InstanceWrapper<VkSurfaceKHR>& VulkanSwapChain::GetSurface()
 	return surface;
 }
 
+InstanceWrapper<VkFramebuffer>& VulkanSwapChain::GetFrameBuffer(int32_t frameIndex)
+{
+	return framebuffers[frameIndex];
+}
 
 const VkSurfaceFormatKHR& VulkanSwapChain::GetSurfaceFormat() const
 {

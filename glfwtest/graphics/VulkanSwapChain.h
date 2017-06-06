@@ -33,12 +33,16 @@ public:
 
 	void SetupFrameBuffers();
 
-	void CreateCommandBuffers();
-
 	InstanceWrapper<VkSurfaceKHR>& GetSurface();
+	InstanceWrapper<VkFramebuffer>& GetFrameBuffer(int32_t frameIndex);
+
 
 	const VkSurfaceFormatKHR& GetSurfaceFormat() const;
 	const VkPresentModeKHR& GetPresentMode() const;
+	VkExtent2D GetExtent() const
+	{
+		return extent;
+	}
 
 private:
 	VkSurfaceFormatKHR PickSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);

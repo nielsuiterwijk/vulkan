@@ -1,5 +1,6 @@
 #include "CommandBuffer.h"
 #include "graphics\GraphicsDevice.h"
+#include "graphics\VulkanSwapChain.h"
 
 #include "standard.h"
 
@@ -15,7 +16,7 @@ CommandBuffer::~CommandBuffer()
 
 }
 
-void CommandBuffer::StartRecording()
+void CommandBuffer::StartRecording(int32_t frameIndex)
 {
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -27,9 +28,9 @@ void CommandBuffer::StartRecording()
 	VkRenderPassBeginInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
-	renderPassInfo.framebuffer = framebuffers[i];
+	renderPassInfo.framebuffer = GraphicsContext::SwapChain->GetFrameBuffer(frameIndex);
 	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = extent;
+	renderPassInfo.renderArea.extent = GraphicsContext::SwapChain->GetExtent();
 
 	VkClearValue clearColor = { 100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1.0f }; // = cornflower blue :)
 	renderPassInfo.clearValueCount = 1;

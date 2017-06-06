@@ -19,6 +19,8 @@ Allocator GraphicsContext::GlobalAllocator = Allocator();
 
 std::shared_ptr<CommandBufferPool> GraphicsContext::CmdBufferPool = nullptr;
 std::shared_ptr<RenderPass> GraphicsContext::RenderPass = nullptr;
+std::shared_ptr<VulkanSwapChain> GraphicsContext::SwapChain = nullptr;
+std::shared_ptr<VulkanInstance> GraphicsContext::VulkanInstance = nullptr;
 
 InstanceWrapper<VkDevice> GraphicsContext::LogicalDevice = { vkDestroyDevice, GraphicsContext::GlobalAllocator.Get() };
 
@@ -30,8 +32,7 @@ VkQueue GraphicsContext::PresentQueue = {};
 glm::u32vec2 GraphicsContext::WindowSize = glm::uvec2(0, 0);
 
 
-GraphicsDevice::GraphicsDevice(glm::u32vec2 windowSize) :
-	vulkanInstance(nullptr)
+GraphicsDevice::GraphicsDevice(glm::u32vec2 windowSize)
 {
 	GraphicsContext::WindowSize = windowSize;
 }
@@ -40,33 +41,31 @@ GraphicsDevice::~GraphicsDevice()
 {
 	GraphicsContext::CmdBufferPool = nullptr;
 	ShaderCache::Destroy();
-	swapChain = nullptr;
+	GraphicsContext::SwapChain = nullptr;
 	GraphicsContext::LogicalDevice = nullptr;
-	vulkanInstance = nullptr;
+	GraphicsContext::VulkanInstance = nullptr;
 
 }
 
 void GraphicsDevice::Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, std::shared_ptr<VulkanSwapChain> vulkanSwapChain)
 {
-	vulkanInstance = vulkanRenderer;
-	swapChain = vulkanSwapChain;
+	GraphicsContext::VulkanInstance = vulkanRenderer;
+	GraphicsContext::SwapChain = vulkanSwapChain;
 
-	CreatePhysicalDevice(swapChain->GetSurface());
+	CreatePhysicalDevice(GraphicsContext::SwapChain->GetSurface());
 
-	GraphicsContext::FamilyIndices = FindQueueFamilies(GraphicsContext::PhysicalDevice, swapChain->GetSurface());
+	GraphicsContext::FamilyIndices = FindQueueFamilies(GraphicsContext::PhysicalDevice, GraphicsContext::SwapChain->GetSurface());
 
 	CreateLogicalDevice();
 
 	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.graphicsFamily, 0, &GraphicsContext::GraphicsQueue);
 	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.presentFamily, 0, &GraphicsContext::PresentQueue);
 
-	swapChain->Connect(GraphicsContext::WindowSize, GraphicsContext::FamilyIndices);
+	GraphicsContext::SwapChain->Connect(GraphicsContext::WindowSize, GraphicsContext::FamilyIndices);
 
-	GraphicsContext::RenderPass = std::make_shared<RenderPass>(swapChain->GetSurfaceFormat().format);
-	swapChain->SetupFrameBuffers();
+	GraphicsContext::RenderPass = std::make_shared<RenderPass>(GraphicsContext::SwapChain->GetSurfaceFormat().format);
+	GraphicsContext::SwapChain->SetupFrameBuffers();
 	GraphicsContext::CmdBufferPool = std::make_shared<CommandBufferPool>();
-
-	swapChain->CreateCommandBuffers();
 
 }
 
@@ -118,7 +117,7 @@ void GraphicsDevice::CreateLogicalDevice()
 void GraphicsDevice::CreatePhysicalDevice(const InstanceWrapper<VkSurfaceKHR>&  surface)
 {
 	uint32_t deviceCount = 0;
-	vkEnumeratePhysicalDevices(vulkanInstance->Get(), &deviceCount, nullptr);
+	vkEnumeratePhysicalDevices(GraphicsContext::VulkanInstance->Get(), &deviceCount, nullptr);
 
 	if (deviceCount == 0)
 	{
@@ -126,7 +125,7 @@ void GraphicsDevice::CreatePhysicalDevice(const InstanceWrapper<VkSurfaceKHR>&  
 	}
 
 	std::vector<VkPhysicalDevice> devices(deviceCount);
-	vkEnumeratePhysicalDevices(vulkanInstance->Get(), &deviceCount, devices.data());
+	vkEnumeratePhysicalDevices(GraphicsContext::VulkanInstance->Get(), &deviceCount, devices.data());
 
 	GraphicsContext::PhysicalDevice = VK_NULL_HANDLE;
 
@@ -220,10 +219,4 @@ bool GraphicsDevice::HasAllRequiredExtensions(VkPhysicalDevice physicalDevice)
 	}
 
 	return requiredExtensions.empty();
-}
-
-
-std::shared_ptr<VulkanSwapChain> GraphicsDevice::GetSwapChain() const
-{
-	return swapChain;
 }

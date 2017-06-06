@@ -35,6 +35,8 @@ public:
 
 	static std::shared_ptr<CommandBufferPool> CmdBufferPool; //Need to use a different name..
 	static std::shared_ptr<RenderPass> RenderPass;
+	static std::shared_ptr<VulkanSwapChain> SwapChain;
+	static std::shared_ptr<VulkanInstance> VulkanInstance;
 
 	static VkPhysicalDevice PhysicalDevice;
 
@@ -56,8 +58,6 @@ public:
 
 	void Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, std::shared_ptr<VulkanSwapChain> vulkanSwapChain);
 
-	std::shared_ptr<VulkanSwapChain> GetSwapChain() const;
-
 	std::shared_ptr<Material> CreateMaterial(const std::string& fileName);
 
 
@@ -70,8 +70,6 @@ private:
 	bool HasAllRequiredExtensions(VkPhysicalDevice device);
 
 private:
-	std::shared_ptr<VulkanInstance> vulkanInstance;
-	std::shared_ptr<VulkanSwapChain> swapChain;
 
 	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME	};
 

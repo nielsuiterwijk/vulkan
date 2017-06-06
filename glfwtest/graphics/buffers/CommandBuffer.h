@@ -8,7 +8,7 @@ public:
 	CommandBuffer(VkCommandBuffer commandBuffer);
 	~CommandBuffer();
 
-	void StartRecording();
+	void StartRecording(int32_t frameIndex);
 
 	void StopRecording();
 
