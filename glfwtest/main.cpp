@@ -24,8 +24,8 @@ int main()
 
 	std::cout << "size of size_t: " << sizeof(size_t) << std::endl;
 
-	ThreadPool p(8);
-	std::future<int> result = p.Enqueue(ThreadedCall, 3, 7);
+	ThreadPool threadPool(8);
+	std::future<int> result = threadPool.Enqueue(ThreadedCall, 3, 7);
 
 	while (result.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
 	{
@@ -41,8 +41,6 @@ int main()
 		{
 			return EXIT_FAILURE;
 		}
-
-
 
 		try
 		{

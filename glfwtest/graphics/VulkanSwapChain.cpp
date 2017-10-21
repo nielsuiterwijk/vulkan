@@ -100,7 +100,6 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 	for (int i = 0; i < images.size(); i++)
 	{
 		backBuffers[i].image = images[i];
-		backBuffers[i].semaphore = VulkanSemaphore();
 
 		VkImageViewCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -158,7 +157,7 @@ void VulkanSwapChain::SetupFrameBuffers()
 	std::cout << "[Vulkan] created: " << backBuffers.size() << " back buffers." << std::endl;
 }
 
-int VulkanSwapChain::PrepareBackBuffer()
+int32_t VulkanSwapChain::PrepareBackBuffer()
 {	
 	uint32_t imageIndex = -1;
 

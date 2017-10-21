@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iostream>
+#include <thread>
 
 #include "helpers/DebugAssert.h"
 #include "helpers/Timer.h"
@@ -81,17 +82,26 @@ bool RavenApp::Initialize()
 	return true;
 }
 
-void RavenApp::Run()
+
+void RavenApp::UpdateThread(RavenApp& app)
 {
-	glm::mat4 matrix;
-	glm::vec4 vec;
-	auto test = matrix * vec;
-
 	Timer timer;
-		
-	std::shared_ptr<Material> fixedMaterial = device->CreateMaterial("fixed");
 
+	while (app.run)
+	{
+		timer.Start();
+
+		timer.Stop();
+	}
+	
+}
+
+void RavenApp::RenderThread(RavenApp& app)
+{
+	std::shared_ptr<Material> fixedMaterial = app.device->CreateMaterial("fixed");
 	PipelineStateObject pso(fixedMaterial);
+
+	VulkanSemaphore renderSemaphore;
 
 	GraphicsContext::GlobalAllocator.PrintStats();
 
@@ -100,35 +110,30 @@ void RavenApp::Run()
 
 	for (size_t i = 0; i < commandBuffers.size(); i++)
 	{
-		commandBuffers[i]->StartRecording(0);
+		commandBuffers[i]->StartRecording(i);
 
 		vkCmdBindPipeline(commandBuffers[i]->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine());
 		vkCmdDraw(commandBuffers[i]->GetNative(), 3, 1, 0, 0);
 
 		commandBuffers[i]->StopRecording();
 	}
-	
-	VulkanSemaphore renderSemaphore;
 
-	while (!glfwWindowShouldClose(window))
+	Timer timer;
+
+	while (app.run)
 	{
 		timer.Start();
-
-		//update
-		{
-			glfwPollEvents();
-		}
 
 		//draw
 		{
 			//Prepare
 			uint32_t imageIndex = GraphicsContext::SwapChain->PrepareBackBuffer();
-			VkSemaphore backBufferSemaphore = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).semaphore.GetNative();
+			const VulkanSemaphore& backBufferSemaphore = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).semaphore;
 
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-			VkSemaphore waitSemaphores[] = { backBufferSemaphore }; //Wait untill this semaphore is signalled to continue with the corresponding stage below
+			VkSemaphore waitSemaphores[] = { backBufferSemaphore.GetNative() }; //Wait untill this semaphore is signalled to continue with the corresponding stage below
 			VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 			submitInfo.waitSemaphoreCount = 1;
 			submitInfo.pWaitSemaphores = waitSemaphores;
@@ -142,7 +147,7 @@ void RavenApp::Run()
 			submitInfo.pSignalSemaphores = signalSemaphores;
 
 			//Draw (wait untill surface is available)
-			if (vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) 
+			if (vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
 			{
 				throw std::runtime_error("failed to submit draw command buffer!");
 			}
@@ -163,9 +168,32 @@ void RavenApp::Run()
 			//Present (wait untill drawing is done)
 			vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
 		}
-		
-		Sleep(500);
 
+		timer.Stop();
+	}
+
+}
+
+void RavenApp::Run()
+{		
+
+	run = true;
+
+	std::thread first(RavenApp::UpdateThread, *this);
+	std::thread second(RavenApp::RenderThread, *this);
+	
+
+	Timer timer;
+	while (!glfwWindowShouldClose(window))
+	{
+		timer.Start();
+
+		//update
+		{
+			glfwPollEvents();
+		}
+				
+		
 		timer.Stop();
 
 		std::string windowTitle = std::string("delta time: ") + Helpers::ValueToString(timer.GetTimeInSeconds()*1000.0f);
@@ -173,7 +201,10 @@ void RavenApp::Run()
 		glfwSetWindowTitle(window, windowTitle.c_str());
 	}
 
+	run = false;
+
+	first.join();                // pauses until first finishes
+	second.join();               // pauses until second finishes
+
 	vkDeviceWaitIdle(GraphicsContext::LogicalDevice);
-	
-	Sleep(2000);
 }

@@ -44,7 +44,7 @@ public:
 	void SetupFrameBuffers();
 
 	//Returns the backbuffer index
-	int PrepareBackBuffer();
+	int32_t PrepareBackBuffer();
 
 	InstanceWrapper<VkSurfaceKHR>& GetSurface();
 	const SwapChainSurface& GetFrameBuffer(int32_t frameIndex);

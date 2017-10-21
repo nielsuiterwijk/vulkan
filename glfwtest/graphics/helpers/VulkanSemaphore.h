@@ -23,7 +23,6 @@ public:
 		semaphore = nullptr;
 	}
 
-	/** Returns the internal handle to the Vulkan object. */
 	const InstanceWrapper<VkSemaphore>& GetNative() const { return semaphore; }
 
 private:

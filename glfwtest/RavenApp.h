@@ -22,7 +22,12 @@ public:
 	RavenApp& operator=(RavenApp&&) & = default;       // Move assignment operator
 
 private:
+	static void UpdateThread(RavenApp& app);
+	static void RenderThread(RavenApp& app);
+
+private:
 	GLFWwindow* window;
+	bool run;
 
 	std::shared_ptr<GraphicsDevice> device;
 };
