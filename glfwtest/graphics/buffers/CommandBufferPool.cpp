@@ -26,6 +26,11 @@ CommandBufferPool::~CommandBufferPool()
 	commandPool = nullptr;
 }
 
+const InstanceWrapper<VkCommandPool>& CommandBufferPool::GetNative() const
+{
+	return commandPool;
+}
+
 /*
 VK_COMMAND_BUFFER_LEVEL_PRIMARY:
 	Can be submitted to a queue for execution, but cannot be called from other command buffers.
@@ -33,17 +38,11 @@ VK_COMMAND_BUFFER_LEVEL_SECONDARY :
 	Cannot be submitted directly, but can be called from primary command buffers.
 */
 
-void CommandBufferPool::Create(std::vector< std::shared_ptr<CommandBuffer> >& result)
+void CommandBufferPool::Create(std::vector< std::shared_ptr<CommandBuffer> >& result, int count)
 {
-	//TODO: Assert
-	if (result[0] != nullptr)
+	for (size_t i = 0; i < count; i++)
 	{
-		throw std::runtime_error("vector wasn't empty!");
-	}
-
-	for (size_t i = 0; i < result.size(); i++)
-	{
-		result[i] = Create();
+		result.push_back(Create());
 	}
 }
 

@@ -17,7 +17,7 @@ VkPhysicalDevice GraphicsContext::PhysicalDevice = VK_NULL_HANDLE;
 
 Allocator GraphicsContext::GlobalAllocator = Allocator();
 
-std::shared_ptr<CommandBufferPool> GraphicsContext::CmdBufferPool = nullptr;
+std::shared_ptr<CommandBufferPool> GraphicsContext::CommandBufferPool = nullptr;
 std::shared_ptr<RenderPass> GraphicsContext::RenderPass = nullptr;
 std::shared_ptr<VulkanSwapChain> GraphicsContext::SwapChain = nullptr;
 std::shared_ptr<VulkanInstance> GraphicsContext::VulkanInstance = nullptr;
@@ -39,7 +39,8 @@ GraphicsDevice::GraphicsDevice(glm::u32vec2 windowSize)
 
 GraphicsDevice::~GraphicsDevice()
 {
-	GraphicsContext::CmdBufferPool = nullptr;
+	GraphicsContext::CommandBufferPool = nullptr;
+	GraphicsContext::RenderPass = nullptr;
 	ShaderCache::Destroy();
 	GraphicsContext::SwapChain = nullptr;
 	GraphicsContext::LogicalDevice = nullptr;
@@ -65,7 +66,7 @@ void GraphicsDevice::Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, 
 
 	GraphicsContext::RenderPass = std::make_shared<RenderPass>(GraphicsContext::SwapChain->GetSurfaceFormat().format);
 	GraphicsContext::SwapChain->SetupFrameBuffers();
-	GraphicsContext::CmdBufferPool = std::make_shared<CommandBufferPool>();
+	GraphicsContext::CommandBufferPool = std::make_shared<CommandBufferPool>();
 
 }
 

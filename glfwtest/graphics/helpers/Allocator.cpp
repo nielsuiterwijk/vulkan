@@ -8,26 +8,38 @@ void* Allocator::Allocate(size_t size, size_t alignment, VkSystemAllocationScope
 {
 	//std::cout << "[Vulkan]Allocated " << size << " bytes. scope: " << scope << std::endl;
 
-	void* allocated = _aligned_malloc(size, alignment);
+	void* address = _aligned_malloc(size, alignment);
 
-	trackers[scope].allocatedMemory.insert(std::make_pair(allocated, size));
+	trackers[scope].allocatedMemory.insert(std::make_pair(address, size));
 	trackers[scope].totalMemoryAllocated += size;
+
+	trackers[scope].totalAllocations++;
 
 	//std::cout << "[Vulkan] Total allocated " << trackers[scope].totalMemoryAllocated << " bytes. type: " << Vulkan::GetAllocationScopeName(scope) << std::endl;
 
-	return allocated;
+	return address;
 }
 
-void* Allocator::Reallocate(void* original, size_t size, size_t alignment, VkSystemAllocationScope scope)
+void* Allocator::Reallocate(void* address, size_t size, size_t alignment, VkSystemAllocationScope scope)
 {
-	return _aligned_realloc(original, size, alignment);
+	std::map<void*, size_t>::iterator it = trackers[scope].allocatedMemory.find(address);
+
+	if (it != trackers[scope].allocatedMemory.end())
+	{
+		trackers[scope].totalMemoryAllocated -= it->second;
+		trackers[scope].totalMemoryAllocated += size;
+
+		trackers[scope].totalReallocations++;
+	}
+
+	return _aligned_realloc(address, size, alignment);
 }
 
-void Allocator::Free(void* data)
+void Allocator::Free(void* address)
 {
 	for (size_t i = 0; i < trackers.size(); i++)
 	{
-		std::map<void*, size_t>::iterator it = trackers[i].allocatedMemory.find(data);
+		std::map<void*, size_t>::iterator it = trackers[i].allocatedMemory.find(address);
 
 		if (it != trackers[i].allocatedMemory.end())
 		{
@@ -40,7 +52,7 @@ void Allocator::Free(void* data)
 	}
 
 
-	_aligned_free(data);
+	_aligned_free(address);
 }
 
 void Allocator::InternalAllocation(size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope scope)

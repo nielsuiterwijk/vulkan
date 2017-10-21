@@ -10,26 +10,21 @@
 
 VulkanSwapChain::VulkanSwapChain(const InstanceWrapper<VkInstance>& applicationInfo) :
 	surface(applicationInfo, vkDestroySurfaceKHR, GraphicsContext::GlobalAllocator.Get()),
-	swapChain()
+	swapChain(),
+	nextBackBufferIndex(0)
 {
 
 }
 
 VulkanSwapChain::~VulkanSwapChain()
 {
-	for (size_t i = 0; i < framebuffers.size(); i++)
+	for (size_t i = 0; i < backBuffers.size(); i++)
 	{
-		framebuffers[i] = nullptr;
+		backBuffers[i].framebuffer = nullptr;
+		backBuffers[i].imageView = nullptr;		
 	}
 
-	framebuffers.clear();
-
-	for (int i = 0; i < imageViews.size(); i++)
-	{
-		imageViews[i] = nullptr;
-	}
-
-	imageViews.clear();
+	backBuffers.clear();
 
 	swapChain = nullptr;
 	surface = nullptr;
@@ -92,17 +87,21 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 	}
 
 	vkGetSwapchainImagesKHR(GraphicsContext::LogicalDevice, swapChain, &imageCount, nullptr); //The implementation is allowed to create more images, which is why we need to explicitly query the amount again.
-	images.resize(imageCount);
+	
+	std::vector<VkImage> images(imageCount);
+	
 	vkGetSwapchainImagesKHR(GraphicsContext::LogicalDevice, swapChain, &imageCount, images.data());
 
 	imageFormat = surfaceFormat.format;
 
-	std::cout << "Created " << imageCount << " images of " << extent.width << " x " << extent.height << " format: " << Vulkan::GetFormatName(imageFormat) << std::endl;
+	std::cout << "Created " << imageCount << " images of " << extent.width << "x" << extent.height << " format: " << Vulkan::GetFormatName(imageFormat) << std::endl;
 
-	imageViews.resize(images.size());
-
+	backBuffers.resize(imageCount);
 	for (int i = 0; i < images.size(); i++)
 	{
+		backBuffers[i].image = images[i];
+		backBuffers[i].semaphore = VulkanSemaphore();
+
 		VkImageViewCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		createInfo.image = images[i];
@@ -121,9 +120,9 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 		createInfo.subresourceRange.layerCount = 1;
 
 		//This is a typical view setup (for a frame buffer). No mipmaps, just color
-		imageViews[i].Initialize(GraphicsContext::LogicalDevice, vkDestroyImageView, GraphicsContext::GlobalAllocator.Get());
+		backBuffers[i].imageView.Initialize(GraphicsContext::LogicalDevice, vkDestroyImageView, GraphicsContext::GlobalAllocator.Get());
 
-		if (vkCreateImageView(GraphicsContext::LogicalDevice, &createInfo, imageViews[i].AllocationCallbacks(), imageViews[i].Replace()) != VK_SUCCESS)
+		if (vkCreateImageView(GraphicsContext::LogicalDevice, &createInfo, backBuffers[i].imageView.AllocationCallbacks(), backBuffers[i].imageView.Replace()) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create image views!");
 		}
@@ -132,13 +131,11 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 
 void VulkanSwapChain::SetupFrameBuffers()
 {
-	framebuffers.resize(imageViews.size());
-
-	for (size_t i = 0; i < framebuffers.size(); i++)
+	for (size_t i = 0; i < backBuffers.size(); i++)
 	{
 		VkImageView attachments[] =
 		{
-			imageViews[i]
+			backBuffers[i].imageView
 		};
 
 		VkFramebufferCreateInfo framebufferInfo = {};
@@ -150,13 +147,29 @@ void VulkanSwapChain::SetupFrameBuffers()
 		framebufferInfo.height = extent.height;
 		framebufferInfo.layers = 1;
 
-		framebuffers[i].Initialize(GraphicsContext::LogicalDevice, vkDestroyFramebuffer, GraphicsContext::GlobalAllocator.Get());
+		backBuffers[i].framebuffer.Initialize(GraphicsContext::LogicalDevice, vkDestroyFramebuffer, GraphicsContext::GlobalAllocator.Get());
 
-		if (vkCreateFramebuffer(GraphicsContext::LogicalDevice, &framebufferInfo, GraphicsContext::GlobalAllocator.Get(), framebuffers[i].Replace()) != VK_SUCCESS)
+		if (vkCreateFramebuffer(GraphicsContext::LogicalDevice, &framebufferInfo, GraphicsContext::GlobalAllocator.Get(), backBuffers[i].framebuffer.Replace()) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create framebuffer!");
 		}
 	}
+
+	std::cout << "[Vulkan] created: " << backBuffers.size() << " back buffers." << std::endl;
+}
+
+int VulkanSwapChain::PrepareBackBuffer()
+{	
+	uint32_t imageIndex = -1;
+
+	VkResult result = vkAcquireNextImageKHR(GraphicsContext::LogicalDevice, swapChain, std::numeric_limits<uint64_t>::max(), backBuffers[nextBackBufferIndex].semaphore.GetNative(), VK_NULL_HANDLE, &imageIndex);
+	
+	assert(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR);
+	assert(imageIndex == nextBackBufferIndex); //imageIndex should be the same as backBufferIndex
+
+	nextBackBufferIndex = (nextBackBufferIndex + 1) % backBuffers.size();
+
+	return imageIndex;
 }
 
 VkSurfaceFormatKHR VulkanSwapChain::PickSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
@@ -231,9 +244,9 @@ InstanceWrapper<VkSurfaceKHR>& VulkanSwapChain::GetSurface()
 	return surface;
 }
 
-InstanceWrapper<VkFramebuffer>& VulkanSwapChain::GetFrameBuffer(int32_t frameIndex)
+const SwapChainSurface& VulkanSwapChain::GetFrameBuffer(int32_t frameIndex)
 {
-	return framebuffers[frameIndex];
+	return backBuffers[frameIndex];
 }
 
 const VkSurfaceFormatKHR& VulkanSwapChain::GetSurfaceFormat() const
@@ -244,6 +257,17 @@ const VkSurfaceFormatKHR& VulkanSwapChain::GetSurfaceFormat() const
 const VkPresentModeKHR& VulkanSwapChain::GetPresentMode() const
 {
 	return presentMode;
+}
+
+VkExtent2D VulkanSwapChain::GetExtent() const
+{
+	return extent;
+}
+
+
+const InstanceWrapper<VkSwapchainKHR>& VulkanSwapChain::GetNative() const
+{
+	return swapChain;
 }
 
 void VulkanSwapChainDetails::Initialize(const VkPhysicalDevice& physicalDevice, const InstanceWrapper<VkSurfaceKHR>& surface)

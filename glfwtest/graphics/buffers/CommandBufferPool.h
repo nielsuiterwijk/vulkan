@@ -14,9 +14,11 @@ public:
 	~CommandBufferPool();
 
 	//Give it an empty vector and it will fill it with propper Command Buffers
-	void Create(std::vector< std::shared_ptr<CommandBuffer> >& result);
+	void Create(std::vector< std::shared_ptr<CommandBuffer> >& result, int count);
 
 	std::shared_ptr<CommandBuffer> Create();
+
+	const InstanceWrapper<VkCommandPool>& GetNative() const;
 
 private:
 	InstanceWrapper<VkCommandPool> commandPool;

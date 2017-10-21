@@ -130,3 +130,14 @@ PipelineStateObject::~PipelineStateObject()
 	graphicsPipeline = nullptr;
 	std::cout << "Destroyed PSO" << std::endl;
 }
+
+
+const InstanceWrapper<VkPipelineLayout>& PipelineStateObject::GetLayout() const
+{
+	return pipelineLayout;
+}
+
+const InstanceWrapper<VkPipeline>& PipelineStateObject::GetPipeLine() const
+{
+	return graphicsPipeline;
+}

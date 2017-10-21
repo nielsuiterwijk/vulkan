@@ -39,6 +39,7 @@ bool RavenApp::Initialize()
 
 	device = std::make_shared<GraphicsDevice>(glm::u32vec2(1280, 720));
 
+
 	uint32_t glfwExtensionCount = 0;
 	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
@@ -61,8 +62,11 @@ bool RavenApp::Initialize()
 	vulkanInstance->CreateInstance(windowExtensionsNeeded);
 	vulkanInstance->HookDebugCallback();
 
+
 	//Note: Ownership given to GraphicsDevice
 	std::shared_ptr<VulkanSwapChain> vulkanSwapChain = std::make_shared<VulkanSwapChain>(vulkanInstance->Get());
+
+	GraphicsContext::GlobalAllocator.PrintStats();
 
 	if (glfwCreateWindowSurface(vulkanInstance->Get(), window, vulkanSwapChain->GetSurface().AllocationCallbacks(), vulkanSwapChain->GetSurface().Replace()) != VK_SUCCESS)
 	{
@@ -84,26 +88,83 @@ void RavenApp::Run()
 	auto test = matrix * vec;
 
 	Timer timer;
+		
+	std::shared_ptr<Material> fixedMaterial = device->CreateMaterial("fixed");
 
+	PipelineStateObject pso(fixedMaterial);
 
+	GraphicsContext::GlobalAllocator.PrintStats();
+
+	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
+	GraphicsContext::CommandBufferPool->Create(commandBuffers, 3);
+
+	for (size_t i = 0; i < commandBuffers.size(); i++)
 	{
-		std::shared_ptr<Material> fixedMaterial = device->CreateMaterial("fixed");
+		commandBuffers[i]->StartRecording(0);
 
-		PipelineStateObject pso(fixedMaterial);
+		vkCmdBindPipeline(commandBuffers[i]->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine());
+		vkCmdDraw(commandBuffers[i]->GetNative(), 3, 1, 0, 0);
 
-
-		GraphicsContext::GlobalAllocator.PrintStats();
+		commandBuffers[i]->StopRecording();
 	}
+	
+	VulkanSemaphore renderSemaphore;
 
 	while (!glfwWindowShouldClose(window))
 	{
 		timer.Start();
 
-		glfwPollEvents();
+		//update
+		{
+			glfwPollEvents();
+		}
 
+		//draw
+		{
+			//Prepare
+			uint32_t imageIndex = GraphicsContext::SwapChain->PrepareBackBuffer();
+			VkSemaphore backBufferSemaphore = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).semaphore.GetNative();
 
+			VkSubmitInfo submitInfo = {};
+			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-		Sleep(5);
+			VkSemaphore waitSemaphores[] = { backBufferSemaphore }; //Wait untill this semaphore is signalled to continue with the corresponding stage below
+			VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+			submitInfo.waitSemaphoreCount = 1;
+			submitInfo.pWaitSemaphores = waitSemaphores;
+			submitInfo.pWaitDstStageMask = waitStages;
+
+			submitInfo.commandBufferCount = 1;
+			submitInfo.pCommandBuffers = &commandBuffers[imageIndex]->GetNative();
+
+			VkSemaphore signalSemaphores[] = { renderSemaphore.GetNative() }; //This semaphore will be signalled when done with rendering the queue
+			submitInfo.signalSemaphoreCount = 1;
+			submitInfo.pSignalSemaphores = signalSemaphores;
+
+			//Draw (wait untill surface is available)
+			if (vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) 
+			{
+				throw std::runtime_error("failed to submit draw command buffer!");
+			}
+
+			VkPresentInfoKHR presentInfo = {};
+			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+			presentInfo.waitSemaphoreCount = 1;
+			presentInfo.pWaitSemaphores = signalSemaphores;
+
+			VkSwapchainKHR swapChains[] = { GraphicsContext::SwapChain->GetNative() };
+			presentInfo.swapchainCount = 1;
+			presentInfo.pSwapchains = swapChains;
+
+			presentInfo.pImageIndices = &imageIndex;
+
+			vkQueueWaitIdle(GraphicsContext::PresentQueue);
+			//Present (wait untill drawing is done)
+			vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
+		}
+		
+		Sleep(500);
 
 		timer.Stop();
 
@@ -112,5 +173,7 @@ void RavenApp::Run()
 		glfwSetWindowTitle(window, windowTitle.c_str());
 	}
 
+	vkDeviceWaitIdle(GraphicsContext::LogicalDevice);
+	
 	Sleep(2000);
 }

@@ -33,7 +33,7 @@ class GraphicsContext
 public:
 	static Allocator GlobalAllocator;
 
-	static std::shared_ptr<CommandBufferPool> CmdBufferPool; //Need to use a different name..
+	static std::shared_ptr<CommandBufferPool> CommandBufferPool; //Need to use a different name..
 	static std::shared_ptr<RenderPass> RenderPass;
 	static std::shared_ptr<VulkanSwapChain> SwapChain;
 	static std::shared_ptr<VulkanInstance> VulkanInstance;

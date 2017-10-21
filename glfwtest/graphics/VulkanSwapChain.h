@@ -3,6 +3,7 @@
 #include "helpers\InstanceWrapper.h"
 #include "GraphicsDevice.h"
 #include "graphics\buffers\CommandBuffer.h"
+#include "graphics\helpers\VulkanSemaphore.h"
 #include "RenderPass.h"
 
 #include <vector>
@@ -23,6 +24,15 @@ public:
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
+struct SwapChainSurface
+{
+	VkImage image;
+	InstanceWrapper<VkImageView> imageView;
+	InstanceWrapper<VkFramebuffer> framebuffer;
+
+	VulkanSemaphore semaphore;	
+};
+
 class VulkanSwapChain
 {
 public:
@@ -33,16 +43,16 @@ public:
 
 	void SetupFrameBuffers();
 
+	//Returns the backbuffer index
+	int PrepareBackBuffer();
+
 	InstanceWrapper<VkSurfaceKHR>& GetSurface();
-	InstanceWrapper<VkFramebuffer>& GetFrameBuffer(int32_t frameIndex);
+	const SwapChainSurface& GetFrameBuffer(int32_t frameIndex);
 
-
+	const InstanceWrapper<VkSwapchainKHR>& GetNative() const;
 	const VkSurfaceFormatKHR& GetSurfaceFormat() const;
 	const VkPresentModeKHR& GetPresentMode() const;
-	VkExtent2D GetExtent() const
-	{
-		return extent;
-	}
+	VkExtent2D GetExtent() const;
 
 private:
 	VkSurfaceFormatKHR PickSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -58,13 +68,11 @@ private:
 
 	VulkanSwapChainDetails details;
 
-	std::vector<VkImage> images;
-	std::vector< InstanceWrapper<VkImageView> > imageViews;
-	std::vector< InstanceWrapper<VkFramebuffer> > framebuffers;
-	std::vector< std::shared_ptr<CommandBuffer> > commandBuffers;
-
-
+	std::vector<SwapChainSurface> backBuffers;
+	
 	VkFormat imageFormat;
 	VkExtent2D extent;
 
+	int32_t nextBackBufferIndex;
+	int32_t currentBackBufferIndex;
 };

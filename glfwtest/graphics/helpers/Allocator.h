@@ -6,8 +6,10 @@
 #include <vector>
 #include <cstdint>
 #include <map>
+#include <sstream>
 
 #include "helpers/Singleton.h"
+#include "helpers\Helpers.h"
 
 
 class Allocator
@@ -19,7 +21,11 @@ private:
 		AllocationTracker(VkSystemAllocationScope scope) :
 			scope(scope),
 			totalMemoryAllocated(0),
-			previousTotalMemoryAllocated(0)
+			previousTotalMemoryAllocated(0),
+			totalAllocations(0),
+			previousTotalAllocations(0),
+			totalReallocations(0),
+			previousTotalReallocations(0)
 		{
 		}
 
@@ -27,6 +33,13 @@ private:
 
 		int64_t totalMemoryAllocated;
 		int64_t previousTotalMemoryAllocated;
+
+		int64_t totalAllocations;
+		int64_t previousTotalAllocations;
+
+		int64_t totalReallocations;
+		int64_t previousTotalReallocations;
+
 
 		VkSystemAllocationScope scope;
 	};
@@ -72,24 +85,42 @@ public:
 
 	void PrintStats()
 	{
+		int64_t vulkanMemoryUsage = 0;
+
 		for (size_t i = 0; i < trackers.size(); i++)
 		{
 			int64_t memoryAllocated = trackers[i].totalMemoryAllocated;
 			int64_t previousMemoryAllocated = trackers[i].previousTotalMemoryAllocated;
-			int64_t delta = memoryAllocated - previousMemoryAllocated;
+			int64_t previousTotalAllocations = trackers[i].previousTotalAllocations;
+			int64_t previousTotalReallocations = trackers[i].previousTotalReallocations;
 
-			//Feels like a waste, but nice formatting is nice.
-			if (delta > 0)
-			{
-				std::cout << "[Vulkan] " << Vulkan::GetAllocationScopeName(trackers[i].scope) << " allocated " << memoryAllocated << " bytes.  delta: +" << delta << " bytes." << std::endl;
-			}
-			else
-			{
-				std::cout << "[Vulkan] " << Vulkan::GetAllocationScopeName(trackers[i].scope) << " allocated " << memoryAllocated << " bytes.  delta: " << delta << " bytes." << std::endl;
-			}
+			std::stringstream ss;
+			ss << (memoryAllocated - previousMemoryAllocated);
+			std::string deltaAllocatedString = (memoryAllocated - previousMemoryAllocated) > 0 ? "+" + ss.str() : ss.str();
+			ss.str(std::string());
+
+			ss << (trackers[i].totalAllocations - previousTotalAllocations);
+			std::string deltaTotalAllocations = (trackers[i].totalAllocations - previousTotalAllocations) > 0 ? "+" + ss.str() : ss.str();
+			ss.str(std::string());
+
+			ss << (trackers[i].totalReallocations - previousTotalReallocations);
+			std::string deltaTotalReallocations = (trackers[i].totalReallocations - previousTotalReallocations) > 0 ? "+" + ss.str() : ss.str();
+			ss.str(std::string());
+
+			std::cout << "[Vulkan] " << Vulkan::GetAllocationScopeName(trackers[i].scope) << " allocated: " << Helpers::FormatToSize(memoryAllocated) << " (" << deltaAllocatedString << " bytes.)" << " allocs: " << trackers[i].totalAllocations << " (" << deltaTotalAllocations << ")" << " reallocs: " << trackers[i].totalReallocations << " (" << deltaTotalReallocations << ")" << std::endl;
+
+			
 
 			trackers[i].previousTotalMemoryAllocated = trackers[i].totalMemoryAllocated;
+			trackers[i].previousTotalAllocations = trackers[i].totalAllocations;
+			trackers[i].previousTotalReallocations = trackers[i].totalReallocations;
+
+			vulkanMemoryUsage += memoryAllocated;
 		}
+
+		std::cout << "[Vulkan] total memory usage: " << Helpers::FormatToSize(vulkanMemoryUsage) << "." << std::endl;
+		std::cout << "" << std::endl;
+
 	}
 
 	VkAllocationCallbacks* Get()

@@ -1,6 +1,7 @@
 #include "CommandBuffer.h"
 #include "graphics\GraphicsDevice.h"
 #include "graphics\VulkanSwapChain.h"
+#include "CommandBufferPool.h"
 
 #include "standard.h"
 
@@ -13,7 +14,7 @@ CommandBuffer::CommandBuffer(VkCommandBuffer commandBuffer) :
 
 CommandBuffer::~CommandBuffer()
 {
-
+	vkFreeCommandBuffers(GraphicsContext::LogicalDevice, GraphicsContext::CommandBufferPool->GetNative(), 1, &commandBuffer);
 }
 
 void CommandBuffer::StartRecording(int32_t frameIndex)
@@ -28,7 +29,7 @@ void CommandBuffer::StartRecording(int32_t frameIndex)
 	VkRenderPassBeginInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
-	renderPassInfo.framebuffer = GraphicsContext::SwapChain->GetFrameBuffer(frameIndex);
+	renderPassInfo.framebuffer = GraphicsContext::SwapChain->GetFrameBuffer(frameIndex).framebuffer;
 	renderPassInfo.renderArea.offset = { 0, 0 };
 	renderPassInfo.renderArea.extent = GraphicsContext::SwapChain->GetExtent();
 
@@ -37,6 +38,7 @@ void CommandBuffer::StartRecording(int32_t frameIndex)
 	renderPassInfo.pClearValues = &clearColor;
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
 }
 
 void CommandBuffer::StopRecording()
@@ -48,4 +50,9 @@ void CommandBuffer::StopRecording()
 	{
 		throw std::runtime_error("failed to record command buffer!");
 	}
+}
+
+const VkCommandBuffer& CommandBuffer::GetNative() const
+{
+	return commandBuffer;
 }
