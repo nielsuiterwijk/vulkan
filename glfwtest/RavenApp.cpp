@@ -14,15 +14,14 @@
 #include "graphics\PipelineStateObject.h"
 
 RavenApp::RavenApp() :
-	window(nullptr),
-	device(nullptr)
+	window(nullptr)
 {
 
 }
 
 RavenApp::~RavenApp()
 {
-	device = nullptr;
+	GraphicsDevice::Instance().Finalize();
 
 	glfwDestroyWindow(window);
 
@@ -34,12 +33,13 @@ bool RavenApp::Initialize()
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 	window = glfwCreateWindow(1280, 720, "Vulkan window", nullptr, nullptr);
 
-	device = std::make_shared<GraphicsDevice>(glm::u32vec2(1280, 720));
-
+	glfwSetWindowUserPointer(window, this);
+	glfwSetWindowSizeCallback(window, RavenApp::OnWindowResized);
+	
 
 	uint32_t glfwExtensionCount = 0;
 	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -65,7 +65,7 @@ bool RavenApp::Initialize()
 
 
 	//Note: Ownership given to GraphicsDevice
-	std::shared_ptr<VulkanSwapChain> vulkanSwapChain = std::make_shared<VulkanSwapChain>(vulkanInstance->Get());
+	std::shared_ptr<VulkanSwapChain> vulkanSwapChain = std::make_shared<VulkanSwapChain>();
 
 	GraphicsContext::GlobalAllocator.PrintStats();
 
@@ -74,8 +74,7 @@ bool RavenApp::Initialize()
 		throw std::runtime_error("failed to create window surface!");
 	}
 
-	device->Initialize(vulkanInstance, vulkanSwapChain);
-	vulkanSwapChain = nullptr;
+	GraphicsDevice::Instance().Initialize(glm::u32vec2(1280, 720), vulkanInstance, vulkanSwapChain);
 
 	GraphicsContext::GlobalAllocator.PrintStats();
 
@@ -98,7 +97,7 @@ void RavenApp::UpdateThread(RavenApp& app)
 
 void RavenApp::RenderThread(RavenApp& app)
 {
-	std::shared_ptr<Material> fixedMaterial = app.device->CreateMaterial("fixed");
+	std::shared_ptr<Material> fixedMaterial = GraphicsDevice::Instance().CreateMaterial("fixed");
 	PipelineStateObject pso(fixedMaterial);
 
 	VulkanSemaphore renderSemaphore;
@@ -123,6 +122,12 @@ void RavenApp::RenderThread(RavenApp& app)
 	while (app.run)
 	{
 		timer.Start();
+
+		if (!GraphicsDevice::Instance().IsAvailable())
+		{
+			Sleep(1);
+			continue;
+		}
 
 		//draw
 		{

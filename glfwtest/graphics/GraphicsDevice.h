@@ -5,6 +5,7 @@
 #include "shaders\Material.h"
 #include "graphics\buffers\CommandBufferPool.h"
 #include "graphics\PipelineStateObject.h"
+#include "graphics\RenderPass.h"
 
 #include "standard.h"
 
@@ -53,13 +54,33 @@ public:
 class GraphicsDevice
 {
 public:
-	GraphicsDevice(glm::u32vec2 windowSize);
+	static GraphicsDevice& Instance()
+	{
+		static GraphicsDevice instance;
+
+		return instance;
+	}
+
+public:
 	~GraphicsDevice();
 
-	void Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, std::shared_ptr<VulkanSwapChain> vulkanSwapChain);
+	void Finalize();
+
+	void Initialize(const glm::u32vec2& windowSize, std::shared_ptr<VulkanInstance> vulkanRenderer, std::shared_ptr<VulkanSwapChain> vulkanSwapChain);
+
+	void SwapchainInvalidated();
 
 	std::shared_ptr<Material> CreateMaterial(const std::string& fileName);
 
+	void OnSwapchainInvalidated(std::function<void()> callback);
+
+	bool IsAvailable() const {
+		return isAvailable;
+			
+	}
+
+private:
+	GraphicsDevice();
 
 private:
 	void CreatePhysicalDevice(const InstanceWrapper<VkSurfaceKHR>& surface);
@@ -74,6 +95,10 @@ private:
 	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME	};
 
 
-	std::vector< std::shared_ptr<PipelineStateObject> > pipleStateObjects;
+	std::vector< std::function<void()> > swapchainInvalidatedCallbacks;
+
+	bool isAvailable;
+
+
 
 };

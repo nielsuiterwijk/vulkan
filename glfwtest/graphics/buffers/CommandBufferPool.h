@@ -18,8 +18,15 @@ public:
 
 	std::shared_ptr<CommandBuffer> Create();
 
+	void Free(std::shared_ptr<CommandBuffer> commandBuffer);
+
+	void FreeAll();
+	void RecreateAll();
+
 	const InstanceWrapper<VkCommandPool>& GetNative() const;
 
 private:
 	InstanceWrapper<VkCommandPool> commandPool;
+
+	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
 };

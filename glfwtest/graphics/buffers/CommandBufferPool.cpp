@@ -48,20 +48,37 @@ void CommandBufferPool::Create(std::vector< std::shared_ptr<CommandBuffer> >& re
 
 std::shared_ptr<CommandBuffer> CommandBufferPool::Create()
 {
-	VkCommandBuffer commandBuffer = {};
+	std::shared_ptr<CommandBuffer> commandBuffer = std::make_shared<CommandBuffer>();
 
-	VkCommandBufferAllocateInfo allocInfo = {};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.commandPool = commandPool;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandBufferCount = 1;
+	commandBuffers.push_back(commandBuffer);
 
-	if (vkAllocateCommandBuffers(GraphicsContext::LogicalDevice, &allocInfo, &commandBuffer) != VK_SUCCESS)
+	return commandBuffer;
+}
+
+void CommandBufferPool::Free(std::shared_ptr<CommandBuffer> commandBuffer)
+{
+	for (size_t i = 0; i < commandBuffers.size(); i++)
 	{
-		throw std::runtime_error("failed to allocate command buffers!");
+		if (commandBuffers[i] == commandBuffer)
+		{
+			commandBuffers.erase(commandBuffers.begin() + i);
+			break;
+		}
 	}
+}
 
-	return std::make_shared<CommandBuffer>(commandBuffer);
+void CommandBufferPool::FreeAll()
+{
+	for (size_t i = 0; i < commandBuffers.size(); i++)
+	{
+		commandBuffers[i]->Finalize();
+	}
+}
 
-
+void CommandBufferPool::RecreateAll()
+{
+	for (size_t i = 0; i < commandBuffers.size(); i++)
+	{
+		commandBuffers[i]->Initialize();
+	}
 }

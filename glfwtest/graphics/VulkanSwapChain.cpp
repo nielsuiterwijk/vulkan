@@ -8,8 +8,8 @@
 #include "vec2.hpp"
 
 
-VulkanSwapChain::VulkanSwapChain(const InstanceWrapper<VkInstance>& applicationInfo) :
-	surface(applicationInfo, vkDestroySurfaceKHR, GraphicsContext::GlobalAllocator.Get()),
+VulkanSwapChain::VulkanSwapChain() :
+	surface(GraphicsContext::VulkanInstance->Get(), vkDestroySurfaceKHR, GraphicsContext::GlobalAllocator.Get()),
 	swapChain(),
 	nextBackBufferIndex(0)
 {

@@ -7,8 +7,11 @@ class CommandBufferPool;
 class CommandBuffer
 {
 public:
-	CommandBuffer(VkCommandBuffer commandBuffer);
+	CommandBuffer();
 	~CommandBuffer();
+
+	void Initialize();
+	void Finalize();
 
 	void StartRecording(int32_t frameIndex);
 	void StopRecording();

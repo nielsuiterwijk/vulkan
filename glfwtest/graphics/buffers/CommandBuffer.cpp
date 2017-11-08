@@ -6,13 +6,31 @@
 #include "standard.h"
 
 
-CommandBuffer::CommandBuffer(VkCommandBuffer commandBuffer) :
-	commandBuffer(commandBuffer)
+CommandBuffer::CommandBuffer()
 {
-
+	Initialize();
 }
 
 CommandBuffer::~CommandBuffer()
+{
+	vkFreeCommandBuffers(GraphicsContext::LogicalDevice, GraphicsContext::CommandBufferPool->GetNative(), 1, &commandBuffer);
+}
+
+void CommandBuffer::Initialize()
+{
+	VkCommandBufferAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.commandPool = GraphicsContext::CommandBufferPool->GetNative();
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandBufferCount = 1;
+
+	if (vkAllocateCommandBuffers(GraphicsContext::LogicalDevice, &allocInfo, &commandBuffer) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to allocate command buffers!");
+	}
+}
+
+void CommandBuffer::Finalize()
 {
 	vkFreeCommandBuffers(GraphicsContext::LogicalDevice, GraphicsContext::CommandBufferPool->GetNative(), 1, &commandBuffer);
 }

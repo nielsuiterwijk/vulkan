@@ -2,10 +2,33 @@
 
 #include "GraphicsDevice.h"
 
+#include "RenderPass.h"
+
 PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material) :
 	pipelineLayout(GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::GlobalAllocator.Get()),
-	graphicsPipeline(GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get())
+	graphicsPipeline(GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get()),
+	material(material)
 {
+	Create();
+
+	GraphicsDevice::Instance().OnSwapchainInvalidated(std::bind(&PipelineStateObject::Create, this));
+}
+
+PipelineStateObject::~PipelineStateObject()
+{
+	pipelineLayout = nullptr;
+	graphicsPipeline = nullptr;
+	std::cout << "Destroyed PSO" << std::endl;
+}
+
+void PipelineStateObject::Create()
+{
+	pipelineLayout = nullptr;
+	graphicsPipeline = nullptr;
+
+	pipelineLayout = InstanceWrapper<VkPipelineLayout>(GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::GlobalAllocator.Get());
+	graphicsPipeline = InstanceWrapper<VkPipeline>(GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get());
+
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.vertexBindingDescriptionCount = 0;
@@ -52,7 +75,7 @@ PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material) :
 	rasterizer.depthBiasSlopeFactor = 0.0f; // Optional
 
 
-	//TODO: Look into MSAA
+											//TODO: Look into MSAA
 	VkPipelineMultisampleStateCreateInfo multisampling = {};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
@@ -63,7 +86,7 @@ PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material) :
 	multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
 
-	//Per frame buffer, default alpha blending
+											   //Per frame buffer, default alpha blending
 	VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
 	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	colorBlendAttachment.blendEnable = VK_TRUE;
@@ -122,13 +145,6 @@ PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material) :
 	{
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
-}
-
-PipelineStateObject::~PipelineStateObject()
-{
-	pipelineLayout = nullptr;
-	graphicsPipeline = nullptr;
-	std::cout << "Destroyed PSO" << std::endl;
 }
 
 

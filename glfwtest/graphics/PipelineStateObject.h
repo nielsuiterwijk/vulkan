@@ -3,7 +3,6 @@
 #include "helpers\InstanceWrapper.h"
 #include "shaders\Material.h"
 
-#include "RenderPass.h"
 
 class GraphicsDevice;
 
@@ -13,6 +12,8 @@ public:
 	PipelineStateObject(std::shared_ptr<Material> material);
 	~PipelineStateObject();
 
+	//Invalidates the previous objects
+	void Create();
 
 	const InstanceWrapper<VkPipelineLayout>& GetLayout() const;
 	const InstanceWrapper<VkPipeline>& GetPipeLine() const;
@@ -20,5 +21,7 @@ public:
 private:
 	InstanceWrapper<VkPipelineLayout> pipelineLayout;
 	InstanceWrapper<VkPipeline> graphicsPipeline;
+
+	std::shared_ptr<Material> material;
 
 };

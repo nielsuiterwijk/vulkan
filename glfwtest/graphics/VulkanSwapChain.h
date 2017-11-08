@@ -36,7 +36,7 @@ struct SwapChainSurface
 class VulkanSwapChain
 {
 public:
-	VulkanSwapChain(const InstanceWrapper<VkInstance>& applicationInfo);
+	VulkanSwapChain();
 	~VulkanSwapChain();
 
 	void Connect(const glm::u32vec2& windowSize, const QueueFamilyIndices& indices);

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "standard.h"
+#include "graphics/GraphicsDevice.h"
 
 struct GLFWwindow;
-class GraphicsDevice;
 
 class RavenApp
 {
@@ -23,11 +23,21 @@ public:
 
 private:
 	static void UpdateThread(RavenApp& app);
-	static void RenderThread(RavenApp& app);
+	static void RenderThread(RavenApp& app); 
+	
+	static void OnWindowResized(GLFWwindow* window, int width, int height)
+	{
+		if (width == 0 || height == 0)
+			return;
+
+		GraphicsContext::WindowSize = glm::ivec2(width, height);
+
+		GraphicsDevice::Instance().SwapchainInvalidated();
+
+		RavenApp* app = reinterpret_cast<RavenApp*>(glfwGetWindowUserPointer(window));
+	}
 
 private:
 	GLFWwindow* window;
 	bool run;
-
-	std::shared_ptr<GraphicsDevice> device;
 };

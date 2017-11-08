@@ -32,12 +32,11 @@ VkQueue GraphicsContext::PresentQueue = {};
 glm::u32vec2 GraphicsContext::WindowSize = glm::uvec2(0, 0);
 
 
-GraphicsDevice::GraphicsDevice(glm::u32vec2 windowSize)
+GraphicsDevice::GraphicsDevice()
 {
-	GraphicsContext::WindowSize = windowSize;
 }
 
-GraphicsDevice::~GraphicsDevice()
+void GraphicsDevice::Finalize()
 {
 	GraphicsContext::CommandBufferPool = nullptr;
 	GraphicsContext::RenderPass = nullptr;
@@ -45,11 +44,16 @@ GraphicsDevice::~GraphicsDevice()
 	GraphicsContext::SwapChain = nullptr;
 	GraphicsContext::LogicalDevice = nullptr;
 	GraphicsContext::VulkanInstance = nullptr;
-
 }
 
-void GraphicsDevice::Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, std::shared_ptr<VulkanSwapChain> vulkanSwapChain)
+GraphicsDevice::~GraphicsDevice()
 {
+	Finalize();
+}
+
+void GraphicsDevice::Initialize(const glm::u32vec2& windowSize, std::shared_ptr<VulkanInstance> vulkanRenderer, std::shared_ptr<VulkanSwapChain> vulkanSwapChain)
+{
+	GraphicsContext::WindowSize = windowSize;
 	GraphicsContext::VulkanInstance = vulkanRenderer;
 	GraphicsContext::SwapChain = vulkanSwapChain;
 
@@ -68,6 +72,42 @@ void GraphicsDevice::Initialize(std::shared_ptr<VulkanInstance> vulkanRenderer, 
 	GraphicsContext::SwapChain->SetupFrameBuffers();
 	GraphicsContext::CommandBufferPool = std::make_shared<CommandBufferPool>();
 
+	isAvailable = true;
+}
+
+void GraphicsDevice::SwapchainInvalidated()
+{
+	vkDeviceWaitIdle(GraphicsContext::LogicalDevice);
+	isAvailable = false;
+	//Remove destroy Framebuffer
+	GraphicsContext::SwapChain = nullptr;
+	//Free CommandBuffers
+	GraphicsContext::CommandBufferPool->FreeAll();
+
+	//Destroy Pipeline, Pipeline layout and RenderPass
+	GraphicsContext::RenderPass = nullptr;
+
+	//Destroy surfaces
+	//Destroy swapchain OR pass it along to the new swapchain
+
+	//rebuild:
+	//createSwapChain();
+	//createImageViews();
+	GraphicsContext::SwapChain = std::make_shared<VulkanSwapChain>(); 
+	//createRenderPass();
+	GraphicsContext::RenderPass = std::make_shared<RenderPass>(GraphicsContext::SwapChain->GetSurfaceFormat().format);
+	GraphicsContext::SwapChain->SetupFrameBuffers();
+	
+	//createCommandBuffers();
+	GraphicsContext::CommandBufferPool->RecreateAll();
+
+	//createGraphicsPipeline();
+	for (size_t i = 0; i < swapchainInvalidatedCallbacks.size(); i++)
+	{
+		swapchainInvalidatedCallbacks[i]();
+	}
+
+	isAvailable = true;
 }
 
 std::shared_ptr<Material> GraphicsDevice::CreateMaterial(const std::string& fileName)
@@ -75,6 +115,11 @@ std::shared_ptr<Material> GraphicsDevice::CreateMaterial(const std::string& file
 	std::shared_ptr<Material> material = std::make_shared<Material>(fileName);
 
 	return material;
+}
+
+void GraphicsDevice::OnSwapchainInvalidated(std::function<void()> callback)
+{
+	swapchainInvalidatedCallbacks.push_back(callback);
 }
 
 void GraphicsDevice::CreateLogicalDevice()
