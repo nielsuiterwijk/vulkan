@@ -9,11 +9,13 @@ class GraphicsDevice;
 class PipelineStateObject
 {
 public:
+	PipelineStateObject();
 	PipelineStateObject(std::shared_ptr<Material> material);
 	~PipelineStateObject();
 
 	//Invalidates the previous objects
-	void Create();
+	void Create(std::shared_ptr<Material> material);
+	void Reload();
 
 	const InstanceWrapper<VkPipelineLayout>& GetLayout() const;
 	const InstanceWrapper<VkPipeline>& GetPipeLine() const;

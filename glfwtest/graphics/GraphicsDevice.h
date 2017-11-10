@@ -12,6 +12,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <mutex>
 
 class VulkanInstance;
 class VulkanSwapChain;
@@ -74,10 +75,8 @@ public:
 
 	void OnSwapchainInvalidated(std::function<void()> callback);
 
-	bool IsAvailable() const {
-		return isAvailable;
-			
-	}
+	void Lock() { busy.lock(); }
+	void Unlock() { busy.unlock(); }
 
 private:
 	GraphicsDevice();
@@ -97,7 +96,7 @@ private:
 
 	std::vector< std::function<void()> > swapchainInvalidatedCallbacks;
 
-	bool isAvailable;
+	std::mutex busy;
 
 
 

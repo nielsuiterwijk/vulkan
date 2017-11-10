@@ -13,27 +13,20 @@ VulkanSwapChain::VulkanSwapChain() :
 	swapChain(),
 	nextBackBufferIndex(0)
 {
-
 }
 
 VulkanSwapChain::~VulkanSwapChain()
 {
-	for (size_t i = 0; i < backBuffers.size(); i++)
-	{
-		backBuffers[i].framebuffer = nullptr;
-		backBuffers[i].imageView = nullptr;		
-	}
-
-	backBuffers.clear();
-
-	swapChain = nullptr;
+	DestroyFrameBuffers();
+	DestroySwapchain();
 	surface = nullptr;
 }
-
 
 void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyIndices& indices)
 {
 	details.Initialize(GraphicsContext::PhysicalDevice, surface);
+
+	nextBackBufferIndex = 0;
 
 	surfaceFormat = PickSwapSurfaceFormat(details.formats);
 	presentMode = PickSwapPresentMode(details.presentModes, false);
@@ -77,7 +70,11 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; //always ignore alpha channel blending with other surfaces
 	createInfo.presentMode = presentMode;
 	createInfo.clipped = VK_TRUE;
-	createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+	if (swapChain == nullptr)
+		createInfo.oldSwapchain = VK_NULL_HANDLE;
+	else
+		createInfo.oldSwapchain = *swapChain.Replace();
 
 	swapChain.Initialize(GraphicsContext::LogicalDevice, vkDestroySwapchainKHR, GraphicsContext::GlobalAllocator.Get());
 
@@ -86,7 +83,8 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 		throw std::runtime_error("failed to create swap chain!");
 	}
 
-	vkGetSwapchainImagesKHR(GraphicsContext::LogicalDevice, swapChain, &imageCount, nullptr); //The implementation is allowed to create more images, which is why we need to explicitly query the amount again.
+	//The implementation is allowed to create more images, which is why we need to explicitly query the amount again.
+	vkGetSwapchainImagesKHR(GraphicsContext::LogicalDevice, swapChain, &imageCount, nullptr); 
 	
 	std::vector<VkImage> images(imageCount);
 	
@@ -155,6 +153,22 @@ void VulkanSwapChain::SetupFrameBuffers()
 	}
 
 	std::cout << "[Vulkan] created: " << backBuffers.size() << " back buffers." << std::endl;
+}
+
+void VulkanSwapChain::DestroyFrameBuffers()
+{
+	for (size_t i = 0; i < backBuffers.size(); i++)
+	{
+		backBuffers[i].framebuffer = nullptr;
+		backBuffers[i].imageView = nullptr;
+	}
+
+	backBuffers.clear();
+}
+
+void VulkanSwapChain::DestroySwapchain()
+{
+	swapChain = nullptr;
 }
 
 int32_t VulkanSwapChain::PrepareBackBuffer()
@@ -227,15 +241,14 @@ VkExtent2D VulkanSwapChain::GetSwapExtents(const VkSurfaceCapabilitiesKHR& capab
 	{
 		return capabilities.currentExtent;
 	}
-	else
-	{
-		VkExtent2D actualExtent = { windowSize.x, windowSize.y };
 
-		actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
-		actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
+	VkExtent2D actualExtent = { windowSize.x, windowSize.y };
 
-		return actualExtent;
-	}
+	actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
+	actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
+
+	return actualExtent;
+	
 }
 
 InstanceWrapper<VkSurfaceKHR>& VulkanSwapChain::GetSurface()

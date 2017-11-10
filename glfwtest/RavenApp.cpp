@@ -12,6 +12,7 @@
 #include "graphics/VulkanInstance.h"
 #include "graphics\VulkanSwapChain.h"
 #include "graphics\PipelineStateObject.h"
+#include "graphics\RenderObject.h"
 
 RavenApp::RavenApp() :
 	window(nullptr)
@@ -97,25 +98,13 @@ void RavenApp::UpdateThread(RavenApp& app)
 
 void RavenApp::RenderThread(RavenApp& app)
 {
-	std::shared_ptr<Material> fixedMaterial = GraphicsDevice::Instance().CreateMaterial("fixed");
-	PipelineStateObject pso(fixedMaterial);
-
 	VulkanSemaphore renderSemaphore;
 
 	GraphicsContext::GlobalAllocator.PrintStats();
 
-	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
-	GraphicsContext::CommandBufferPool->Create(commandBuffers, 3);
+	RenderObject ro;
+	ro.Load();
 
-	for (size_t i = 0; i < commandBuffers.size(); i++)
-	{
-		commandBuffers[i]->StartRecording(i);
-
-		vkCmdBindPipeline(commandBuffers[i]->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine());
-		vkCmdDraw(commandBuffers[i]->GetNative(), 3, 1, 0, 0);
-
-		commandBuffers[i]->StopRecording();
-	}
 
 	Timer timer;
 
@@ -123,17 +112,15 @@ void RavenApp::RenderThread(RavenApp& app)
 	{
 		timer.Start();
 
-		if (!GraphicsDevice::Instance().IsAvailable())
-		{
-			Sleep(1);
-			continue;
-		}
+		GraphicsDevice::Instance().Lock();
 
 		//draw
 		{
 			//Prepare
 			uint32_t imageIndex = GraphicsContext::SwapChain->PrepareBackBuffer();
 			const VulkanSemaphore& backBufferSemaphore = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).semaphore;
+
+			ro.PrepareDraw();
 
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -145,7 +132,7 @@ void RavenApp::RenderThread(RavenApp& app)
 			submitInfo.pWaitDstStageMask = waitStages;
 
 			submitInfo.commandBufferCount = 1;
-			submitInfo.pCommandBuffers = &commandBuffers[imageIndex]->GetNative();
+			submitInfo.pCommandBuffers = &ro.commandBuffers[imageIndex]->GetNative();
 
 			VkSemaphore signalSemaphores[] = { renderSemaphore.GetNative() }; //This semaphore will be signalled when done with rendering the queue
 			submitInfo.signalSemaphoreCount = 1;
@@ -173,8 +160,11 @@ void RavenApp::RenderThread(RavenApp& app)
 			//Present (wait untill drawing is done)
 			vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
 		}
+		GraphicsDevice::Instance().Unlock();
 
 		timer.Stop();
+
+		Sleep(10);
 	}
 
 }

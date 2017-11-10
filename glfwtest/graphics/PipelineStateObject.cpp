@@ -4,25 +4,39 @@
 
 #include "RenderPass.h"
 
+PipelineStateObject::PipelineStateObject() :
+	pipelineLayout(),
+	graphicsPipeline(),
+	material(nullptr)
+{
+}
+
 PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material) :
 	pipelineLayout(GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::GlobalAllocator.Get()),
 	graphicsPipeline(GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get()),
 	material(material)
 {
-	Create();
+	Create(material);
 
-	GraphicsDevice::Instance().OnSwapchainInvalidated(std::bind(&PipelineStateObject::Create, this));
+	GraphicsDevice::Instance().OnSwapchainInvalidated(std::bind(&PipelineStateObject::Reload, this));
 }
 
 PipelineStateObject::~PipelineStateObject()
 {
 	pipelineLayout = nullptr;
 	graphicsPipeline = nullptr;
+	material = nullptr;
 	std::cout << "Destroyed PSO" << std::endl;
 }
 
-void PipelineStateObject::Create()
+void PipelineStateObject::Reload()
 {
+	Create(material);
+}
+
+void PipelineStateObject::Create(std::shared_ptr<Material> material)
+{
+	this->material = material;
 	pipelineLayout = nullptr;
 	graphicsPipeline = nullptr;
 
@@ -44,15 +58,15 @@ void PipelineStateObject::Create()
 	VkViewport viewport = {};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = 1280.0f; //TODO: Need to be taken as input?
-	viewport.height = 720.0f; //TODO: Need to be taken as input?
+	viewport.width = GraphicsContext::WindowSize.x; 
+	viewport.height = GraphicsContext::WindowSize.y; //TODO: Need to be taken as input?
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
 	VkRect2D scissor = {};
 	scissor.offset = { 0, 0 };
-	scissor.extent.width = 1280;
-	scissor.extent.height = 720;
+	scissor.extent.width = viewport.width;
+	scissor.extent.height = viewport.height;
 
 	VkPipelineViewportStateCreateInfo viewportState = {};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

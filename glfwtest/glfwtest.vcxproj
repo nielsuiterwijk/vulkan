@@ -197,6 +197,7 @@
     <ClInclude Include="graphics\helpers\VulkanSemaphore.h" />
     <ClInclude Include="graphics\models\Mesh.h" />
     <ClInclude Include="graphics\PipelineStateObject.h" />
+    <ClInclude Include="graphics\RenderObject.h" />
     <ClInclude Include="graphics\RenderPass.h" />
     <ClInclude Include="graphics\shaders\FragmentShader.h" />
     <ClInclude Include="graphics\shaders\ShaderCache.h" />

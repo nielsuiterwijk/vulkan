@@ -38,10 +38,13 @@ class VulkanSwapChain
 public:
 	VulkanSwapChain();
 	~VulkanSwapChain();
-
+	
 	void Connect(const glm::u32vec2& windowSize, const QueueFamilyIndices& indices);
 
 	void SetupFrameBuffers();
+
+	void DestroyFrameBuffers();
+	void DestroySwapchain();
 
 	//Returns the backbuffer index
 	int32_t PrepareBackBuffer();

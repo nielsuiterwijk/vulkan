@@ -552,6 +552,7 @@
     <ClInclude Include="graphics\buffers\CommandBufferPool.h" />
     <ClInclude Include="graphics\models\Mesh.h" />
     <ClInclude Include="graphics\helpers\VulkanSemaphore.h" />
+    <ClInclude Include="graphics\RenderObject.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">
