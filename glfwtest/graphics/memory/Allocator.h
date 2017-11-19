@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include "VulkanHelpers.h"
+#include "graphics/helpers/VulkanHelpers.h"
 #include <iostream>
 #include <vector>
 #include <cstdint>

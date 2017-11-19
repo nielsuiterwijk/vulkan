@@ -14,6 +14,8 @@
 #include "graphics\PipelineStateObject.h"
 #include "graphics\RenderObject.h"
 
+#include "graphics/memory/GPUAllocator.h"
+
 RavenApp::RavenApp() :
 	window(nullptr)
 {
@@ -79,6 +81,8 @@ bool RavenApp::Initialize()
 
 	GraphicsContext::GlobalAllocator.PrintStats();
 
+	GPUAllocator gpuAllocator(1024, 8);
+
 	return true;
 }
 
@@ -92,6 +96,7 @@ void RavenApp::UpdateThread(RavenApp& app)
 		timer.Start();
 
 		timer.Stop();
+		Sleep(0);
 	}
 	
 }
@@ -164,7 +169,7 @@ void RavenApp::RenderThread(RavenApp& app)
 
 		timer.Stop();
 
-		Sleep(10);
+		Sleep(1);
 	}
 
 }

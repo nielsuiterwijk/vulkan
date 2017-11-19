@@ -10,7 +10,6 @@
     <ClCompile Include="helpers\Timer.cpp">
       <Filter>base</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\helpers\Allocator.cpp" />
     <ClCompile Include="graphics\VulkanSwapChain.cpp" />
     <ClCompile Include="graphics\VulkanInstance.cpp">
       <Filter>renderers</Filter>
@@ -24,6 +23,9 @@
     <ClCompile Include="graphics\buffers\CommandBufferPool.cpp" />
     <ClCompile Include="graphics\buffers\CommandBuffer.cpp" />
     <ClCompile Include="graphics\models\Mesh.cpp" />
+    <ClCompile Include="graphics\buffers\VulkanBuffer.cpp" />
+    <ClCompile Include="graphics\memory\Allocator.cpp" />
+    <ClCompile Include="graphics\memory\GPUAllocator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -534,7 +536,6 @@
     <ClInclude Include="graphics\helpers\VulkanHelpers.h">
       <Filter>vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\helpers\Allocator.h" />
     <ClInclude Include="graphics\VulkanSwapChain.h" />
     <ClInclude Include="graphics\VulkanInstance.h">
       <Filter>renderers</Filter>
@@ -553,6 +554,9 @@
     <ClInclude Include="graphics\models\Mesh.h" />
     <ClInclude Include="graphics\helpers\VulkanSemaphore.h" />
     <ClInclude Include="graphics\RenderObject.h" />
+    <ClInclude Include="graphics\buffers\VulkanBuffer.h" />
+    <ClInclude Include="graphics\memory\Allocator.h" />
+    <ClInclude Include="graphics\memory\GPUAllocator.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">
