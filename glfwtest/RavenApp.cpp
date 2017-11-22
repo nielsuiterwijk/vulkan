@@ -110,8 +110,19 @@ void RavenApp::RenderThread(const RavenApp* app)
 	RenderObject ro;
 	ro.Load();
 
+	VkFence renderFence;
+	VkFenceCreateInfo fenceInfo = {};
+	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceInfo.pNext = VK_NULL_HANDLE;
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+
+	vkCreateFence(GraphicsContext::LogicalDevice, &fenceInfo, GraphicsContext::GlobalAllocator.Get(), &renderFence);
 
 	Timer timer;
+	Timer acquireTimer;
+	Timer renderQueuTimer;
+	Timer presentTimer;
 
 	while (app->run)
 	{
@@ -121,16 +132,20 @@ void RavenApp::RenderThread(const RavenApp* app)
 
 		//draw
 		{
+			acquireTimer.Start();
 			//Prepare
 			uint32_t imageIndex = GraphicsContext::SwapChain->PrepareBackBuffer();
 			const VulkanSemaphore& backBufferSemaphore = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).semaphore;
+			Sleep(4);
+			acquireTimer.Stop();			
 
+			renderQueuTimer.Start();
 			ro.PrepareDraw(imageIndex);
 
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-			VkSemaphore waitSemaphores[] = { backBufferSemaphore.GetNative() }; //Wait untill this semaphore is signalled to continue with the corresponding stage below
+			VkSemaphore waitSemaphores[] = { backBufferSemaphore.GetNative() }; //Wait until this semaphore is signaled to continue with executing the command buffers
 			VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 			submitInfo.waitSemaphoreCount = 1;
 			submitInfo.pWaitSemaphores = waitSemaphores;
@@ -139,15 +154,18 @@ void RavenApp::RenderThread(const RavenApp* app)
 			submitInfo.commandBufferCount = 1;
 			submitInfo.pCommandBuffers = &ro.commandBuffers[imageIndex]->GetNative();
 
-			VkSemaphore signalSemaphores[] = { renderSemaphore.GetNative() }; //This semaphore will be signalled when done with rendering the queue
+			VkSemaphore signalSemaphores[] = { renderSemaphore.GetNative() }; //This semaphore will be signaled when done with rendering the queue
 			submitInfo.signalSemaphoreCount = 1;
 			submitInfo.pSignalSemaphores = signalSemaphores;
-
+			vkResetFences(GraphicsContext::LogicalDevice, 1, &renderFence);
 			//Draw (wait untill surface is available)
-			if (vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+			if (vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, renderFence) != VK_SUCCESS)
 			{
 				throw std::runtime_error("failed to submit draw command buffer!");
 			}
+			vkWaitForFences(GraphicsContext::LogicalDevice, 1, &renderFence, true, 1000000);
+			//Sleep(4);
+			renderQueuTimer.Stop();
 
 			VkPresentInfoKHR presentInfo = {};
 			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -161,15 +179,19 @@ void RavenApp::RenderThread(const RavenApp* app)
 
 			presentInfo.pImageIndices = &imageIndex;
 
+			presentTimer.Start();
 			vkQueueWaitIdle(GraphicsContext::PresentQueue);
-			//Present (wait untill drawing is done)
+			//Present (wait until drawing is done)
 			vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
+			presentTimer.Stop();
 		}
 		GraphicsDevice::Instance().Unlock();
 
 		timer.Stop();
 
-		Sleep(16);
+		std::cout << "Acquire: " << acquireTimer.GetTimeInSeconds() << " Render: " << renderQueuTimer.GetTimeInSeconds() << " Present: " << presentTimer.GetTimeInSeconds() << std::endl;
+
+		Sleep(4);
 	}
 
 }

@@ -22,7 +22,7 @@ public:
 	{
 		semaphore = nullptr;
 	}
-
+	
 	const InstanceWrapper<VkSemaphore>& GetNative() const { return semaphore; }
 
 private:

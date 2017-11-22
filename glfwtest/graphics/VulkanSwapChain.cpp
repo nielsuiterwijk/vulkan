@@ -32,7 +32,7 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 	extent = GetSwapExtents(details.capabilities, windowSize);
 
 	//Triple buffering!
-	uint32_t imageCount = 3;
+	uint32_t imageCount = 1;
 
 	if (details.capabilities.maxImageCount > 0 && imageCount > details.capabilities.maxImageCount)
 	{
