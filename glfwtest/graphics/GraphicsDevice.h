@@ -67,7 +67,7 @@ public:
 
 	void Finalize();
 
-	void Initialize(const glm::u32vec2& windowSize, std::shared_ptr<VulkanInstance> vulkanRenderer, std::shared_ptr<VulkanSwapChain> vulkanSwapChain);
+	void Initialize(const glm::u32vec2& windowSize, std::shared_ptr<VulkanSwapChain> vulkanSwapChain);
 
 	void SwapchainInvalidated();
 
@@ -88,6 +88,9 @@ private:
 	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice, const InstanceWrapper<VkSurfaceKHR>&  surface);
 
 	bool HasAllRequiredExtensions(VkPhysicalDevice device);
+
+	void DestroySwapchain();
+	void RebuildSwapchain();
 
 private:
 

@@ -9,7 +9,7 @@
 
 
 VulkanSwapChain::VulkanSwapChain() :
-	surface(GraphicsContext::VulkanInstance->Get(), vkDestroySurfaceKHR, GraphicsContext::GlobalAllocator.Get()),
+	surface(GraphicsContext::VulkanInstance->GetNative(), vkDestroySurfaceKHR, GraphicsContext::GlobalAllocator.Get()),
 	swapChain(),
 	nextBackBufferIndex(0)
 {
@@ -19,7 +19,6 @@ VulkanSwapChain::~VulkanSwapChain()
 {
 	DestroyFrameBuffers();
 	DestroySwapchain();
-	surface = nullptr;
 }
 
 void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyIndices& indices)

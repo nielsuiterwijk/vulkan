@@ -146,7 +146,7 @@ bool VulkanInstance::CheckValidationLayers()
 	return true;
 }
 
-const InstanceWrapper<VkInstance>& VulkanInstance::Get() const
+const InstanceWrapper<VkInstance>& VulkanInstance::GetNative() const
 {
 	return applicationInfo;
 }

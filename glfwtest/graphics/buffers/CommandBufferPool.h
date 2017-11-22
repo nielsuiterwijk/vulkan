@@ -18,6 +18,7 @@ public:
 
 	std::shared_ptr<CommandBuffer> Create();
 
+	void Clear();
 	void Free(std::shared_ptr<CommandBuffer> commandBuffer);
 
 	void FreeAll();

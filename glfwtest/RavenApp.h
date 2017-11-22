@@ -22,8 +22,8 @@ public:
 	RavenApp& operator=(RavenApp&&) & = default;       // Move assignment operator
 
 private:
-	static void UpdateThread(RavenApp& app);
-	static void RenderThread(RavenApp& app); 
+	static void UpdateThread(const RavenApp* app);
+	static void RenderThread(const RavenApp* app); 
 	
 	static void OnWindowResized(GLFWwindow* window, int width, int height)
 	{

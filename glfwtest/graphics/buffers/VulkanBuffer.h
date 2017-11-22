@@ -5,7 +5,7 @@
 class VulkanBuffer
 {
 public:
-	VulkanBuffer(void* data, size_t size);
+	VulkanBuffer(VkBufferUsageFlags flags, VkSharingMode sharingMode, void* data, size_t size);
 	~VulkanBuffer();
 
 	const VkBuffer& GetNative() const

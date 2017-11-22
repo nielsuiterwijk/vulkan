@@ -24,17 +24,17 @@ public:
 		GraphicsContext::CommandBufferPool->Create(commandBuffers, 3);
 	}
 
-	void PrepareDraw()
+	void PrepareDraw(uint32_t imageIndex)
 	{
 		
-		for (size_t i = 0; i < commandBuffers.size(); i++)
+		//for (size_t i = 0; i < commandBuffers.size(); i++)
 		{
-			commandBuffers[i]->StartRecording(i);
+			commandBuffers[imageIndex]->StartRecording(imageIndex);
 
-			vkCmdBindPipeline(commandBuffers[i]->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine());
-			vkCmdDraw(commandBuffers[i]->GetNative(), 3, 1, 0, 0);
+			vkCmdBindPipeline(commandBuffers[imageIndex]->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine());
+			vkCmdDraw(commandBuffers[imageIndex]->GetNative(), 3, 1, 0, 0);
 
-			commandBuffers[i]->StopRecording();
+			commandBuffers[imageIndex]->StopRecording();
 		}
 	}
 

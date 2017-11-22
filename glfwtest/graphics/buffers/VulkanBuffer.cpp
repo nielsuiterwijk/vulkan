@@ -4,13 +4,13 @@
 
 #include <vulkan/vulkan.h>
 
-VulkanBuffer::VulkanBuffer(void* bufferData, size_t size)
+VulkanBuffer::VulkanBuffer(VkBufferUsageFlags flags, VkSharingMode sharingMode, void* bufferData, size_t size)
 {
 	VkBufferCreateInfo bufferInfo = {};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferInfo.size = size;
-	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	bufferInfo.usage = flags;
+	bufferInfo.sharingMode = sharingMode;
 
 	if (vkCreateBuffer(GraphicsContext::LogicalDevice, &bufferInfo, nullptr, &nativeBuffer) != VK_SUCCESS) 
 	{

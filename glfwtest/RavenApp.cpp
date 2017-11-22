@@ -52,19 +52,19 @@ bool RavenApp::Initialize()
 	std::vector<std::string> windowExtensionsNeeded(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
 	//Note: Ownership given to GraphicsDevice
-	std::shared_ptr<VulkanInstance> vulkanInstance = std::make_shared<VulkanInstance>();
+	GraphicsContext::VulkanInstance = std::make_shared<VulkanInstance>();
 
 	for (size_t i = 0; i < allExtensionsRequired.size(); i++)
 	{
-		if (!vulkanInstance->IsExtensionAvailable(allExtensionsRequired[i]))
+		if (!GraphicsContext::VulkanInstance->IsExtensionAvailable(allExtensionsRequired[i]))
 		{
 			std::cout << "Missing " << allExtensionsRequired[i] << " extension." << std::endl;
 			return false;
 		}
 	}
 
-	vulkanInstance->CreateInstance(windowExtensionsNeeded);
-	vulkanInstance->HookDebugCallback();
+	GraphicsContext::VulkanInstance->CreateInstance(windowExtensionsNeeded);
+	GraphicsContext::VulkanInstance->HookDebugCallback();
 
 
 	//Note: Ownership given to GraphicsDevice
@@ -72,12 +72,12 @@ bool RavenApp::Initialize()
 
 	GraphicsContext::GlobalAllocator.PrintStats();
 
-	if (glfwCreateWindowSurface(vulkanInstance->Get(), window, vulkanSwapChain->GetSurface().AllocationCallbacks(), vulkanSwapChain->GetSurface().Replace()) != VK_SUCCESS)
+	if (glfwCreateWindowSurface(GraphicsContext::VulkanInstance->GetNative(), window, vulkanSwapChain->GetSurface().AllocationCallbacks(), vulkanSwapChain->GetSurface().Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create window surface!");
 	}
 
-	GraphicsDevice::Instance().Initialize(glm::u32vec2(1280, 720), vulkanInstance, vulkanSwapChain);
+	GraphicsDevice::Instance().Initialize(glm::u32vec2(1280, 720), vulkanSwapChain);
 
 	GraphicsContext::GlobalAllocator.PrintStats();
 
@@ -87,21 +87,21 @@ bool RavenApp::Initialize()
 }
 
 
-void RavenApp::UpdateThread(RavenApp& app)
+void RavenApp::UpdateThread(const RavenApp* app)
 {
 	Timer timer;
 
-	while (app.run)
+	while (app->run)
 	{
 		timer.Start();
 
 		timer.Stop();
-		Sleep(0);
+		Sleep(16);
 	}
 	
 }
 
-void RavenApp::RenderThread(RavenApp& app)
+void RavenApp::RenderThread(const RavenApp* app)
 {
 	VulkanSemaphore renderSemaphore;
 
@@ -113,7 +113,7 @@ void RavenApp::RenderThread(RavenApp& app)
 
 	Timer timer;
 
-	while (app.run)
+	while (app->run)
 	{
 		timer.Start();
 
@@ -125,7 +125,7 @@ void RavenApp::RenderThread(RavenApp& app)
 			uint32_t imageIndex = GraphicsContext::SwapChain->PrepareBackBuffer();
 			const VulkanSemaphore& backBufferSemaphore = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).semaphore;
 
-			ro.PrepareDraw();
+			ro.PrepareDraw(imageIndex);
 
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -169,19 +169,19 @@ void RavenApp::RenderThread(RavenApp& app)
 
 		timer.Stop();
 
-		Sleep(1);
+		Sleep(16);
 	}
 
 }
 
 void RavenApp::Run()
-{		
+{
 
 	run = true;
 
-	std::thread first(RavenApp::UpdateThread, *this);
-	std::thread second(RavenApp::RenderThread, *this);
-	
+	std::thread first(RavenApp::UpdateThread, this);
+	std::thread second(RavenApp::RenderThread, this);
+
 
 	Timer timer;
 	while (!glfwWindowShouldClose(window))
@@ -192,8 +192,8 @@ void RavenApp::Run()
 		{
 			glfwPollEvents();
 		}
-				
-		
+
+
 		timer.Stop();
 
 		std::string windowTitle = std::string("delta time: ") + Helpers::ValueToString(timer.GetTimeInSeconds()*1000.0f);

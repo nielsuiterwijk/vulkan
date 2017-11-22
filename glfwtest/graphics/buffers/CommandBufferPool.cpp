@@ -55,6 +55,11 @@ std::shared_ptr<CommandBuffer> CommandBufferPool::Create()
 	return commandBuffer;
 }
 
+void CommandBufferPool::Clear()
+{
+	commandBuffers.clear();
+}
+
 void CommandBufferPool::Free(std::shared_ptr<CommandBuffer> commandBuffer)
 {
 	for (size_t i = 0; i < commandBuffers.size(); i++)

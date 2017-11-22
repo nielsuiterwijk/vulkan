@@ -19,7 +19,7 @@ public:
 
 	bool IsExtensionAvailable(const std::string& extension);
 
-	const InstanceWrapper<VkInstance>& Get() const;
+	const InstanceWrapper<VkInstance>& GetNative() const;
 
 private:
 	void CacheExtensions();
