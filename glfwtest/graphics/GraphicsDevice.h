@@ -2,6 +2,8 @@
 
 #include "helpers/InstanceWrapper.h"
 
+#include "graphics/memory/GPUAllocator.h"
+
 #include "shaders\Material.h"
 #include "graphics\buffers\CommandBufferPool.h"
 #include "graphics\PipelineStateObject.h"
@@ -34,6 +36,7 @@ class GraphicsContext
 {
 public:
 	static Allocator GlobalAllocator;
+	static GPUAllocator* DeviceAllocator;
 
 	static std::shared_ptr<CommandBufferPool> CommandBufferPool; //Need to use a different name..
 	static std::shared_ptr<RenderPass> RenderPass;

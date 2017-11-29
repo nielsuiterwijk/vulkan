@@ -1,12 +1,35 @@
 #include "Mesh.h"
 
-#include "graphics/buffers/CommandBuffer.h"
+#include "graphics/buffers/VulkanBuffer.h"
 
-Mesh::Mesh(uint32_t triangleCount) :
-	triangleCount(triangleCount)
+Mesh::Mesh(uint32_t newTriangleCount) :
+	triangleCount(newTriangleCount),
 	//indexBuffer(nullptr),
-	//vertexBuffer(nullptr)
+	vertexBuffer(nullptr)
 {
+	const std::vector<Vertex> vertices =
+	{
+		{ { 0.0f, -0.8f },{ 1.0f, 0.0f, 0.0f } },
+		{ { 0.5f, 0.0f },{ 0.0f, 1.0f, 0.0f } },
+		{ { 0.0f, 0.8f },{ 0.0f, 1.0f, 1.0f } },
+		{ { -0.5f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
+		{ { 0.0f, -0.8f },{ 1.0f, 0.0f, 0.0f } }
+	};
+	/*const std::vector<Vertex> vertices =
+	{
+		{ { 0.0f, -0.8f },{ 1.0f, 0.0f, 1.0f } },
+		{ { 0.5f, 0.5f },{ 0.0f, 1.0f, 0.0f } },
+		{ { -0.5f, 0.5f },{ 0.0f, 0.0f, 1.0f } }
+	};*/
+
+	Vertex::GetBindingDescription(bindingDescription);
+	Vertex::GetAttributeDescriptions(attributeDescriptions);
+
+	triangleCount = vertices.size();
+	uint32_t memorySize = sizeof(Vertex) * triangleCount;
+	uint8_t* vertexData = new uint8_t[memorySize];
+	memcpy(vertexData, vertices.data(), memorySize);
+	Initialize(vertexData, memorySize, nullptr, 0, 0);
 }
 
 Mesh::~Mesh()
@@ -15,6 +38,9 @@ Mesh::~Mesh()
 
 bool Mesh::Initialize(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t vertexFormat)
 {
+	assert(vertexBuffer == nullptr);
+	vertexBuffer = new VulkanBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, vertexData, vertexDataSize);
+
 	/*if (vertexFormat & MeshVertexFormatFlags::INDEXED)
 	{
 		if (indexData == nullptr)
@@ -33,17 +59,14 @@ bool Mesh::Initialize(void* vertexData, const size_t& vertexDataSize, void* inde
 	return true;
 }
 
-void Mesh::SetupCommandBuffer(const CommandBuffer& buffer) const
-{
-	/*buffer->BindVertexBuffer(0, vertexBuffer);
+void Mesh::SetupCommandBuffer(std::shared_ptr<CommandBuffer> commandBuffer, const PipelineStateObject& pso) const
+{	
+	vkCmdBindPipeline(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine());
 
-	if (vertexFormatFlags & MeshVertexFormatFlags::INDEXED)
-	{
-		buffer->DrawElements(DrawPrimitive::TRIANGLES, IndexType::UNSIGNED_INT, triangleCount * 3, indexBuffer);
-	}
-	else
-	{
-		buffer->DrawArrays(DrawPrimitive::TRIANGLES, 0, triangleCount * 3);
-	}*/
+	VkBuffer vertexBuffers[] = { vertexBuffer->GetNative() };
+	VkDeviceSize offsets[] = { 0 };
+	vkCmdBindVertexBuffers(commandBuffer->GetNative(), 0, 1, vertexBuffers, offsets);
+
+	vkCmdDraw(commandBuffer->GetNative(), triangleCount, 1, 0, 0);
 
 }

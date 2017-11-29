@@ -8,6 +8,8 @@
 #include "VulkanInstance.h"
 #include "VulkanSwapChain.h"
 
+#include "memory/GPUAllocator.h"
+
 #include <iostream>
 #include <set>
 
@@ -15,7 +17,8 @@
 
 VkPhysicalDevice GraphicsContext::PhysicalDevice = VK_NULL_HANDLE;
 
-Allocator GraphicsContext::GlobalAllocator = Allocator();
+Allocator GraphicsContext::GlobalAllocator;
+GPUAllocator* GraphicsContext::DeviceAllocator = nullptr;
 
 std::shared_ptr<CommandBufferPool> GraphicsContext::CommandBufferPool = nullptr;
 std::shared_ptr<RenderPass> GraphicsContext::RenderPass = nullptr;
@@ -50,6 +53,8 @@ void GraphicsDevice::Finalize()
 
 	GraphicsContext::SwapChain->DestroySwapchain();
 
+	delete GraphicsContext::DeviceAllocator;
+
 	GraphicsContext::LogicalDevice = nullptr;
 	//a = nullptr;
 
@@ -68,6 +73,8 @@ void GraphicsDevice::Initialize(const glm::u32vec2& windowSize, std::shared_ptr<
 	GraphicsContext::SwapChain = vulkanSwapChain;
 
 	CreatePhysicalDevice(GraphicsContext::SwapChain->GetSurface());
+
+	GraphicsContext::DeviceAllocator = new GPUAllocator(16 * 1024 * 1024, 8);
 	
 	GraphicsContext::FamilyIndices = FindQueueFamilies(GraphicsContext::PhysicalDevice, GraphicsContext::SwapChain->GetSurface());
 

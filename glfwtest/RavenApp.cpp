@@ -15,6 +15,7 @@
 #include "graphics\RenderObject.h"
 
 #include "graphics/memory/GPUAllocator.h"
+#include "graphics/models/Mesh.h"
 
 RavenApp::RavenApp() :
 	window(nullptr)
@@ -80,9 +81,7 @@ bool RavenApp::Initialize()
 	GraphicsDevice::Instance().Initialize(glm::u32vec2(1280, 720), vulkanSwapChain);
 
 	GraphicsContext::GlobalAllocator.PrintStats();
-
-	GPUAllocator gpuAllocator(1024, 8);
-
+	
 	return true;
 }
 
@@ -107,8 +106,13 @@ void RavenApp::RenderThread(const RavenApp* app)
 
 	GraphicsContext::GlobalAllocator.PrintStats();
 
+	Mesh m(3);
+
 	RenderObject ro;
-	ro.Load();
+	ro.Load(m);
+
+
+	GraphicsContext::GlobalAllocator.PrintStats();
 
 	VkFence renderFence;
 	VkFenceCreateInfo fenceInfo = {};
@@ -123,6 +127,8 @@ void RavenApp::RenderThread(const RavenApp* app)
 	Timer acquireTimer;
 	Timer renderQueuTimer;
 	Timer presentTimer;
+
+	float accumelatedTime = 0;
 
 	while (app->run)
 	{
@@ -140,7 +146,11 @@ void RavenApp::RenderThread(const RavenApp* app)
 			acquireTimer.Stop();			
 
 			renderQueuTimer.Start();
-			ro.PrepareDraw(imageIndex);
+
+			{
+				ro.PrepareDraw(imageIndex, m);
+				//ro.PrepareDraw(imageIndex);
+			}
 
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -187,11 +197,16 @@ void RavenApp::RenderThread(const RavenApp* app)
 		}
 		GraphicsDevice::Instance().Unlock();
 
+		Sleep(16);
 		timer.Stop();
+		accumelatedTime += timer.GetTimeInSeconds();
 
-		std::cout << "Acquire: " << acquireTimer.GetTimeInSeconds() << " Render: " << renderQueuTimer.GetTimeInSeconds() << " Present: " << presentTimer.GetTimeInSeconds() << std::endl;
+		if (accumelatedTime > 1.0f)
+		{
+			std::cout << "Acquire: " << acquireTimer.GetTimeInSeconds() << " Render: " << renderQueuTimer.GetTimeInSeconds() << " Present: " << presentTimer.GetTimeInSeconds() << std::endl;
+			accumelatedTime -= 1.0f;
+		}
 
-		Sleep(4);
 	}
 
 }
@@ -215,6 +230,7 @@ void RavenApp::Run()
 			glfwPollEvents();
 		}
 
+		Sleep(16);
 
 		timer.Stop();
 

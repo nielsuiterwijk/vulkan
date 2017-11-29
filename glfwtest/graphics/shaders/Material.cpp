@@ -12,8 +12,8 @@ Material::Material(const std::string& fileName)
 	vertex = ShaderCache::GetVertexShader(fileName);
 	fragment = ShaderCache::GetFragmentShader(fileName);
 
-	//Needed at some point.. not sure who and where :D
-	//VkPipelineShaderStageCreateInfo shaderStages[] = { vertexShaderStageInfo, fragmentShaderStageInfo };
+	shaderStages.push_back(vertex->GetShaderStageCreateInfo());
+	shaderStages.push_back(fragment->GetShaderStageCreateInfo());
 }
 
 Material::~Material()
@@ -24,12 +24,7 @@ Material::~Material()
 	std::cout << "Destroyed material" << std::endl;
 }
 
-std::vector<VkPipelineShaderStageCreateInfo> Material::GetShaderStages() const
+const std::vector<VkPipelineShaderStageCreateInfo>& Material::GetShaderStages() const
 {
-	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-
-	shaderStages.push_back(vertex->GetShaderStageCreateInfo());
-	shaderStages.push_back(fragment->GetShaderStageCreateInfo());
-
 	return shaderStages;
 }

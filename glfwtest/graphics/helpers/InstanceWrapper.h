@@ -20,6 +20,7 @@ public:
 	{
 		this->deleteCallback = [ = ](T obj)
 		{
+			std::cout << "Deleting Vulkan Instance" << std::endl;
 			callback(obj, allocator);
 		};
 	}
@@ -29,6 +30,7 @@ public:
 	{
 		this->deleteCallback = [this, &instance, callback, allocator](T obj)
 		{
+			std::cout << "Deleting Vulkan Instance" << std::endl;
 			callback(instance, obj, allocator);
 		};
 	}
@@ -38,6 +40,7 @@ public:
 	{
 		this->deleteCallback = [this, &device, callback, allocator](T obj)
 		{
+			std::cout << "Deleting Vulkan Instance" << std::endl;
 			callback(device, obj, allocator);
 		};
 	}
@@ -62,6 +65,7 @@ public:
 
 		this->deleteCallback = [this, &device, callback, allocator](T obj)
 		{
+			std::cout << "Deleting Vulkan Instance" << std::endl;
 			callback(device, obj, allocator);
 		};
 	}

@@ -32,7 +32,7 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 	extent = GetSwapExtents(details.capabilities, windowSize);
 
 	//Triple buffering!
-	uint32_t imageCount = 1;
+	uint32_t imageCount = 3;
 
 	if (details.capabilities.maxImageCount > 0 && imageCount > details.capabilities.maxImageCount)
 	{
@@ -175,6 +175,11 @@ int32_t VulkanSwapChain::PrepareBackBuffer()
 	uint32_t imageIndex = -1;
 
 	VkResult result = vkAcquireNextImageKHR(GraphicsContext::LogicalDevice, swapChain, std::numeric_limits<uint64_t>::max(), backBuffers[nextBackBufferIndex].semaphore.GetNative(), VK_NULL_HANDLE, &imageIndex);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR)
+	{
+		//todo: recreate SwapChain
+	}
 	
 	assert(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR);
 	assert(imageIndex == nextBackBufferIndex); //imageIndex should be the same as backBufferIndex
