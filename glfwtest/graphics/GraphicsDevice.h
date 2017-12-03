@@ -38,6 +38,7 @@ public:
 	static Allocator GlobalAllocator;
 	static GPUAllocator* DeviceAllocator;
 
+	static std::shared_ptr<CommandBufferPool> CommandBufferPoolTransient;
 	static std::shared_ptr<CommandBufferPool> CommandBufferPool; //Need to use a different name..
 	static std::shared_ptr<RenderPass> RenderPass;
 	static std::shared_ptr<VulkanSwapChain> SwapChain;

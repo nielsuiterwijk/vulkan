@@ -10,7 +10,7 @@
 class CommandBufferPool
 {
 public:
-	CommandBufferPool();
+	CommandBufferPool(VkCommandPoolCreateFlags createFlags);
 	~CommandBufferPool();
 
 	//Give it an empty vector and it will fill it with propper Command Buffers

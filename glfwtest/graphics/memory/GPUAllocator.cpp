@@ -13,12 +13,12 @@ GPUAllocator::~GPUAllocator()
 
 }
 
-void GPUAllocator::Allocate(VulkanBuffer& buffer)
+void GPUAllocator::Allocate(VulkanBuffer& buffer, VkMemoryPropertyFlags requiredProperties)
 {
 	VkMemoryRequirements memoryRequirements;
 	vkGetBufferMemoryRequirements(GraphicsContext::LogicalDevice, buffer.GetNative(), &memoryRequirements);
 
-	int32_t memoryType = FindProperties(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	int32_t memoryType = FindProperties(memoryRequirements.memoryTypeBits, requiredProperties);
 
 	assert(memoryType >= 0);
 

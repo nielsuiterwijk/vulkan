@@ -2,13 +2,13 @@
 
 #include "graphics\GraphicsDevice.h"
 
-CommandBufferPool::CommandBufferPool() :
+CommandBufferPool::CommandBufferPool(VkCommandPoolCreateFlags createFlags) :
 	commandPool(GraphicsContext::LogicalDevice, vkDestroyCommandPool, GraphicsContext::GlobalAllocator.Get())
 {
 	VkCommandPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	poolInfo.queueFamilyIndex = GraphicsContext::FamilyIndices.graphicsFamily;
-	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
+	poolInfo.flags = createFlags; // Optional
 
 	/*
 		VK_COMMAND_POOL_CREATE_TRANSIENT_BIT: Hint that command buffers are rerecorded with new commands very often (may change memory allocation behavior)
@@ -59,7 +59,7 @@ void CommandBufferPool::Clear()
 {
 	commandBuffers.clear();
 }
-
+//TODO: Fix this coupling, its ugly.
 void CommandBufferPool::Free(std::shared_ptr<CommandBuffer> commandBuffer)
 {
 	for (size_t i = 0; i < commandBuffers.size(); i++)

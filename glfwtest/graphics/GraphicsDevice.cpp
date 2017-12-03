@@ -20,6 +20,7 @@ VkPhysicalDevice GraphicsContext::PhysicalDevice = VK_NULL_HANDLE;
 Allocator GraphicsContext::GlobalAllocator;
 GPUAllocator* GraphicsContext::DeviceAllocator = nullptr;
 
+std::shared_ptr<CommandBufferPool> GraphicsContext::CommandBufferPoolTransient = nullptr;
 std::shared_ptr<CommandBufferPool> GraphicsContext::CommandBufferPool = nullptr;
 std::shared_ptr<RenderPass> GraphicsContext::RenderPass = nullptr;
 std::shared_ptr<VulkanSwapChain> GraphicsContext::SwapChain = nullptr;
@@ -87,7 +88,10 @@ void GraphicsDevice::Initialize(const glm::u32vec2& windowSize, std::shared_ptr<
 
 	GraphicsContext::RenderPass = std::make_shared<RenderPass>(GraphicsContext::SwapChain->GetSurfaceFormat().format);
 	GraphicsContext::SwapChain->SetupFrameBuffers();
-	GraphicsContext::CommandBufferPool = std::make_shared<CommandBufferPool>();
+
+	GraphicsContext::CommandBufferPool = std::make_shared<CommandBufferPool>(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+	GraphicsContext::CommandBufferPoolTransient = std::make_shared<CommandBufferPool>(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
+	
 }
 
 
