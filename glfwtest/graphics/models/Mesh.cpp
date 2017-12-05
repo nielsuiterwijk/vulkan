@@ -39,7 +39,7 @@ Mesh::~Mesh()
 bool Mesh::Initialize(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t vertexFormat)
 {
 	assert(vertexBuffer == nullptr);
-	vertexBuffer = new VulkanBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, vertexData, vertexDataSize);
+	vertexBuffer = new VulkanBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, BufferType::Static , vertexData, vertexDataSize);
 
 	/*if (vertexFormat & MeshVertexFormatFlags::INDEXED)
 	{

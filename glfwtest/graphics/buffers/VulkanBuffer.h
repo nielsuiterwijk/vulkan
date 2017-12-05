@@ -2,15 +2,24 @@
 
 #include <vulkan/vulkan.h>
 
+struct BufferType
+{
+	enum Enum
+	{
+		Static,
+		Dynamic
+	};
+};
+
 class VulkanBuffer
 {
 public:
-	VulkanBuffer(VkBufferUsageFlags flags, VkSharingMode sharingMode, void* data, size_t size);
+	VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType, void* data, size_t size);
 	~VulkanBuffer();
 
 	const VkBuffer& GetNative() const
 	{
-		return nativeBuffer;
+		return deviceBuffer;
 	}
 	
 	VkDeviceMemory* GetDeviceMemory()
@@ -18,7 +27,20 @@ public:
 		return &nativeMemory;
 	}
 
+	void CopyStagingToDevice();
+
 private:
-	VkBuffer nativeBuffer;
+	void SetupStagingBuffer(void* bufferData);
+	void SetupLocalStaticBuffer(VkBufferUsageFlags flags);
+
+	void SetupLocalDynamicBuffer(void* bufferData, VkBufferUsageFlags flags);
+
+private:
+	VkBuffer stagingBuffer;
+	VkBuffer deviceBuffer;
+
+	VkDeviceMemory stagingMemory;
 	VkDeviceMemory nativeMemory;
+
+	size_t size;
 };

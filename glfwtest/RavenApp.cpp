@@ -230,7 +230,7 @@ void RavenApp::Run()
 			glfwPollEvents();
 		}
 
-		Sleep(16);
+		Sleep(1);
 
 		timer.Stop();
 

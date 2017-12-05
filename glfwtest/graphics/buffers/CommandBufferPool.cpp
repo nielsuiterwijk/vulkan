@@ -48,7 +48,7 @@ void CommandBufferPool::Create(std::vector< std::shared_ptr<CommandBuffer> >& re
 
 std::shared_ptr<CommandBuffer> CommandBufferPool::Create()
 {
-	std::shared_ptr<CommandBuffer> commandBuffer = std::make_shared<CommandBuffer>();
+	std::shared_ptr<CommandBuffer> commandBuffer = std::make_shared<CommandBuffer>(shared_from_this());
 
 	commandBuffers.push_back(commandBuffer);
 

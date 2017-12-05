@@ -13,10 +13,10 @@ GPUAllocator::~GPUAllocator()
 
 }
 
-void GPUAllocator::Allocate(VulkanBuffer& buffer, VkMemoryPropertyFlags requiredProperties)
+void GPUAllocator::Allocate(const VkBuffer& buffer, VkDeviceMemory* memory, VkMemoryPropertyFlags requiredProperties)
 {
 	VkMemoryRequirements memoryRequirements;
-	vkGetBufferMemoryRequirements(GraphicsContext::LogicalDevice, buffer.GetNative(), &memoryRequirements);
+	vkGetBufferMemoryRequirements(GraphicsContext::LogicalDevice, buffer, &memoryRequirements);
 
 	int32_t memoryType = FindProperties(memoryRequirements.memoryTypeBits, requiredProperties);
 
@@ -27,7 +27,7 @@ void GPUAllocator::Allocate(VulkanBuffer& buffer, VkMemoryPropertyFlags required
 	allocInfo.allocationSize = memoryRequirements.size;
 	allocInfo.memoryTypeIndex = memoryType;
 
-	if (vkAllocateMemory(GraphicsContext::LogicalDevice, &allocInfo, GraphicsContext::GlobalAllocator.Get(), buffer.GetDeviceMemory()) != VK_SUCCESS)
+	if (vkAllocateMemory(GraphicsContext::LogicalDevice, &allocInfo, GraphicsContext::GlobalAllocator.Get(), memory) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to allocate vertex buffer memory!");
 	}

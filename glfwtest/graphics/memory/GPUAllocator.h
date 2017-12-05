@@ -9,7 +9,7 @@ public:
 	GPUAllocator(int32_t size, int32_t alignment);
 	~GPUAllocator();
 
-	void Allocate(VulkanBuffer& buffer, VkMemoryPropertyFlags requiredProperties);
+	void Allocate(const VkBuffer& buffer, VkDeviceMemory* memory, VkMemoryPropertyFlags requiredProperties);
 
 private:
 	int32_t FindProperties(uint32_t memoryTypeBitsRequirement, VkMemoryPropertyFlags requiredProperties);

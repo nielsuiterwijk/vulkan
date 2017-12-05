@@ -1,13 +1,11 @@
 #pragma once
 
-#include "graphics\helpers\InstanceWrapper.h"
-#include "CommandBuffer.h"
 #include "standard.h"
+#include "graphics\helpers\InstanceWrapper.h"
+#include "graphics\buffers\CommandBuffer.h"
 
-#include <vulkan\vulkan.h>
-#include <vector>
-
-class CommandBufferPool
+//public std::enable_shared_from_this<Foo>
+class CommandBufferPool : public std::enable_shared_from_this<CommandBufferPool>
 {
 public:
 	CommandBufferPool(VkCommandPoolCreateFlags createFlags);
@@ -29,5 +27,5 @@ public:
 private:
 	InstanceWrapper<VkCommandPool> commandPool;
 
-	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
+	std::vector< std::shared_ptr<CommandBuffer> > commandBuffers;
 };

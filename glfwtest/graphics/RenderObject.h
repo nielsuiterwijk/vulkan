@@ -39,10 +39,25 @@ public:
 
 		//for (size_t i = 0; i < commandBuffers.size(); i++)
 		{
-			commandBuffers[imageIndex]->StartRecording(imageIndex);
+			commandBuffers[imageIndex]->StartRecording(imageIndex, VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
-			mesh.SetupCommandBuffer(commandBuffers[imageIndex], psoBasic);
 
+			VkRenderPassBeginInfo renderPassInfo = {};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
+			renderPassInfo.framebuffer = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).framebuffer;
+			renderPassInfo.renderArea.offset = { 0, 0 };
+			renderPassInfo.renderArea.extent = GraphicsContext::SwapChain->GetExtent();
+
+			VkClearValue clearColor = { 100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1.0f }; // = cornflower blue :)
+			renderPassInfo.clearValueCount = 1;
+			renderPassInfo.pClearValues = &clearColor;
+
+			vkCmdBeginRenderPass(commandBuffers[imageIndex]->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+			{
+				mesh.SetupCommandBuffer(commandBuffers[imageIndex], psoBasic);
+			}
+			vkCmdEndRenderPass(commandBuffers[imageIndex]->GetNative());
 			commandBuffers[imageIndex]->StopRecording();
 		}
 	}
@@ -52,10 +67,25 @@ public:
 		
 		//for (size_t i = 0; i < commandBuffers.size(); i++)
 		{
-			commandBuffers[imageIndex]->StartRecording(imageIndex);
+			commandBuffers[imageIndex]->StartRecording(imageIndex, VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
-			vkCmdBindPipeline(commandBuffers[imageIndex]->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, psoFixed.GetPipeLine());
-			vkCmdDraw(commandBuffers[imageIndex]->GetNative(), 3, 1, 0, 0);
+			VkRenderPassBeginInfo renderPassInfo = {};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
+			renderPassInfo.framebuffer = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).framebuffer;
+			renderPassInfo.renderArea.offset = { 0, 0 };
+			renderPassInfo.renderArea.extent = GraphicsContext::SwapChain->GetExtent();
+
+			VkClearValue clearColor = { 100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1.0f }; // = cornflower blue :)
+			renderPassInfo.clearValueCount = 1;
+			renderPassInfo.pClearValues = &clearColor;
+
+			vkCmdBeginRenderPass(commandBuffers[imageIndex]->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+			{
+				vkCmdBindPipeline(commandBuffers[imageIndex]->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, psoFixed.GetPipeLine());
+				vkCmdDraw(commandBuffers[imageIndex]->GetNative(), 3, 1, 0, 0);
+			}
+			vkCmdEndRenderPass(commandBuffers[imageIndex]->GetNative());
 
 			commandBuffers[imageIndex]->StopRecording();
 		}
