@@ -40,9 +40,9 @@ namespace Helpers
 		return d;
 	}
 	
-	static std::string FormatToSize(int64_t value)
+	static std::string MemorySizeToString(int64_t value)
 	{		
-		static std::array<std::string, 4> sizes = { std::string("B"), std::string("Kb"), std::string("Mb"), std::string("Gb") };		
+		static std::array<std::string, 4> sizes = { std::string("B"), std::string("KB"), std::string("MB"), std::string("GB") };		
 
 		int div = 0;
 		size_t rem = 0;

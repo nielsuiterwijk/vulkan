@@ -107,7 +107,7 @@ public:
 			std::string deltaTotalReallocations = (trackers[i].totalReallocations - previousTotalReallocations) > 0 ? "+" + ss.str() : ss.str();
 			ss.str(std::string());
 
-			std::cout << "[Vulkan] " << Vulkan::GetAllocationScopeName(trackers[i].scope) << " allocated: " << Helpers::FormatToSize(memoryAllocated) << " (" << deltaAllocatedString << " bytes.)" << " allocs: " << trackers[i].totalAllocations << " (" << deltaTotalAllocations << ")" << " reallocs: " << trackers[i].totalReallocations << " (" << deltaTotalReallocations << ")" << std::endl;
+			std::cout << "[Vulkan] " << Vulkan::GetAllocationScopeName(trackers[i].scope) << " allocated: " << Helpers::MemorySizeToString(memoryAllocated) << " (" << deltaAllocatedString << " bytes.)" << " allocs: " << trackers[i].totalAllocations << " (" << deltaTotalAllocations << ")" << " reallocs: " << trackers[i].totalReallocations << " (" << deltaTotalReallocations << ")" << std::endl;
 
 			
 
@@ -118,7 +118,7 @@ public:
 			vulkanMemoryUsage += memoryAllocated;
 		}
 
-		std::cout << "[Vulkan] total memory usage: " << Helpers::FormatToSize(vulkanMemoryUsage) << "." << std::endl;
+		std::cout << "[Vulkan] total memory usage: " << Helpers::MemorySizeToString(vulkanMemoryUsage) << "." << std::endl;
 		std::cout << "" << std::endl;
 
 	}

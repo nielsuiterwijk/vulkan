@@ -22,12 +22,13 @@ class VulkanSwapChain;
 
 struct QueueFamilyIndices
 {
+	int transportFamily = -1;
 	int graphicsFamily = -1;
 	int presentFamily = -1;
 
 	bool IsComplete()
 	{
-		return graphicsFamily >= 0 && presentFamily >= 0;
+		return graphicsFamily >= 0 && presentFamily >= 0 && transportFamily >= 0;
 	}
 };
 
@@ -50,6 +51,7 @@ public:
 
 	static QueueFamilyIndices FamilyIndices;
 
+	static VkQueue TransportQueue;
 	static VkQueue GraphicsQueue;
 	static VkQueue PresentQueue;
 

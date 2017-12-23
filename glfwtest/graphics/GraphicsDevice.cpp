@@ -30,6 +30,7 @@ InstanceWrapper<VkDevice> GraphicsContext::LogicalDevice = { vkDestroyDevice, Gr
 
 QueueFamilyIndices GraphicsContext::FamilyIndices = {};
 
+VkQueue GraphicsContext::TransportQueue = {};
 VkQueue GraphicsContext::GraphicsQueue = {};
 VkQueue GraphicsContext::PresentQueue = {};
 
@@ -47,8 +48,12 @@ void GraphicsDevice::Finalize()
 
 	GraphicsContext::SwapChain->DestroyFrameBuffers();
 
+	GraphicsContext::CommandBufferPoolTransient->Clear();
+	GraphicsContext::CommandBufferPoolTransient = nullptr;
+
 	GraphicsContext::CommandBufferPool->Clear();
 	GraphicsContext::CommandBufferPool = nullptr;
+
 	GraphicsContext::RenderPass = nullptr;
 	ShaderCache::Destroy();
 
@@ -74,13 +79,14 @@ void GraphicsDevice::Initialize(const glm::u32vec2& windowSize, std::shared_ptr<
 	GraphicsContext::SwapChain = vulkanSwapChain;
 
 	CreatePhysicalDevice(GraphicsContext::SwapChain->GetSurface());
-
-	GraphicsContext::DeviceAllocator = new GPUAllocator(16 * 1024 * 1024, 8);
 	
 	GraphicsContext::FamilyIndices = FindQueueFamilies(GraphicsContext::PhysicalDevice, GraphicsContext::SwapChain->GetSurface());
 
 	CreateLogicalDevice();
 
+	GraphicsContext::DeviceAllocator = new GPUAllocator(16 * 1024 * 1024, 8);
+
+	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.transportFamily, 0, &GraphicsContext::TransportQueue);
 	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.graphicsFamily, 0, &GraphicsContext::GraphicsQueue);
 	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.presentFamily, 0, &GraphicsContext::PresentQueue);
 
@@ -243,7 +249,7 @@ void GraphicsDevice::CreatePhysicalDevice(const InstanceWrapper<VkSurfaceKHR>&  
 	}
 }
 
-QueueFamilyIndices GraphicsDevice::FindQueueFamilies(VkPhysicalDevice physicalDevice, const InstanceWrapper<VkSurfaceKHR>&  surface)
+QueueFamilyIndices GraphicsDevice::FindQueueFamilies(VkPhysicalDevice physicalDevice, const InstanceWrapper<VkSurfaceKHR>& surface)
 {
 	QueueFamilyIndices indices;
 
@@ -259,6 +265,11 @@ QueueFamilyIndices GraphicsDevice::FindQueueFamilies(VkPhysicalDevice physicalDe
 		if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
 		{
 			indices.graphicsFamily = i;
+		}
+		
+		if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT)
+		{
+			indices.transportFamily = i;
 		}
 
 		VkBool32 presentSupport = false;

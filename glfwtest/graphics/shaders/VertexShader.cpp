@@ -24,6 +24,7 @@ VertexShader::VertexShader(const std::string& fileName) :
 	shaderInfo.module = shaderModule;
 	shaderInfo.pName = "main";
 
+	//Load meta data to create descriptors?
 }
 
 

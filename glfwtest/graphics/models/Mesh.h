@@ -67,6 +67,6 @@ private:
 	VkVertexInputBindingDescription bindingDescription;
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
-	//Buffer* indexBuffer;
+	VulkanBuffer* indexBuffer;
 	VulkanBuffer* vertexBuffer;
 };

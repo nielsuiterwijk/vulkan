@@ -209,6 +209,8 @@ void RavenApp::RenderThread(const RavenApp* app)
 
 	}
 
+	vkDestroyFence(GraphicsContext::LogicalDevice, renderFence, GraphicsContext::GlobalAllocator.Get());
+
 }
 
 void RavenApp::Run()
