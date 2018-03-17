@@ -51,7 +51,7 @@ public:
 		};
 	};
 
-	Mesh(uint32_t triangleCount);
+	Mesh();
 	~Mesh();
 
 	bool Initialize(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t vertexFormat);

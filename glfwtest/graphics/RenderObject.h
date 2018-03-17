@@ -2,6 +2,8 @@
 
 #include "PipelineStateObject.h"
 #include "graphics/models/Mesh.h"
+#include "graphics/VulkanSwapChain.h"
+#include "graphics/shaders/UniformBuffer.h"
 
 class RenderObject
 {
@@ -25,9 +27,8 @@ public:
 		psoFixed.Create(fixedMaterial);
 		psoFixed.Build();
 
-		psoBasic.Create(nullptr);
+		psoBasic.Create(basicMaterial);
 
-		psoBasic.SetShader(basicMaterial->GetShaderStages());
 		psoBasic.SetVertices(m.GetBindingDescription(), m.GetAttributeDescriptions());
 		psoBasic.Build();
 
@@ -36,7 +37,7 @@ public:
 
 	void PrepareDraw(uint32_t imageIndex, const Mesh& mesh)
 	{
-
+		basicMaterial->GetUniformBuffers()[0]->Upload();
 		//for (size_t i = 0; i < commandBuffers.size(); i++)
 		{
 			commandBuffers[imageIndex]->StartRecording(imageIndex, VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);

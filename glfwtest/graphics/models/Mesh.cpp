@@ -2,8 +2,8 @@
 
 #include "graphics/buffers/VulkanBuffer.h"
 
-Mesh::Mesh(uint32_t newTriangleCount) :
-	triangleCount(newTriangleCount),
+Mesh::Mesh() :
+	triangleCount(0),
 	indexBuffer(nullptr),
 	vertexBuffer(nullptr)
 {

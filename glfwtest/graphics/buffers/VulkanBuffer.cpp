@@ -10,9 +10,10 @@ VulkanBuffer::VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType
 	deviceBuffer(nullptr),
 	stagingMemory(nullptr),
 	stagingBuffer(nullptr),
-	size(size)
+	size(size),
+	bufferType(bufferType)
 {
-	//TODO: Dynamic memory might not want to use the staging buffer?
+
 	switch (bufferType)
 	{
 	case BufferType::Static:
@@ -26,6 +27,7 @@ VulkanBuffer::VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType
 		SetupLocalDynamicBuffer(bufferData, flags);
 		break;
 	default:
+		assert(false && "Not implemented.");
 		break;
 	}
 
@@ -62,10 +64,29 @@ void VulkanBuffer::SetupLocalDynamicBuffer(void* bufferData, VkBufferUsageFlags 
 
 	vkBindBufferMemory(GraphicsContext::LogicalDevice, deviceBuffer, nativeMemory, 0);
 
+	Map(bufferData);
+}
+
+
+void VulkanBuffer::Map(void* bufferData)
+{
 	void* data;
-	vkMapMemory(GraphicsContext::LogicalDevice, nativeMemory, 0, size, 0, &data);
-	memcpy(data, bufferData, size);
-	vkUnmapMemory(GraphicsContext::LogicalDevice, nativeMemory);
+	switch (bufferType)
+	{
+	case BufferType::Static:
+		vkMapMemory(GraphicsContext::LogicalDevice, stagingMemory, 0, size, 0, &data);
+		memcpy(data, bufferData, size);
+		vkUnmapMemory(GraphicsContext::LogicalDevice, stagingMemory);
+		break;
+	case BufferType::Dynamic:
+		vkMapMemory(GraphicsContext::LogicalDevice, nativeMemory, 0, size, 0, &data);
+		memcpy(data, bufferData, size);
+		vkUnmapMemory(GraphicsContext::LogicalDevice, nativeMemory);
+		break;
+	default:
+		assert(false && "Not implemented.");
+		break;
+	}
 }
 
 void VulkanBuffer::SetupLocalStaticBuffer(VkBufferUsageFlags flags)
@@ -103,10 +124,7 @@ void VulkanBuffer::SetupStagingBuffer(void* bufferData)
 
 	vkBindBufferMemory(GraphicsContext::LogicalDevice, stagingBuffer, stagingMemory, 0);
 
-	void* data;
-	vkMapMemory(GraphicsContext::LogicalDevice, stagingMemory, 0, size, 0, &data);
-	memcpy(data, bufferData, size);
-	vkUnmapMemory(GraphicsContext::LogicalDevice, stagingMemory);
+	Map(bufferData);
 }
 
 void VulkanBuffer::CopyStagingToDevice()
@@ -128,6 +146,7 @@ void VulkanBuffer::CopyStagingToDevice()
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &buffer->GetNative();
 
+	//TODO: This causes waits, needs to be async
 	vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 	vkQueueWaitIdle(GraphicsContext::GraphicsQueue);
 

@@ -1,8 +1,8 @@
 #include "PipelineStateObject.h"
 
 #include "GraphicsDevice.h"
-
 #include "RenderPass.h"
+#include "graphics/shaders/UniformBuffer.h"
 
 PipelineStateObject::PipelineStateObject() :
 	pipelineLayout(),
@@ -133,6 +133,12 @@ void PipelineStateObject::Create(std::shared_ptr<Material> material)
 	pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
 	pipelineLayoutInfo.pPushConstantRanges = 0; // Optional
 
+	if (material != nullptr)
+	{
+		pipelineLayoutInfo.setLayoutCount = material->GetUniformBuffers().size();
+		pipelineLayoutInfo.pSetLayouts = &material->GetUniformBuffers()[0]->GetDescriptorSetLayout();
+	}
+
 	if (vkCreatePipelineLayout(GraphicsContext::LogicalDevice, &pipelineLayoutInfo, pipelineLayout.AllocationCallbacks(), pipelineLayout.Replace()) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create pipeline layout!");
@@ -142,7 +148,6 @@ void PipelineStateObject::Create(std::shared_ptr<Material> material)
 	if (material != nullptr)
 	{
 		SetShader(material->GetShaderStages());
-		//Build();
 	}
 }
 

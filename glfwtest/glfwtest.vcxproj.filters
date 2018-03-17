@@ -557,6 +557,7 @@
     <ClInclude Include="graphics\buffers\VulkanBuffer.h" />
     <ClInclude Include="graphics\memory\Allocator.h" />
     <ClInclude Include="graphics\memory\GPUAllocator.h" />
+    <ClInclude Include="graphics\shaders\UniformBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

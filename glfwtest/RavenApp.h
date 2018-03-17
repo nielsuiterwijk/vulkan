@@ -2,6 +2,7 @@
 
 #include "standard.h"
 #include "graphics/GraphicsDevice.h"
+#include "graphics/RenderObject.h"
 
 struct GLFWwindow;
 
@@ -22,8 +23,8 @@ public:
 	RavenApp& operator=(RavenApp&&) & = default;       // Move assignment operator
 
 private:
-	static void UpdateThread(const RavenApp* app);
-	static void RenderThread(const RavenApp* app); 
+	static void UpdateThread(RavenApp* app);
+	static void RenderThread(RavenApp* app); 
 	
 	static void OnWindowResized(GLFWwindow* window, int width, int height)
 	{
@@ -40,4 +41,8 @@ private:
 private:
 	GLFWwindow* window;
 	bool run;
+
+	//objects..
+	RenderObject renderobject;
+	std::mutex objectMutex;
 };

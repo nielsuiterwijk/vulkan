@@ -3,6 +3,7 @@
 #include "ShaderCache.h"
 #include "VertexShader.h"
 #include "FragmentShader.h"
+#include "UniformBuffer.h"
 
 Material::Material(const std::string& fileName)
 {
@@ -14,6 +15,9 @@ Material::Material(const std::string& fileName)
 
 	shaderStages.push_back(vertex->GetShaderStageCreateInfo());
 	shaderStages.push_back(fragment->GetShaderStageCreateInfo());
+
+	UniformBuffer* ub = new UniformBuffer((void*)(new CameraUBO()), sizeof(CameraUBO));
+	uniformBuffers.push_back(ub);
 }
 
 Material::~Material()
@@ -21,10 +25,21 @@ Material::~Material()
 	vertex = nullptr;
 	fragment = nullptr;
 
+	for (int i = 0; i < uniformBuffers.size(); i++)
+	{
+		delete uniformBuffers[i];
+	}
+	uniformBuffers.clear();
+
 	std::cout << "Destroyed material" << std::endl;
 }
 
 const std::vector<VkPipelineShaderStageCreateInfo>& Material::GetShaderStages() const
 {
 	return shaderStages;
+}
+
+const std::vector<UniformBuffer*>& Material::GetUniformBuffers() const
+{
+	return uniformBuffers;
 }

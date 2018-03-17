@@ -1,6 +1,5 @@
 #include "RavenApp.h"
 
-
 #include <vector>
 #include <iostream>
 #include <thread>
@@ -13,6 +12,7 @@
 #include "graphics\VulkanSwapChain.h"
 #include "graphics\PipelineStateObject.h"
 #include "graphics\RenderObject.h"
+#include "graphics\shaders\UniformBuffer.h"
 
 #include "graphics/memory/GPUAllocator.h"
 #include "graphics/models/Mesh.h"
@@ -32,37 +32,60 @@ RavenApp::~RavenApp()
 	glfwTerminate();
 }
 
+void error_callback(int error, const char* description)
+{
+	puts(description);
+}
+
 bool RavenApp::Initialize()
 {
-	glfwInit();
+	{
+		if (!glfwInit()) //Initialize GLFW
+		{
+			std::cout << "GLFW not initialized." << std::endl;
+			return false;
+		}
+		
+		glfwSetErrorCallback(error_callback);
 
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-	window = glfwCreateWindow(1280, 720, "Vulkan window", nullptr, nullptr);
+		window = glfwCreateWindow(1280, 720, "Vulkan window", nullptr, nullptr);
+	}
 
-	glfwSetWindowUserPointer(window, this);
-	glfwSetWindowSizeCallback(window, RavenApp::OnWindowResized);
-	
+	if (glfwVulkanSupported() == GLFW_TRUE)
+	{
+		std::cout << "Vulkan is supported." << std::endl;
+	}
+	else 
+	{
+		std::cout << "Vulkan is NOT supported. Falling back to DirectX11" << std::endl;
+	}
 
 	uint32_t glfwExtensionCount = 0;
 	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-	std::vector<std::string> allExtensionsRequired;
-
+	
 	std::vector<std::string> windowExtensionsNeeded(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
 	//Note: Ownership given to GraphicsDevice
 	GraphicsContext::VulkanInstance = std::make_shared<VulkanInstance>();
 
-	for (size_t i = 0; i < allExtensionsRequired.size(); i++)
+	std::cout << glfwExtensionCount << " extensions available." << std::endl;
+	for (size_t i = 0; i < windowExtensionsNeeded.size(); i++)
 	{
-		if (!GraphicsContext::VulkanInstance->IsExtensionAvailable(allExtensionsRequired[i]))
+		if (!GraphicsContext::VulkanInstance->IsExtensionAvailable(windowExtensionsNeeded[i]))
 		{
-			std::cout << "Missing " << allExtensionsRequired[i] << " extension." << std::endl;
+			std::cout << "Missing " << windowExtensionsNeeded[i] << " extension." << std::endl;
 			return false;
 		}
+
+		std::cout << windowExtensionsNeeded[i] << " extension is available." << std::endl;
 	}
+
+
+	glfwSetWindowUserPointer(window, this);
+	glfwSetWindowSizeCallback(window, RavenApp::OnWindowResized);
 
 	GraphicsContext::VulkanInstance->CreateInstance(windowExtensionsNeeded);
 	GraphicsContext::VulkanInstance->HookDebugCallback();
@@ -72,8 +95,9 @@ bool RavenApp::Initialize()
 	std::shared_ptr<VulkanSwapChain> vulkanSwapChain = std::make_shared<VulkanSwapChain>();
 
 	GraphicsContext::GlobalAllocator.PrintStats();
+	VkResult result = glfwCreateWindowSurface(GraphicsContext::VulkanInstance->GetNative(), window, vulkanSwapChain->GetSurface().AllocationCallbacks(), vulkanSwapChain->GetSurface().Replace());
 
-	if (glfwCreateWindowSurface(GraphicsContext::VulkanInstance->GetNative(), window, vulkanSwapChain->GetSurface().AllocationCallbacks(), vulkanSwapChain->GetSurface().Replace()) != VK_SUCCESS)
+	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create window surface!");
 	}
@@ -86,13 +110,34 @@ bool RavenApp::Initialize()
 }
 
 
-void RavenApp::UpdateThread(const RavenApp* app)
+void RavenApp::UpdateThread(RavenApp* app)
 {
 	Timer timer;
+	//CameraUBO ubo = {};
+	
 
 	while (app->run)
 	{
 		timer.Start();
+
+		if (app->renderobject.basicMaterial != nullptr)
+		{			
+			CameraUBO* ubo = app->renderobject.basicMaterial->GetUniformBuffers()[0]->Get<CameraUBO>();
+
+			app->objectMutex.lock();
+
+				static auto startTime = std::chrono::high_resolution_clock::now();
+
+				auto currentTime = std::chrono::high_resolution_clock::now();
+				float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+				ubo->model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+				ubo->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+				ubo->proj = glm::perspective(glm::radians(45.0f), GraphicsContext::WindowSize.x / (float)GraphicsContext::WindowSize.y, 0.1f, 10.0f);
+				ubo->proj[1][1] *= -1;
+
+			app->objectMutex.unlock();
+		}
 
 		timer.Stop();
 		Sleep(16);
@@ -100,16 +145,15 @@ void RavenApp::UpdateThread(const RavenApp* app)
 	
 }
 
-void RavenApp::RenderThread(const RavenApp* app)
+void RavenApp::RenderThread(RavenApp* app)
 {
 	VulkanSemaphore renderSemaphore;
 
 	GraphicsContext::GlobalAllocator.PrintStats();
 
-	Mesh m(3);
+	Mesh quad;
 
-	RenderObject ro;
-	ro.Load(m);
+	app->renderobject.Load(quad);
 
 
 	GraphicsContext::GlobalAllocator.PrintStats();
@@ -148,7 +192,9 @@ void RavenApp::RenderThread(const RavenApp* app)
 			renderQueuTimer.Start();
 
 			{
-				ro.PrepareDraw(imageIndex, m);
+				app->objectMutex.lock();
+				app->renderobject.PrepareDraw(imageIndex, quad);//TODO: let it return a command buffer to add to a list.
+				app->objectMutex.unlock();
 				//ro.PrepareDraw(imageIndex);
 			}
 
@@ -162,7 +208,7 @@ void RavenApp::RenderThread(const RavenApp* app)
 			submitInfo.pWaitDstStageMask = waitStages;
 
 			submitInfo.commandBufferCount = 1;
-			submitInfo.pCommandBuffers = &ro.commandBuffers[imageIndex]->GetNative();
+			submitInfo.pCommandBuffers = &app->renderobject.commandBuffers[imageIndex]->GetNative(); //TODO: make use of local vector of commandBuffers
 
 			VkSemaphore signalSemaphores[] = { renderSemaphore.GetNative() }; //This semaphore will be signaled when done with rendering the queue
 			submitInfo.signalSemaphoreCount = 1;
@@ -218,8 +264,8 @@ void RavenApp::Run()
 
 	run = true;
 
-	std::thread first(RavenApp::UpdateThread, this);
-	std::thread second(RavenApp::RenderThread, this);
+	std::thread updateThread(RavenApp::UpdateThread, this);
+	std::thread renderThread(RavenApp::RenderThread, this);
 
 
 	Timer timer;
@@ -243,8 +289,8 @@ void RavenApp::Run()
 
 	run = false;
 
-	first.join();                // pauses until first finishes
-	second.join();               // pauses until second finishes
+	updateThread.join();                // pauses until first finishes
+	renderThread.join();               // pauses until second finishes
 
 	vkDeviceWaitIdle(GraphicsContext::LogicalDevice);
 }

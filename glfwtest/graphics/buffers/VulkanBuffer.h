@@ -28,6 +28,7 @@ public:
 	}
 
 	void CopyStagingToDevice();
+	void Map(void* bufferData);
 
 private:
 	void SetupStagingBuffer(void* bufferData);
@@ -43,4 +44,5 @@ private:
 	VkDeviceMemory nativeMemory;
 
 	size_t size;
+	BufferType::Enum bufferType;
 };

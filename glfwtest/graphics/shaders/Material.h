@@ -2,10 +2,12 @@
 
 #include "graphics\helpers\InstanceWrapper.h"
 
+
 #include <string>
 #include <vector>
 #include <memory>
 
+class UniformBuffer;
 class VertexShader;
 class FragmentShader;
 
@@ -18,9 +20,13 @@ public:
 
 	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages() const;
 
+	const std::vector<UniformBuffer*>& GetUniformBuffers() const;
+
 private:
 	std::shared_ptr<VertexShader> vertex;
 	std::shared_ptr<FragmentShader> fragment;
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+
+	std::vector<UniformBuffer*> uniformBuffers;
 };

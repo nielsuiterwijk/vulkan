@@ -128,7 +128,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -207,6 +207,7 @@
     <ClInclude Include="graphics\shaders\ShaderCache.h" />
     <ClInclude Include="graphics\shaders\Material.h" />
     <ClInclude Include="graphics\shaders\Shader.h" />
+    <ClInclude Include="graphics\shaders\UniformBuffer.h" />
     <ClInclude Include="graphics\shaders\VertexShader.h" />
     <ClInclude Include="graphics\VulkanSwapChain.h" />
     <ClInclude Include="helpers\DebugAssert.h" />
