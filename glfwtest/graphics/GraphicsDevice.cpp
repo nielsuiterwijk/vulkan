@@ -1,12 +1,14 @@
 #include "GraphicsDevice.h"
 
+#include "standard.h"
+
 #include "PipelineStateObject.h"
 #include "RenderPass.h"
 #include "shaders\ShaderCache.h"
-#include "standard.h"
 #include "helpers/VulkanHelpers.h"
 #include "VulkanInstance.h"
 #include "VulkanSwapChain.h"
+#include "GraphicsContext.h"
 
 #include "memory/GPUAllocator.h"
 
@@ -14,7 +16,6 @@
 #include <set>
 
 //TODO: Seperate file?
-
 VkPhysicalDevice GraphicsContext::PhysicalDevice = VK_NULL_HANDLE;
 
 Allocator GraphicsContext::GlobalAllocator;
@@ -181,11 +182,11 @@ void GraphicsDevice::CreateLogicalDevice()
 	VkDeviceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
-	createInfo.queueCreateInfoCount = queueCreateInfos.size();
+	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 
 	createInfo.pEnabledFeatures = &deviceFeatures;
 
-	createInfo.enabledExtensionCount = deviceExtensions.size();
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
 	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
 	//Note: logical device validation layers got deprecated see: https://www.khronos.org/registry/vulkan/specs/1.0-extensions/xhtml/vkspec.html 31.1.1 Device Layer Deprecation

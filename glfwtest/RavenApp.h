@@ -43,6 +43,6 @@ private:
 	bool run;
 
 	//objects..
-	RenderObject renderobject;
+	RenderObject* renderobject;
 	std::mutex objectMutex;
 };

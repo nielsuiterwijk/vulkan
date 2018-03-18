@@ -1,6 +1,7 @@
 #include "CommandBufferPool.h"
 
 #include "graphics\GraphicsDevice.h"
+#include "graphics\GraphicsContext.h"
 
 CommandBufferPool::CommandBufferPool(VkCommandPoolCreateFlags createFlags) :
 	commandPool(GraphicsContext::LogicalDevice, vkDestroyCommandPool, GraphicsContext::GlobalAllocator.Get())

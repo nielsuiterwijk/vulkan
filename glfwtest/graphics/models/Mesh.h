@@ -5,6 +5,7 @@
 #include "graphics/PipelineStateObject.h"
 
 class VulkanBuffer;
+class Material;
 
 struct Vertex 
 {
@@ -55,7 +56,7 @@ public:
 	~Mesh();
 
 	bool Initialize(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t vertexFormat);
-	void SetupCommandBuffer(std::shared_ptr<CommandBuffer> buffer, const PipelineStateObject& pso) const;
+	void SetupCommandBuffer(std::shared_ptr<CommandBuffer> buffer, const PipelineStateObject& pso, std::shared_ptr<Material> material) const;
 
 	const VkVertexInputBindingDescription& GetBindingDescription() const { return bindingDescription; }
 	const std::vector<VkVertexInputAttributeDescription>& GetAttributeDescriptions() const { return attributeDescriptions; }

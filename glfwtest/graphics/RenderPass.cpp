@@ -1,5 +1,6 @@
 #include "RenderPass.h"
 #include "graphics\GraphicsDevice.h"
+#include "graphics\GraphicsContext.h"
 #include "graphics\VulkanSwapChain.h"
 
 #include <vulkan\vulkan.h>

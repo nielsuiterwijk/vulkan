@@ -1,6 +1,6 @@
 #include "GPUAllocator.h"
 
-#include "graphics/GraphicsDevice.h"
+#include "graphics/GraphicsContext.h"
 
 GPUAllocator::GPUAllocator(int32_t size, int32_t alignment)
 {

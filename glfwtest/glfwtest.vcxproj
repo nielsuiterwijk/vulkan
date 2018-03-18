@@ -107,6 +107,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)glfwtest\includes\;$(SolutionDir)glfwtest\includes\glm;%(AdditionalIncludeDirectories);$(SolutionDir)glfwtest\</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -174,7 +175,10 @@
   <ItemGroup>
     <ClCompile Include="graphics\buffers\CommandBuffer.cpp" />
     <ClCompile Include="graphics\buffers\CommandBufferPool.cpp" />
+    <ClCompile Include="graphics\buffers\UniformBuffer.cpp" />
     <ClCompile Include="graphics\buffers\VulkanBuffer.cpp" />
+    <ClCompile Include="graphics\buffers\VulkanDescriptorPool.cpp" />
+    <ClCompile Include="graphics\helpers\VulkanSemaphore.cpp" />
     <ClCompile Include="graphics\memory\Allocator.cpp" />
     <ClCompile Include="graphics\memory\GPUAllocator.cpp" />
     <ClCompile Include="graphics\models\Mesh.cpp" />
@@ -195,7 +199,10 @@
   <ItemGroup>
     <ClInclude Include="graphics\buffers\CommandBuffer.h" />
     <ClInclude Include="graphics\buffers\CommandBufferPool.h" />
+    <ClInclude Include="graphics\buffers\UniformBuffer.h" />
     <ClInclude Include="graphics\buffers\VulkanBuffer.h" />
+    <ClInclude Include="graphics\buffers\VulkanDescriptorPool.h" />
+    <ClInclude Include="graphics\GraphicsContext.h" />
     <ClInclude Include="graphics\memory\Allocator.h" />
     <ClInclude Include="graphics\helpers\VulkanSemaphore.h" />
     <ClInclude Include="graphics\memory\GPUAllocator.h" />
@@ -207,7 +214,6 @@
     <ClInclude Include="graphics\shaders\ShaderCache.h" />
     <ClInclude Include="graphics\shaders\Material.h" />
     <ClInclude Include="graphics\shaders\Shader.h" />
-    <ClInclude Include="graphics\shaders\UniformBuffer.h" />
     <ClInclude Include="graphics\shaders\VertexShader.h" />
     <ClInclude Include="graphics\VulkanSwapChain.h" />
     <ClInclude Include="helpers\DebugAssert.h" />

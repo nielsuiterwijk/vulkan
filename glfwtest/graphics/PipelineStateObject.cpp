@@ -2,7 +2,7 @@
 
 #include "GraphicsDevice.h"
 #include "RenderPass.h"
-#include "graphics/shaders/UniformBuffer.h"
+#include "graphics/buffers/UniformBuffer.h"
 
 PipelineStateObject::PipelineStateObject() :
 	pipelineLayout(),
@@ -76,8 +76,8 @@ void PipelineStateObject::Create(std::shared_ptr<Material> material)
 	rasterizer.rasterizerDiscardEnable = VK_FALSE; //If set to VK_TRUE, then geometry never passes through the rasterizer stage. This basically disables any output to the framebuffer.
 	rasterizer.polygonMode = VK_POLYGON_MODE_FILL; //Wireframe mode: VK_POLYGON_MODE_LINE or point cloud: VK_POLYGON_MODE_POINT
 	rasterizer.lineWidth = 1.0f;
-	rasterizer.cullMode =  VK_CULL_MODE_BACK_BIT;
-	rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 	rasterizer.depthBiasConstantFactor = 0.0f; // Optional
 	rasterizer.depthBiasClamp = 0.0f; // Optional

@@ -1,6 +1,6 @@
 #include "VulkanBuffer.h"
 
-#include "graphics/GraphicsDevice.h"
+#include "graphics/GraphicsContext.h"
 #include "graphics/memory/GPUAllocator.h"
 
 #include <vulkan/vulkan.h>

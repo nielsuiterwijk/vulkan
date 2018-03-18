@@ -12,7 +12,7 @@
 #include "graphics\VulkanSwapChain.h"
 #include "graphics\PipelineStateObject.h"
 #include "graphics\RenderObject.h"
-#include "graphics\shaders\UniformBuffer.h"
+#include "graphics\buffers\UniformBuffer.h"
 
 #include "graphics/memory/GPUAllocator.h"
 #include "graphics/models/Mesh.h"
@@ -25,6 +25,8 @@ RavenApp::RavenApp() :
 
 RavenApp::~RavenApp()
 {
+	delete renderobject;
+
 	GraphicsDevice::Instance().Finalize();
 
 	glfwDestroyWindow(window);
@@ -105,6 +107,8 @@ bool RavenApp::Initialize()
 	GraphicsDevice::Instance().Initialize(glm::u32vec2(1280, 720), vulkanSwapChain);
 
 	GraphicsContext::GlobalAllocator.PrintStats();
+
+	renderobject = new RenderObject();
 	
 	return true;
 }
@@ -120,9 +124,9 @@ void RavenApp::UpdateThread(RavenApp* app)
 	{
 		timer.Start();
 
-		if (app->renderobject.basicMaterial != nullptr)
+		if (app->renderobject->material3D != nullptr)
 		{			
-			CameraUBO* ubo = app->renderobject.basicMaterial->GetUniformBuffers()[0]->Get<CameraUBO>();
+			CameraUBO* ubo = app->renderobject->material3D->GetUniformBuffers()[0]->Get<CameraUBO>();
 
 			app->objectMutex.lock();
 
@@ -153,7 +157,7 @@ void RavenApp::RenderThread(RavenApp* app)
 
 	Mesh quad;
 
-	app->renderobject.Load(quad);
+	app->renderobject->Load(quad);
 
 
 	GraphicsContext::GlobalAllocator.PrintStats();
@@ -193,7 +197,9 @@ void RavenApp::RenderThread(RavenApp* app)
 
 			{
 				app->objectMutex.lock();
-				app->renderobject.PrepareDraw(imageIndex, quad);//TODO: let it return a command buffer to add to a list.
+				//TODO: let it return a command buffer to add to a list.
+				//TODO: Make the prepare threadsafe by doing a copy?
+				app->renderobject->PrepareDraw(imageIndex, quad);
 				app->objectMutex.unlock();
 				//ro.PrepareDraw(imageIndex);
 			}
@@ -208,7 +214,7 @@ void RavenApp::RenderThread(RavenApp* app)
 			submitInfo.pWaitDstStageMask = waitStages;
 
 			submitInfo.commandBufferCount = 1;
-			submitInfo.pCommandBuffers = &app->renderobject.commandBuffers[imageIndex]->GetNative(); //TODO: make use of local vector of commandBuffers
+			submitInfo.pCommandBuffers = &app->renderobject->commandBuffers[imageIndex]->GetNative(); //TODO: make use of local vector of commandBuffers
 
 			VkSemaphore signalSemaphores[] = { renderSemaphore.GetNative() }; //This semaphore will be signaled when done with rendering the queue
 			submitInfo.signalSemaphoreCount = 1;

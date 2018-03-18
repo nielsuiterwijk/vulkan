@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../helpers/InstanceWrapper.h"
-#include "graphics\GraphicsDevice.h"
+#include "graphics/GraphicsContext.h"
 
 //TODO: Add ref counting
 class Shader

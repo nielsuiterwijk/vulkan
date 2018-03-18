@@ -1,6 +1,8 @@
 #include "Mesh.h"
 
 #include "graphics/buffers/VulkanBuffer.h"
+#include "graphics/shaders/Material.h"
+#include "graphics/buffers/UniformBuffer.h"
 
 Mesh::Mesh() :
 	triangleCount(0),
@@ -68,7 +70,7 @@ bool Mesh::Initialize(void* vertexData, const size_t& vertexDataSize, void* inde
 	return true;
 }
 
-void Mesh::SetupCommandBuffer(std::shared_ptr<CommandBuffer> commandBuffer, const PipelineStateObject& pso) const
+void Mesh::SetupCommandBuffer(std::shared_ptr<CommandBuffer> commandBuffer, const PipelineStateObject& pso, std::shared_ptr<Material> material) const
 {	
 	vkCmdBindPipeline(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine());
 
@@ -77,6 +79,9 @@ void Mesh::SetupCommandBuffer(std::shared_ptr<CommandBuffer> commandBuffer, cons
 	vkCmdBindVertexBuffers(commandBuffer->GetNative(), 0, 1, vertexBuffers, offsets);
 
 	vkCmdBindIndexBuffer(commandBuffer->GetNative(), indexBuffer->GetNative(), 0, VK_INDEX_TYPE_UINT16);
+		
+	
+	vkCmdBindDescriptorSets(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetLayout(), 0, 1, &material->GetUniformBuffers()[0]->GetDescriptorSet(), 0, nullptr);
 
 	//vkCmdDraw(commandBuffer->GetNative(), triangleCount, 1, 0, 0);
 	vkCmdDrawIndexed(commandBuffer->GetNative(), triangleCount * 3, 1, 0, 0, 0);

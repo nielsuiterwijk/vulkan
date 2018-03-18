@@ -3,9 +3,10 @@
 #include "ShaderCache.h"
 #include "VertexShader.h"
 #include "FragmentShader.h"
-#include "UniformBuffer.h"
+#include "graphics/buffers/UniformBuffer.h"
 
-Material::Material(const std::string& fileName)
+Material::Material(const std::string& fileName) :
+	descripterPool(1)
 {
 	//TODO: read the meta data and load in.
 	//std::vector<char> data = FileSystem::ReadFile(fileName);
@@ -16,7 +17,7 @@ Material::Material(const std::string& fileName)
 	shaderStages.push_back(vertex->GetShaderStageCreateInfo());
 	shaderStages.push_back(fragment->GetShaderStageCreateInfo());
 
-	UniformBuffer* ub = new UniformBuffer((void*)(new CameraUBO()), sizeof(CameraUBO));
+	UniformBuffer* ub = new UniformBuffer((void*)(new CameraUBO()), sizeof(CameraUBO), descripterPool);
 	uniformBuffers.push_back(ub);
 }
 

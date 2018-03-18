@@ -26,6 +26,9 @@
     <ClCompile Include="graphics\buffers\VulkanBuffer.cpp" />
     <ClCompile Include="graphics\memory\Allocator.cpp" />
     <ClCompile Include="graphics\memory\GPUAllocator.cpp" />
+    <ClCompile Include="graphics\buffers\UniformBuffer.cpp" />
+    <ClCompile Include="graphics\helpers\VulkanSemaphore.cpp" />
+    <ClCompile Include="graphics\buffers\VulkanDescriptorPool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -557,7 +560,9 @@
     <ClInclude Include="graphics\buffers\VulkanBuffer.h" />
     <ClInclude Include="graphics\memory\Allocator.h" />
     <ClInclude Include="graphics\memory\GPUAllocator.h" />
-    <ClInclude Include="graphics\shaders\UniformBuffer.h" />
+    <ClInclude Include="graphics\buffers\UniformBuffer.h" />
+    <ClInclude Include="graphics\buffers\VulkanDescriptorPool.h" />
+    <ClInclude Include="graphics\GraphicsContext.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

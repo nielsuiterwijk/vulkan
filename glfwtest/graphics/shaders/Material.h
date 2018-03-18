@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics\helpers\InstanceWrapper.h"
-
+#include "graphics\buffers\VulkanDescriptorPool.h"
 
 #include <string>
 #include <vector>
@@ -27,6 +27,8 @@ private:
 	std::shared_ptr<FragmentShader> fragment;
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+
+	VulkanDescriptorPool descripterPool;
 
 	std::vector<UniformBuffer*> uniformBuffers;
 };

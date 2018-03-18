@@ -1,6 +1,7 @@
 #include "VulkanSwapChain.h"
 
 #include "GraphicsDevice.h"
+#include "graphics\GraphicsContext.h"
 #include "VulkanInstance.h"
 #include "helpers\VulkanHelpers.h"
 

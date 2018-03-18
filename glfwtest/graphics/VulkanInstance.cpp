@@ -3,7 +3,7 @@
 #include "standard.h"
 #include "helpers/VulkanHelpers.h"
 #include "helpers/VulkanDebugHook.h"
-#include "GraphicsDevice.h"
+#include "GraphicsContext.h"
 
 #include <iostream>
 #include <algorithm>
@@ -53,13 +53,13 @@ void VulkanInstance::CreateInstance(std::vector<std::string> requiredExtensions)
 	{
 		requiredExtensionsC.push_back(requiredExtensions[i].c_str());
 	}
-	createInfo.enabledExtensionCount = requiredExtensionsC.size();
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensionsC.size());
 	createInfo.ppEnabledExtensionNames = requiredExtensionsC.data();
 
 
 	if (enableValidationLayers)
 	{
-		createInfo.enabledLayerCount = validationLayers.size();
+		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 		createInfo.ppEnabledLayerNames = validationLayers.data();
 	}
 	else

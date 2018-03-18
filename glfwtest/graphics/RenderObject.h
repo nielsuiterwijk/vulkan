@@ -3,8 +3,7 @@
 #include "PipelineStateObject.h"
 #include "graphics/models/Mesh.h"
 #include "graphics/VulkanSwapChain.h"
-#include "graphics/shaders/UniformBuffer.h"
-
+#include "graphics/buffers/UniformBuffer.h"
 class RenderObject
 {
 public:
@@ -16,32 +15,38 @@ public:
 	~RenderObject()
 	{
 		fixedMaterial = nullptr;
-		basicMaterial = nullptr;
+		material2D = nullptr;
+		material3D = nullptr;
 	}
 
 	void Load(const Mesh& m)
 	{
 		fixedMaterial = GraphicsDevice::Instance().CreateMaterial("fixed");
-		basicMaterial = GraphicsDevice::Instance().CreateMaterial("basic");
+		material2D = GraphicsDevice::Instance().CreateMaterial("basic2d");
+		material3D = GraphicsDevice::Instance().CreateMaterial("basic3d");
 
 		psoFixed.Create(fixedMaterial);
 		psoFixed.Build();
 
-		psoBasic.Create(basicMaterial);
+		psoBasic2D.Create(material2D);
+		psoBasic2D.SetVertices(m.GetBindingDescription(), m.GetAttributeDescriptions());
+		psoBasic2D.Build();
 
-		psoBasic.SetVertices(m.GetBindingDescription(), m.GetAttributeDescriptions());
-		psoBasic.Build();
+		psoBasic3D.Create(material3D);
+		psoBasic3D.SetVertices(m.GetBindingDescription(), m.GetAttributeDescriptions());
+		psoBasic3D.Build();
 
 		GraphicsContext::CommandBufferPool->Create(commandBuffers, 3);
 	}
 
 	void PrepareDraw(uint32_t imageIndex, const Mesh& mesh)
 	{
-		basicMaterial->GetUniformBuffers()[0]->Upload();
-		//for (size_t i = 0; i < commandBuffers.size(); i++)
-		{
-			commandBuffers[imageIndex]->StartRecording(imageIndex, VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+		std::shared_ptr<CommandBuffer> commandBuffer = commandBuffers[imageIndex];
 
+		material3D->GetUniformBuffers()[0]->Upload();
+		
+		{
+			commandBuffer->StartRecording(imageIndex, VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
 			VkRenderPassBeginInfo renderPassInfo = {};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -54,12 +59,13 @@ public:
 			renderPassInfo.clearValueCount = 1;
 			renderPassInfo.pClearValues = &clearColor;
 
-			vkCmdBeginRenderPass(commandBuffers[imageIndex]->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+			vkCmdBeginRenderPass(commandBuffer->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 			{
-				mesh.SetupCommandBuffer(commandBuffers[imageIndex], psoBasic);
+				//mesh.SetupCommandBuffer(commandBuffer, psoBasic2D, material2D);
+				mesh.SetupCommandBuffer(commandBuffer, psoBasic3D, material3D);
 			}
-			vkCmdEndRenderPass(commandBuffers[imageIndex]->GetNative());
-			commandBuffers[imageIndex]->StopRecording();
+			vkCmdEndRenderPass(commandBuffer->GetNative());
+			commandBuffer->StopRecording();
 		}
 	}
 
@@ -94,10 +100,12 @@ public:
 
 public:
 	std::shared_ptr<Material> fixedMaterial;
-	std::shared_ptr<Material> basicMaterial;
+	std::shared_ptr<Material> material2D;
+	std::shared_ptr<Material> material3D;
 
 	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
 
 	PipelineStateObject psoFixed;
-	PipelineStateObject psoBasic;
+	PipelineStateObject psoBasic2D;
+	PipelineStateObject psoBasic3D;
 };

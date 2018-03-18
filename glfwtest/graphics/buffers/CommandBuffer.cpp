@@ -2,6 +2,7 @@
 #include "graphics\GraphicsDevice.h"
 #include "graphics\VulkanSwapChain.h"
 #include "graphics\buffers\CommandBufferPool.h"
+#include "graphics\GraphicsContext.h"
 
 #include "standard.h"
 
