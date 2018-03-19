@@ -109,6 +109,7 @@ bool RavenApp::Initialize()
 	GraphicsContext::GlobalAllocator.PrintStats();
 
 	renderobject = new RenderObject();
+
 	
 	return true;
 }
@@ -135,7 +136,7 @@ void RavenApp::UpdateThread(RavenApp* app)
 				auto currentTime = std::chrono::high_resolution_clock::now();
 				float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-				ubo->model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+				ubo->model = glm::rotate(glm::mat4(1.0f), time * glm::radians(50.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 				ubo->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 				ubo->proj = glm::perspective(glm::radians(45.0f), GraphicsContext::WindowSize.x / (float)GraphicsContext::WindowSize.y, 0.1f, 10.0f);
 				ubo->proj[1][1] *= -1;
@@ -156,8 +157,8 @@ void RavenApp::RenderThread(RavenApp* app)
 	GraphicsContext::GlobalAllocator.PrintStats();
 
 	Mesh quad;
-
-	app->renderobject->Load(quad);
+	Mesh chalet("models/chalet.obj");
+	app->renderobject->Load(chalet);
 
 
 	GraphicsContext::GlobalAllocator.PrintStats();
@@ -176,7 +177,9 @@ void RavenApp::RenderThread(RavenApp* app)
 	Timer renderQueuTimer;
 	Timer presentTimer;
 
-	float accumelatedTime = 0;
+	float accumelatedTime = 0; 
+	
+	VkResult result;
 
 	while (app->run)
 	{
@@ -190,7 +193,7 @@ void RavenApp::RenderThread(RavenApp* app)
 			//Prepare
 			uint32_t imageIndex = GraphicsContext::SwapChain->PrepareBackBuffer();
 			const VulkanSemaphore& backBufferSemaphore = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).semaphore;
-			Sleep(4);
+			//Sleep(4);
 			acquireTimer.Stop();			
 
 			renderQueuTimer.Start();
@@ -199,7 +202,8 @@ void RavenApp::RenderThread(RavenApp* app)
 				app->objectMutex.lock();
 				//TODO: let it return a command buffer to add to a list.
 				//TODO: Make the prepare threadsafe by doing a copy?
-				app->renderobject->PrepareDraw(imageIndex, quad);
+				//TODO: dont pass the mesh, it should be owned / held by the renderObject
+				app->renderobject->PrepareDraw(imageIndex, chalet);
 				app->objectMutex.unlock();
 				//ro.PrepareDraw(imageIndex);
 			}
@@ -221,11 +225,19 @@ void RavenApp::RenderThread(RavenApp* app)
 			submitInfo.pSignalSemaphores = signalSemaphores;
 			vkResetFences(GraphicsContext::LogicalDevice, 1, &renderFence);
 			//Draw (wait untill surface is available)
-			if (vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, renderFence) != VK_SUCCESS)
+			result = vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, renderFence);
+			if (result != VK_SUCCESS)
 			{
+				std::cout << "vkWaitForFences error: " << Vulkan::GetVkResultAsString(result) << std::endl;
 				throw std::runtime_error("failed to submit draw command buffer!");
 			}
-			vkWaitForFences(GraphicsContext::LogicalDevice, 1, &renderFence, true, 1000000);
+
+			result = vkWaitForFences(GraphicsContext::LogicalDevice, 1, &renderFence, true, 5000000000);
+			if (result != VK_SUCCESS)
+			{
+				std::cout << "vkWaitForFences error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+			}
+
 			//Sleep(4);
 			renderQueuTimer.Stop();
 

@@ -106,7 +106,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)glfwtest\includes\;$(SolutionDir)glfwtest\includes\glm;%(AdditionalIncludeDirectories);$(SolutionDir)glfwtest\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)glfwtest\includes\;$(SolutionDir)glfwtest\includes\glm;%(AdditionalIncludeDirectories);$(SolutionDir)glfwtest\;$(SolutionDir)glfwtest\includes\tinyobj</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -191,6 +191,7 @@
     <ClCompile Include="graphics\VulkanSwapChain.cpp" />
     <ClCompile Include="helpers\DebugAssert.cpp" />
     <ClCompile Include="graphics\GraphicsDevice.cpp" />
+    <ClCompile Include="includes\tinyobj\tiny_obj_loader.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RavenApp.cpp" />
     <ClCompile Include="helpers\Timer.cpp" />

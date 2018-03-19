@@ -29,6 +29,7 @@
     <ClCompile Include="graphics\buffers\UniformBuffer.cpp" />
     <ClCompile Include="graphics\helpers\VulkanSemaphore.cpp" />
     <ClCompile Include="graphics\buffers\VulkanDescriptorPool.cpp" />
+    <ClCompile Include="includes\tinyobj\tiny_obj_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">

@@ -35,6 +35,40 @@ struct Vertex
 	}
 };
 
+struct Vertex3D
+{
+	glm::vec3 pos;
+	//glm::vec2 texCoords;
+	glm::vec3 color;
+
+	static void GetBindingDescription(VkVertexInputBindingDescription& bindingDescription)
+	{
+		bindingDescription.binding = 0;
+		bindingDescription.stride = sizeof(Vertex3D);
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	}
+
+	static void GetAttributeDescriptions(std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
+	{
+		attributeDescriptions.resize(2);
+
+		attributeDescriptions[0].binding = 0;
+		attributeDescriptions[0].location = 0;
+		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[0].offset = offsetof(Vertex3D, pos);
+
+		/*attributeDescriptions[0].binding = 0;
+		attributeDescriptions[0].location = 1;
+		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions[0].offset = offsetof(Vertex3D, texCoords);*/
+
+		attributeDescriptions[1].binding = 0;
+		attributeDescriptions[1].location = 1;
+		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[1].offset = offsetof(Vertex3D, color);
+	}
+};
+
 class Mesh
 {
 public:
@@ -53,9 +87,10 @@ public:
 	};
 
 	Mesh();
+	Mesh(const std::string& fileName);
 	~Mesh();
 
-	bool Initialize(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t vertexFormat);
+	bool Initialize(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize);
 	void SetupCommandBuffer(std::shared_ptr<CommandBuffer> buffer, const PipelineStateObject& pso, std::shared_ptr<Material> material) const;
 
 	const VkVertexInputBindingDescription& GetBindingDescription() const { return bindingDescription; }

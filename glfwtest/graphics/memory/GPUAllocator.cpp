@@ -50,7 +50,7 @@ void GPUAllocator::Allocate(const VkBuffer& buffer, VkDeviceMemory* memory, VkMe
 		throw std::runtime_error("failed to allocate vertex buffer memory!");
 	}
 
-
+	std::cout << "Allocated " << Helpers::MemorySizeToString(memoryRequirements.size) << " bytes." << std::endl;
 }
 
 // Find a memory in `memoryTypeBitsRequirement` that includes all of `requiredProperties`
