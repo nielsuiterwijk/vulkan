@@ -30,6 +30,8 @@
     <ClCompile Include="graphics\helpers\VulkanSemaphore.cpp" />
     <ClCompile Include="graphics\buffers\VulkanDescriptorPool.cpp" />
     <ClCompile Include="includes\tinyobj\tiny_obj_loader.cpp" />
+    <ClCompile Include="graphics\DepthBuffer.cpp" />
+    <ClCompile Include="graphics\textures\Texture2D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -564,6 +566,8 @@
     <ClInclude Include="graphics\buffers\UniformBuffer.h" />
     <ClInclude Include="graphics\buffers\VulkanDescriptorPool.h" />
     <ClInclude Include="graphics\GraphicsContext.h" />
+    <ClInclude Include="graphics\DepthBuffer.h" />
+    <ClInclude Include="graphics\textures\Texture2D.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

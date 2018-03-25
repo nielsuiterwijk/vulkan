@@ -178,6 +178,7 @@
     <ClCompile Include="graphics\buffers\UniformBuffer.cpp" />
     <ClCompile Include="graphics\buffers\VulkanBuffer.cpp" />
     <ClCompile Include="graphics\buffers\VulkanDescriptorPool.cpp" />
+    <ClCompile Include="graphics\DepthBuffer.cpp" />
     <ClCompile Include="graphics\helpers\VulkanSemaphore.cpp" />
     <ClCompile Include="graphics\memory\Allocator.cpp" />
     <ClCompile Include="graphics\memory\GPUAllocator.cpp" />
@@ -188,6 +189,7 @@
     <ClCompile Include="graphics\shaders\Material.cpp" />
     <ClCompile Include="graphics\shaders\ShaderCache.cpp" />
     <ClCompile Include="graphics\shaders\VertexShader.cpp" />
+    <ClCompile Include="graphics\textures\Texture2D.cpp" />
     <ClCompile Include="graphics\VulkanSwapChain.cpp" />
     <ClCompile Include="helpers\DebugAssert.cpp" />
     <ClCompile Include="graphics\GraphicsDevice.cpp" />
@@ -203,6 +205,7 @@
     <ClInclude Include="graphics\buffers\UniformBuffer.h" />
     <ClInclude Include="graphics\buffers\VulkanBuffer.h" />
     <ClInclude Include="graphics\buffers\VulkanDescriptorPool.h" />
+    <ClInclude Include="graphics\DepthBuffer.h" />
     <ClInclude Include="graphics\GraphicsContext.h" />
     <ClInclude Include="graphics\memory\Allocator.h" />
     <ClInclude Include="graphics\helpers\VulkanSemaphore.h" />
@@ -216,6 +219,7 @@
     <ClInclude Include="graphics\shaders\Material.h" />
     <ClInclude Include="graphics\shaders\Shader.h" />
     <ClInclude Include="graphics\shaders\VertexShader.h" />
+    <ClInclude Include="graphics\textures\Texture2D.h" />
     <ClInclude Include="graphics\VulkanSwapChain.h" />
     <ClInclude Include="helpers\DebugAssert.h" />
     <ClInclude Include="graphics\helpers\VulkanDebugHook.h" />

@@ -38,7 +38,7 @@ void CommandBuffer::Finalize()
 	vkFreeCommandBuffers(GraphicsContext::LogicalDevice, commandBufferPool->GetNative(), 1, &commandBuffer);
 }
 
-void CommandBuffer::StartRecording(int32_t frameIndex, VkCommandBufferUsageFlagBits flag)
+void CommandBuffer::StartRecording(VkCommandBufferUsageFlagBits flag)
 {
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

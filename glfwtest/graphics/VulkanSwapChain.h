@@ -4,6 +4,8 @@
 #include "GraphicsDevice.h"
 #include "graphics\buffers\CommandBuffer.h"
 #include "graphics\helpers\VulkanSemaphore.h"
+#include "graphics\textures\Texture2D.h"
+#include "graphics\DepthBuffer.h"
 #include "RenderPass.h"
 
 #include <vector>
@@ -26,8 +28,7 @@ public:
 
 struct SwapChainSurface
 {
-	VkImage image;
-	InstanceWrapper<VkImageView> imageView;
+	Texture2D texture;
 	InstanceWrapper<VkFramebuffer> framebuffer;
 
 	VulkanSemaphore semaphore;	
@@ -48,6 +49,8 @@ public:
 
 	//Returns the backbuffer index
 	int32_t PrepareBackBuffer();
+
+	const DepthBuffer& GetDepthBuffer() const;
 
 	InstanceWrapper<VkSurfaceKHR>& GetSurface();
 	const SwapChainSurface& GetFrameBuffer(int32_t frameIndex);
@@ -72,6 +75,7 @@ private:
 	VulkanSwapChainDetails details;
 
 	std::vector<SwapChainSurface> backBuffers;
+	DepthBuffer depthBuffer;
 	
 	VkFormat imageFormat;
 	VkExtent2D extent;

@@ -91,13 +91,15 @@ void GraphicsDevice::Initialize(const glm::u32vec2& windowSize, std::shared_ptr<
 	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.graphicsFamily, 0, &GraphicsContext::GraphicsQueue);
 	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.presentFamily, 0, &GraphicsContext::PresentQueue);
 
-	GraphicsContext::SwapChain->Connect(GraphicsContext::WindowSize, GraphicsContext::FamilyIndices);
-
-	GraphicsContext::RenderPass = std::make_shared<RenderPass>(GraphicsContext::SwapChain->GetSurfaceFormat().format);
-	GraphicsContext::SwapChain->SetupFrameBuffers();
-
 	GraphicsContext::CommandBufferPool = std::make_shared<CommandBufferPool>(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 	GraphicsContext::CommandBufferPoolTransient = std::make_shared<CommandBufferPool>(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
+
+	GraphicsContext::SwapChain->Connect(GraphicsContext::WindowSize, GraphicsContext::FamilyIndices);
+	
+
+	GraphicsContext::RenderPass = std::make_shared<RenderPass>(GraphicsContext::SwapChain->GetSurfaceFormat().format, GraphicsContext::SwapChain->GetDepthBuffer().GetFormat());
+	GraphicsContext::SwapChain->SetupFrameBuffers();
+
 	
 }
 
@@ -120,14 +122,11 @@ void GraphicsDevice::DestroySwapchain()
 void GraphicsDevice::RebuildSwapchain()
 {
 	//rebuild:
-	//createSwapChain();
-	//createImageViews();
 	GraphicsContext::SwapChain->Connect(GraphicsContext::WindowSize, GraphicsContext::FamilyIndices);
-	//createRenderPass();
-	GraphicsContext::RenderPass = std::make_shared<RenderPass>(GraphicsContext::SwapChain->GetSurfaceFormat().format);
+
+	GraphicsContext::RenderPass = std::make_shared<RenderPass>(GraphicsContext::SwapChain->GetSurfaceFormat().format, GraphicsContext::SwapChain->GetDepthBuffer().GetFormat());
 	GraphicsContext::SwapChain->SetupFrameBuffers();
 
-	//createCommandBuffers();
 	GraphicsContext::CommandBufferPool->RecreateAll();
 }
 

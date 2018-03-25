@@ -37,6 +37,7 @@ private:
 
 	VkViewport viewport;
 	VkRect2D scissor;
+
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo;
 	VkPipelineColorBlendStateCreateInfo colorBlending;
 	VkPipelineColorBlendAttachmentState colorBlendAttachment;
@@ -44,5 +45,6 @@ private:
 	VkPipelineRasterizationStateCreateInfo rasterizer;
 	VkPipelineViewportStateCreateInfo viewportState;
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly;
+	VkPipelineDepthStencilStateCreateInfo depthStencil;
 
 };

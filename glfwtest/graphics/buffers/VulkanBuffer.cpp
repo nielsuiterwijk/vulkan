@@ -131,7 +131,7 @@ void VulkanBuffer::CopyStagingToDevice()
 {
 	auto buffer = GraphicsContext::CommandBufferPoolTransient->Create();
 
-	buffer->StartRecording(0, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+	buffer->StartRecording(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
 	VkBufferCopy copyRegion = {};
 	copyRegion.srcOffset = 0; // Optional
@@ -147,8 +147,8 @@ void VulkanBuffer::CopyStagingToDevice()
 	submitInfo.pCommandBuffers = &buffer->GetNative();
 
 	//TODO: This causes waits, needs to be async
-	vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(GraphicsContext::GraphicsQueue);
+	vkQueueSubmit(GraphicsContext::TransportQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(GraphicsContext::TransportQueue);
 
 	GraphicsContext::CommandBufferPoolTransient->Free(buffer);
 }

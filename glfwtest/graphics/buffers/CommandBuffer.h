@@ -17,7 +17,7 @@ public:
 	void Initialize();
 	void Finalize();
 
-	void StartRecording(int32_t frameIndex, VkCommandBufferUsageFlagBits flag);
+	void StartRecording(VkCommandBufferUsageFlagBits flag);
 	void StopRecording();
 
 	const VkCommandBuffer& GetNative() const;

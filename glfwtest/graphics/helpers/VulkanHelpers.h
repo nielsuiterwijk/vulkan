@@ -7,6 +7,13 @@
 class Vulkan
 {
 public:
+
+
+	static bool HasStencilComponent(VkFormat format)
+	{
+		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+	}
+
 	//https://www.reddit.com/r/vulkan/comments/4ta9nj/is_there_a_comprehensive_list_of_the_names_and/
 	static const char* GetVendorName(int vendorId)
 	{

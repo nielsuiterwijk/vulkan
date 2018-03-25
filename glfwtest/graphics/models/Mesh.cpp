@@ -26,11 +26,11 @@ Mesh::Mesh() :
 	Vertex::GetBindingDescription(bindingDescription);
 	Vertex::GetAttributeDescriptions(attributeDescriptions);
 	
-	uint32_t memorySize = sizeof(Vertex) * vertices.size();
+	size_t memorySize = sizeof(Vertex) * vertices.size();
 	uint8_t* vertexData = new uint8_t[memorySize];
 	memcpy(vertexData, vertices.data(), memorySize);
 
-	uint32_t memorySizeIndices = sizeof(uint16_t) * indices.size();
+	size_t memorySizeIndices = sizeof(uint16_t) * indices.size();
 	uint8_t* indexData = new uint8_t[memorySizeIndices];
 	memcpy(indexData, indices.data(), memorySizeIndices);
 

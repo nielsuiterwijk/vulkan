@@ -12,7 +12,8 @@
 VulkanSwapChain::VulkanSwapChain() :
 	surface(GraphicsContext::VulkanInstance->GetNative(), vkDestroySurfaceKHR, GraphicsContext::GlobalAllocator.Get()),
 	swapChain(),
-	nextBackBufferIndex(0)
+	nextBackBufferIndex(0),
+	depthBuffer()
 {
 }
 
@@ -97,49 +98,29 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 	backBuffers.resize(imageCount);
 	for (int i = 0; i < images.size(); i++)
 	{
-		backBuffers[i].image = images[i];
-
-		VkImageViewCreateInfo createInfo = {};
-		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		createInfo.image = images[i];
-		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		createInfo.format = imageFormat;
-
-		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		createInfo.subresourceRange.baseMipLevel = 0;
-		createInfo.subresourceRange.levelCount = 1;
-		createInfo.subresourceRange.baseArrayLayer = 0;
-		createInfo.subresourceRange.layerCount = 1;
-
-		//This is a typical view setup (for a frame buffer). No mipmaps, just color
-		backBuffers[i].imageView.Initialize(GraphicsContext::LogicalDevice, vkDestroyImageView, GraphicsContext::GlobalAllocator.Get());
-
-		if (vkCreateImageView(GraphicsContext::LogicalDevice, &createInfo, backBuffers[i].imageView.AllocationCallbacks(), backBuffers[i].imageView.Replace()) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create image views!");
-		}
+		backBuffers[i].texture.SetImage(images[i]);
+		backBuffers[i].texture.SetupView(imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
+
+	depthBuffer.Initialize(windowSize.x, windowSize.y);
 }
 
 void VulkanSwapChain::SetupFrameBuffers()
 {
 	for (size_t i = 0; i < backBuffers.size(); i++)
 	{
-		VkImageView attachments[] =
-		{
-			backBuffers[i].imageView
-		};
 
+		std::array<VkImageView, 2> attachments = 
+		{
+			backBuffers[i].texture.GetImageView(),
+			depthBuffer.GetImageView()
+		};
+		
 		VkFramebufferCreateInfo framebufferInfo = {};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
-		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments = attachments;
+		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		framebufferInfo.pAttachments = attachments.data();
 		framebufferInfo.width = extent.width;
 		framebufferInfo.height = extent.height;
 		framebufferInfo.layers = 1;
@@ -157,10 +138,11 @@ void VulkanSwapChain::SetupFrameBuffers()
 
 void VulkanSwapChain::DestroyFrameBuffers()
 {
+	depthBuffer.Destroy();
+
 	for (size_t i = 0; i < backBuffers.size(); i++)
 	{
-		backBuffers[i].framebuffer = nullptr;
-		backBuffers[i].imageView = nullptr;
+		backBuffers[i].framebuffer = nullptr;		
 	}
 
 	backBuffers.clear();
@@ -180,6 +162,7 @@ int32_t VulkanSwapChain::PrepareBackBuffer()
 	if (result == VK_ERROR_OUT_OF_DATE_KHR)
 	{
 		//todo: recreate SwapChain
+		throw std::runtime_error("VK_ERROR_OUT_OF_DATE_KHR");
 	}
 	
 	assert(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR);
@@ -281,6 +264,10 @@ VkExtent2D VulkanSwapChain::GetExtent() const
 	return extent;
 }
 
+const DepthBuffer& VulkanSwapChain::GetDepthBuffer() const
+{
+	return depthBuffer;
+}
 
 const InstanceWrapper<VkSwapchainKHR>& VulkanSwapChain::GetNative() const
 {
