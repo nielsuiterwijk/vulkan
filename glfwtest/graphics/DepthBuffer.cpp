@@ -9,7 +9,14 @@ DepthBuffer::DepthBuffer() : Texture2D()
 
 DepthBuffer::~DepthBuffer()
 {
+	//Destroy() gets called in Texture2D deconstructor
+}
 
+void DepthBuffer::Destroy()
+{
+	imageView = nullptr;
+	image = nullptr;
+	imageDeviceMemory = nullptr; //TODO: Use GpuAllocator::Free();
 }
 
 void DepthBuffer::Initialize(uint32_t width, uint32_t height)
@@ -21,12 +28,6 @@ void DepthBuffer::Initialize(uint32_t width, uint32_t height)
 
 }
 
-void DepthBuffer::Destroy()
-{
-	imageView = nullptr;
-	image = nullptr;
-	imageDeviceMemory = nullptr;
-}
 
 VkFormat DepthBuffer::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 {

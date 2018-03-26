@@ -34,14 +34,14 @@ Mesh::Mesh() :
 	uint8_t* indexData = new uint8_t[memorySizeIndices];
 	memcpy(indexData, indices.data(), memorySizeIndices);
 
-	triangleCount = indices.size() / 3;
+	triangleCount = static_cast<uint32_t>(indices.size()) / 3;
 	Initialize(vertexData, memorySize, indexData, memorySizeIndices);
 
 	delete [] vertexData;
 	delete [] indexData;
 }
 
-Mesh::Mesh(const std::string& fileName) :
+Mesh::Mesh(const std::string& fileName) : //TODO: implement glTF? https://godotengine.org/article/we-should-all-use-gltf-20-export-3d-assets-game-engines
 	triangleCount(0),
 	indexBuffer(nullptr),
 	vertexBuffer(nullptr)
@@ -95,7 +95,7 @@ Mesh::Mesh(const std::string& fileName) :
 		}
 	}
 
-	triangleCount = indices.size() / 3;
+	triangleCount = static_cast<uint32_t>(indices.size()) / 3;
 
 	for (size_t i = 0; i < triangleCount; i++)
 	{
@@ -107,9 +107,9 @@ Mesh::Mesh(const std::string& fileName) :
 		glm::vec3 edge2 = v1.pos - v3.pos;
 		glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
 
-		vertices[3 * i + 0].color = normal;
-		vertices[3 * i + 1].color = normal;
-		vertices[3 * i + 2].color = normal;
+		vertices[3 * i + 0].color = glm::vec3(0.5f, 0.5f, 0.5f) + (normal * 0.5f);
+		vertices[3 * i + 1].color = glm::vec3(0.5f, 0.5f, 0.5f) + (normal * 0.5f);
+		vertices[3 * i + 2].color = glm::vec3(0.5f, 0.5f, 0.5f) + (normal * 0.5f);
 	}
 
 	loadTimer.Stop();

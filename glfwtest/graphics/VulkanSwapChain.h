@@ -7,6 +7,7 @@
 #include "graphics\textures\Texture2D.h"
 #include "graphics\DepthBuffer.h"
 #include "RenderPass.h"
+#include "graphics/FrameBuffer.h"
 
 #include <vector>
 #include <glm/fwd.hpp>
@@ -24,14 +25,6 @@ public:
 	VkSurfaceCapabilitiesKHR capabilities;
 	std::vector<VkSurfaceFormatKHR> formats;
 	std::vector<VkPresentModeKHR> presentModes;
-};
-
-struct SwapChainSurface
-{
-	Texture2D texture;
-	InstanceWrapper<VkFramebuffer> framebuffer;
-
-	VulkanSemaphore semaphore;	
 };
 
 class VulkanSwapChain
@@ -53,7 +46,7 @@ public:
 	const DepthBuffer& GetDepthBuffer() const;
 
 	InstanceWrapper<VkSurfaceKHR>& GetSurface();
-	const SwapChainSurface& GetFrameBuffer(int32_t frameIndex);
+	const FrameBuffer& GetFrameBuffer(int32_t frameIndex);
 
 	const InstanceWrapper<VkSwapchainKHR>& GetNative() const;
 	const VkSurfaceFormatKHR& GetSurfaceFormat() const;
@@ -74,7 +67,7 @@ private:
 
 	VulkanSwapChainDetails details;
 
-	std::vector<SwapChainSurface> backBuffers;
+	std::vector<FrameBuffer> backBuffers;
 	DepthBuffer depthBuffer;
 	
 	VkFormat imageFormat;

@@ -16,15 +16,16 @@ Texture2D::Texture2D() :
 Texture2D::~Texture2D()
 {
 	imageView = nullptr;
-	//image = nullptr;
+	image = nullptr;
 	imageDeviceMemory = nullptr;
 }
+
 
 void Texture2D::SetImage(const VkImage& vkImage)
 {
 	image.Initialize(GraphicsContext::LogicalDevice, vkDestroyImage, GraphicsContext::GlobalAllocator.Get());
 
-	this->image = vkImage;
+	image = vkImage;
 }
 
 

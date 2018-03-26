@@ -32,6 +32,7 @@
     <ClCompile Include="includes\tinyobj\tiny_obj_loader.cpp" />
     <ClCompile Include="graphics\DepthBuffer.cpp" />
     <ClCompile Include="graphics\textures\Texture2D.cpp" />
+    <ClCompile Include="graphics\FrameBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -568,6 +569,7 @@
     <ClInclude Include="graphics\GraphicsContext.h" />
     <ClInclude Include="graphics\DepthBuffer.h" />
     <ClInclude Include="graphics\textures\Texture2D.h" />
+    <ClInclude Include="graphics\FrameBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

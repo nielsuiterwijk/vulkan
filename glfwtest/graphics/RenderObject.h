@@ -51,7 +51,7 @@ public:
 			VkRenderPassBeginInfo renderPassInfo = {};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderPassInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
-			renderPassInfo.framebuffer = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).framebuffer;
+			renderPassInfo.framebuffer = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).GetNative();
 			renderPassInfo.renderArea.offset = { 0, 0 };
 			renderPassInfo.renderArea.extent = GraphicsContext::SwapChain->GetExtent();
 
@@ -82,7 +82,7 @@ public:
 			VkRenderPassBeginInfo renderPassInfo = {};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderPassInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
-			renderPassInfo.framebuffer = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).framebuffer;
+			renderPassInfo.framebuffer = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).GetNative();
 			renderPassInfo.renderArea.offset = { 0, 0 };
 			renderPassInfo.renderArea.extent = GraphicsContext::SwapChain->GetExtent();
 

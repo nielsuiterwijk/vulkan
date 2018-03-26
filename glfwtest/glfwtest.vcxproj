@@ -179,6 +179,7 @@
     <ClCompile Include="graphics\buffers\VulkanBuffer.cpp" />
     <ClCompile Include="graphics\buffers\VulkanDescriptorPool.cpp" />
     <ClCompile Include="graphics\DepthBuffer.cpp" />
+    <ClCompile Include="graphics\FrameBuffer.cpp" />
     <ClCompile Include="graphics\helpers\VulkanSemaphore.cpp" />
     <ClCompile Include="graphics\memory\Allocator.cpp" />
     <ClCompile Include="graphics\memory\GPUAllocator.cpp" />
@@ -206,6 +207,7 @@
     <ClInclude Include="graphics\buffers\VulkanBuffer.h" />
     <ClInclude Include="graphics\buffers\VulkanDescriptorPool.h" />
     <ClInclude Include="graphics\DepthBuffer.h" />
+    <ClInclude Include="graphics\FrameBuffer.h" />
     <ClInclude Include="graphics\GraphicsContext.h" />
     <ClInclude Include="graphics\memory\Allocator.h" />
     <ClInclude Include="graphics\helpers\VulkanSemaphore.h" />

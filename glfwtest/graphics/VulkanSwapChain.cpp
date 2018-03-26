@@ -98,8 +98,7 @@ void VulkanSwapChain::Connect(const glm::u32vec2& windowSize, const QueueFamilyI
 	backBuffers.resize(imageCount);
 	for (int i = 0; i < images.size(); i++)
 	{
-		backBuffers[i].texture.SetImage(images[i]);
-		backBuffers[i].texture.SetupView(imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+		backBuffers[i].InitializeImageView(imageFormat, images[i]);
 	}
 
 	depthBuffer.Initialize(windowSize.x, windowSize.y);
@@ -109,28 +108,7 @@ void VulkanSwapChain::SetupFrameBuffers()
 {
 	for (size_t i = 0; i < backBuffers.size(); i++)
 	{
-
-		std::array<VkImageView, 2> attachments = 
-		{
-			backBuffers[i].texture.GetImageView(),
-			depthBuffer.GetImageView()
-		};
-		
-		VkFramebufferCreateInfo framebufferInfo = {};
-		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
-		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-		framebufferInfo.pAttachments = attachments.data();
-		framebufferInfo.width = extent.width;
-		framebufferInfo.height = extent.height;
-		framebufferInfo.layers = 1;
-
-		backBuffers[i].framebuffer.Initialize(GraphicsContext::LogicalDevice, vkDestroyFramebuffer, GraphicsContext::GlobalAllocator.Get());
-
-		if (vkCreateFramebuffer(GraphicsContext::LogicalDevice, &framebufferInfo, GraphicsContext::GlobalAllocator.Get(), backBuffers[i].framebuffer.Replace()) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create framebuffer!");
-		}
+		backBuffers[i].InitializeFrameBuffer(extent.width, extent.height, depthBuffer);
 	}
 
 	std::cout << "[Vulkan] created: " << backBuffers.size() << " back buffers." << std::endl;
@@ -142,10 +120,8 @@ void VulkanSwapChain::DestroyFrameBuffers()
 
 	for (size_t i = 0; i < backBuffers.size(); i++)
 	{
-		backBuffers[i].framebuffer = nullptr;		
+		backBuffers[i].Destroy();
 	}
-
-	backBuffers.clear();
 }
 
 void VulkanSwapChain::DestroySwapchain()
@@ -157,7 +133,7 @@ int32_t VulkanSwapChain::PrepareBackBuffer()
 {	
 	uint32_t imageIndex = -1;
 
-	VkResult result = vkAcquireNextImageKHR(GraphicsContext::LogicalDevice, swapChain, std::numeric_limits<uint64_t>::max(), backBuffers[nextBackBufferIndex].semaphore.GetNative(), VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(GraphicsContext::LogicalDevice, swapChain, std::numeric_limits<uint64_t>::max(), backBuffers[nextBackBufferIndex].GetLock(), VK_NULL_HANDLE, &imageIndex);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR)
 	{
@@ -244,7 +220,7 @@ InstanceWrapper<VkSurfaceKHR>& VulkanSwapChain::GetSurface()
 	return surface;
 }
 
-const SwapChainSurface& VulkanSwapChain::GetFrameBuffer(int32_t frameIndex)
+const FrameBuffer& VulkanSwapChain::GetFrameBuffer(int32_t frameIndex)
 {
 	return backBuffers[frameIndex];
 }

@@ -10,6 +10,7 @@ public:
 	Texture2D();
 	virtual ~Texture2D();
 
+
 	void AllocateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlagBits imageUsage, VkMemoryPropertyFlagBits propertyFlags);
 
 	void SetImage(const VkImage& image);

@@ -192,7 +192,7 @@ void RavenApp::RenderThread(RavenApp* app)
 			acquireTimer.Start();
 			//Prepare
 			uint32_t imageIndex = GraphicsContext::SwapChain->PrepareBackBuffer();
-			const VulkanSemaphore& backBufferSemaphore = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).semaphore;
+			const InstanceWrapper<VkSemaphore>& backBufferSemaphore = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).GetLock();
 			//Sleep(4);
 			acquireTimer.Stop();			
 
@@ -211,7 +211,7 @@ void RavenApp::RenderThread(RavenApp* app)
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-			VkSemaphore waitSemaphores[] = { backBufferSemaphore.GetNative() }; //Wait until this semaphore is signaled to continue with executing the command buffers
+			VkSemaphore waitSemaphores[] = { backBufferSemaphore }; //Wait until this semaphore is signaled to continue with executing the command buffers
 			VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 			submitInfo.waitSemaphoreCount = 1;
 			submitInfo.pWaitSemaphores = waitSemaphores;
