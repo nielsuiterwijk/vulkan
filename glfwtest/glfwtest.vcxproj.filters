@@ -33,6 +33,8 @@
     <ClCompile Include="graphics\DepthBuffer.cpp" />
     <ClCompile Include="graphics\textures\Texture2D.cpp" />
     <ClCompile Include="graphics\FrameBuffer.cpp" />
+    <ClCompile Include="includes\stb_image.cpp" />
+    <ClCompile Include="io\FileSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -570,6 +572,7 @@
     <ClInclude Include="graphics\DepthBuffer.h" />
     <ClInclude Include="graphics\textures\Texture2D.h" />
     <ClInclude Include="graphics\FrameBuffer.h" />
+    <ClInclude Include="includes\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

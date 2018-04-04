@@ -5,14 +5,21 @@
 #include "FragmentShader.h"
 #include "graphics/buffers/UniformBuffer.h"
 
+#include <thread>
+#include <iostream>
+#include <windows.h>
+
 Material::Material(const std::string& fileName) :
 	descripterPool(1)
 {
+	std::cout << "Creating material: " << fileName << std::endl;
 	//TODO: read the meta data and load in.
 	//std::vector<char> data = FileSystem::ReadFile(fileName);
 
 	vertex = ShaderCache::GetVertexShader(fileName);
 	fragment = ShaderCache::GetFragmentShader(fileName);
+
+	::Sleep(100);
 
 	shaderStages.push_back(vertex->GetShaderStageCreateInfo());
 	shaderStages.push_back(fragment->GetShaderStageCreateInfo());

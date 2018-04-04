@@ -3,33 +3,62 @@
 #include "standard.h"
 
 #include <fstream>
+#include <queue>
 
 
 class FileSystem
 {
+private:
+	struct AsyncFileLoad
+	{
+	public:
+		AsyncFileLoad() :
+			fileName("default"),
+			callback(nullptr)
+		{
+
+		}
+
+		AsyncFileLoad(const std::string& fileName, std::function<void(std::vector<char>)> callback) :
+			fileName(fileName),
+			callback(callback)
+		{
+
+		}
+
+		AsyncFileLoad& operator=(const AsyncFileLoad& other) // copy assignment
+		{
+			// self-assignment check expected
+			if (this != &other) 
+			{ 
+				fileName = other.fileName;
+				callback = other.callback;
+			}
+			return *this;
+		}
+
+		std::string fileName;
+		std::function<void(std::vector<char>)> callback;
+	};
 public:
 
-	static std::vector<char> ReadFile(const std::string& filename)
-	{
-		std::ifstream file(filename, std::ios::ate | std::ios::binary);
+	static void Start();
+	static void Exit();
 
-		if (!file.is_open())
-		{
-			throw std::runtime_error("failed to open file!");
-		}
-		else
-		{
-			std::cout << "[FileSystem] Reading " << filename.c_str() << std::endl;
-		}
+	static std::vector<char> ReadFile(const std::string& filename);
 
-		size_t fileSize = (size_t)file.tellg();
-		std::vector<char> buffer(fileSize);
+	static void LoadFileAsync(const std::string& fileName, std::function<void(std::vector<char>)> callback);
 
-		file.seekg(0);
-		file.read(buffer.data(), fileSize);
+private:
+	static void LoadAsync();
 
-		file.close();
+private:
+	static std::thread fileLoadingThread;
+	static std::queue<AsyncFileLoad> tasks;
 
-		return buffer;
-	}
+	static std::mutex queue_mutex; //TODO: At some point a lockless queue would be a nice addition
+	static std::condition_variable condition;
+
+	static bool threadStarted;
+	static bool stop;
 };

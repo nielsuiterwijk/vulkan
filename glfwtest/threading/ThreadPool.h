@@ -53,12 +53,12 @@ public:
 	}
 
 	template<class F, class... Args>
-	auto Enqueue(F&& f, Args&&... args) ->std::future<typename std::result_of<F(Args...)>::type>
+	auto Enqueue(F&& function, Args&&... args) ->std::future<typename std::result_of<F(Args...)>::type>
 	{
 		using return_type = typename std::result_of<F(Args...)>::type;
 
 		//Here we create a callback object with the arguments, that way we can use it later (or in a different thread.
-		auto task = std::make_shared< std::packaged_task<return_type()> >(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+		auto task = std::make_shared< std::packaged_task<return_type()> >(std::bind(std::forward<F>(function), std::forward<Args>(args)...));
 
 		//We get the return result back from the object, which will be set at some point in the future.
 		std::future<return_type> res = task->get_future();

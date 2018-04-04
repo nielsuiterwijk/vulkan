@@ -2,16 +2,26 @@
 #include "io\FileSystem.h"
 
 #include <string>
+#include <functional>
 
 FragmentShader::FragmentShader(const std::string& fileName) :
 	Shader()
 {
-	auto code = FileSystem::ReadFile("shaders/" + fileName + ".frag.spv");
+	FileSystem::LoadFileAsync("shaders/" + fileName + ".frag.spv", std::bind(&FragmentShader::FileLoaded, this, std::placeholders::_1));
+}
 
+FragmentShader::~FragmentShader()
+{
+
+}
+
+
+void FragmentShader::FileLoaded(std::vector<char> fileData)
+{
 	VkShaderModuleCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	createInfo.codeSize = code.size();
-	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+	createInfo.codeSize = fileData.size();
+	createInfo.pCode = reinterpret_cast<const uint32_t*>(fileData.data());
 
 	if (vkCreateShaderModule(GraphicsContext::LogicalDevice, &createInfo, shaderModule.AllocationCallbacks(), shaderModule.Replace()) != VK_SUCCESS)
 	{
@@ -22,9 +32,4 @@ FragmentShader::FragmentShader(const std::string& fileName) :
 	shaderInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 	shaderInfo.module = shaderModule;
 	shaderInfo.pName = "main";
-}
-
-FragmentShader::~FragmentShader()
-{
-
 }

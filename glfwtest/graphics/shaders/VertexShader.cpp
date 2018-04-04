@@ -2,17 +2,29 @@
 #include "io\FileSystem.h"
 
 #include <vector>
+#include <functional>
 
 
 VertexShader::VertexShader(const std::string& fileName) :
 	Shader()
 {
-	auto code = FileSystem::ReadFile("shaders/" + fileName + ".vert.spv");
+	//Load meta data to create descriptors?
+	FileSystem::LoadFileAsync("shaders/" + fileName + ".vert.spv", std::bind(&VertexShader::FileLoaded, this, std::placeholders::_1));
 
+}
+
+
+VertexShader::~VertexShader()
+{
+
+}
+
+void VertexShader::FileLoaded(std::vector<char> fileData)
+{
 	VkShaderModuleCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	createInfo.codeSize = code.size();
-	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+	createInfo.codeSize = fileData.size();
+	createInfo.pCode = reinterpret_cast<const uint32_t*>(fileData.data());
 
 	if (vkCreateShaderModule(GraphicsContext::LogicalDevice, &createInfo, shaderModule.AllocationCallbacks(), shaderModule.Replace()) != VK_SUCCESS)
 	{
@@ -23,12 +35,4 @@ VertexShader::VertexShader(const std::string& fileName) :
 	shaderInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
 	shaderInfo.module = shaderModule;
 	shaderInfo.pName = "main";
-
-	//Load meta data to create descriptors?
-}
-
-
-VertexShader::~VertexShader()
-{
-
 }

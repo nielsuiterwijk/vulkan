@@ -9,4 +9,7 @@ public:
 	virtual ~VertexShader();
 
 private:
+	void FileLoaded(std::vector<char> fileData);
+
+private:
 };

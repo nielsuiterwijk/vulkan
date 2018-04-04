@@ -9,4 +9,7 @@ public:
 	virtual ~FragmentShader();
 
 private:
+	void FileLoaded(std::vector<char> fileData);
+
+private:
 };

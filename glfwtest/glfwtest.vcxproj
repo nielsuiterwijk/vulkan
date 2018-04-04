@@ -194,7 +194,9 @@
     <ClCompile Include="graphics\VulkanSwapChain.cpp" />
     <ClCompile Include="helpers\DebugAssert.cpp" />
     <ClCompile Include="graphics\GraphicsDevice.cpp" />
+    <ClCompile Include="includes\stb_image.cpp" />
     <ClCompile Include="includes\tinyobj\tiny_obj_loader.cpp" />
+    <ClCompile Include="io\FileSystem.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RavenApp.cpp" />
     <ClCompile Include="helpers\Timer.cpp" />
@@ -379,6 +381,7 @@
     <ClInclude Include="includes\standard.h" />
     <ClInclude Include="graphics\helpers\InstanceWrapper.h" />
     <ClInclude Include="helpers\Integer.h" />
+    <ClInclude Include="includes\stb_image.h" />
     <ClInclude Include="io\FileSystem.h" />
     <ClInclude Include="RavenApp.h" />
     <ClInclude Include="threading\Task.h" />

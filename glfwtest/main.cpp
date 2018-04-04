@@ -3,6 +3,7 @@
 #include "RavenApp.h"
 #include "threading/Task.h"
 #include "threading/ThreadPool.h"
+#include "io/FileSystem.h"
 
 #include <windows.h>
 #include <iostream>
@@ -18,9 +19,17 @@ int ThreadedCall(int a, int b)
 	return a * b;
 }
 
+void AsyncCallback(std::vector<char> fileData)
+{
+	std::cout << "received result for AsyncCallback: " << fileData.size() << std::endl;
+}
+
 int main()
 {
 	Integer::RunSanityCheck();
+
+	FileSystem::Start();
+	FileSystem::LoadFileAsync("models/chalet.jpg", AsyncCallback);
 
 	std::cout << "size of size_t: " << sizeof(size_t) << std::endl;
 
@@ -56,6 +65,7 @@ int main()
 		}
 	}
 
+	FileSystem::Exit();
 	Sleep(3000);
 
 	return EXIT_SUCCESS;
