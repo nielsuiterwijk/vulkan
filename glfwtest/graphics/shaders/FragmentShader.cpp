@@ -32,4 +32,14 @@ void FragmentShader::FileLoaded(std::vector<char> fileData)
 	shaderInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 	shaderInfo.module = shaderModule;
 	shaderInfo.pName = "main";
+
+	isLoaded = true;
+
+	materialQueueMutex.lock();
+	while (!materialQueue.empty())
+	{
+		AddToShaderStage(materialQueue.front());
+		materialQueue.pop();
+	}
+	materialQueueMutex.unlock();
 }

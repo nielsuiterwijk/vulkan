@@ -25,7 +25,7 @@ public:
 		material2D = GraphicsDevice::Instance().CreateMaterial("basic2d");
 		material3D = GraphicsDevice::Instance().CreateMaterial("basic3d");
 
-		psoFixed.Create(fixedMaterial);
+		/*psoFixed.Create(fixedMaterial);
 		psoFixed.Build();
 
 		psoBasic2D.Create(material2D);
@@ -34,7 +34,7 @@ public:
 
 		psoBasic3D.Create(material3D);
 		psoBasic3D.SetVertices(m.GetBindingDescription(), m.GetAttributeDescriptions());
-		psoBasic3D.Build();
+		psoBasic3D.Build();*/
 
 		GraphicsContext::CommandBufferPool->Create(commandBuffers, 3);
 	}
@@ -42,6 +42,17 @@ public:
 	void PrepareDraw(uint32_t imageIndex, const Mesh& mesh)
 	{
 		std::shared_ptr<CommandBuffer> commandBuffer = commandBuffers[imageIndex];
+
+		if (!material3D->IsLoaded())
+			return;
+		
+
+		if (psoBasic3D.IsDirty())
+		{
+			psoBasic3D.Create(material3D);
+			psoBasic3D.SetVertices(mesh.GetBindingDescription(), mesh.GetAttributeDescriptions());
+			psoBasic3D.Build();
+		}
 
 		material3D->GetUniformBuffers()[0]->Upload();
 		

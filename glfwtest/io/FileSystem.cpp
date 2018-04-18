@@ -33,10 +33,6 @@ std::vector<char> FileSystem::ReadFile(const std::string& filename)
 	{
 		throw std::runtime_error("failed to open file!");
 	}
-	else
-	{
-		std::cout << "[FileSystem] Reading " << filename.c_str() << std::endl;
-	}
 
 	size_t fileSize = (size_t)file.tellg();
 	std::vector<char> buffer(fileSize);
@@ -45,6 +41,10 @@ std::vector<char> FileSystem::ReadFile(const std::string& filename)
 	file.read(buffer.data(), fileSize);
 
 	file.close();
+
+	std::cout << "[FileSystem] Loaded " << filename.c_str()  << " size: " << fileSize << std::endl;
+
+	::_sleep(3000);
 
 	return buffer;
 }

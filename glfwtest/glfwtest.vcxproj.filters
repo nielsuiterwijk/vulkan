@@ -35,6 +35,7 @@
     <ClCompile Include="graphics\FrameBuffer.cpp" />
     <ClCompile Include="includes\stb_image.cpp" />
     <ClCompile Include="io\FileSystem.cpp" />
+    <ClCompile Include="raven\model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -573,6 +574,7 @@
     <ClInclude Include="graphics\textures\Texture2D.h" />
     <ClInclude Include="graphics\FrameBuffer.h" />
     <ClInclude Include="includes\stb_image.h" />
+    <ClInclude Include="raven\model.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

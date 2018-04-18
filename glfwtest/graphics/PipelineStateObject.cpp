@@ -15,7 +15,8 @@ PipelineStateObject::PipelineStateObject() :
 PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material) :
 	pipelineLayout(GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::GlobalAllocator.Get()),
 	graphicsPipeline(GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get()),
-	material(material)
+	material(material),
+	isDirty(true)
 {
 	Create(material);
 
@@ -35,6 +36,16 @@ void PipelineStateObject::Reload()
 	Create(material);
 }
 
+/*void CreatePSO( VertexBuffer& vertexBuffer, 
+				  ae3d::Shader& shader, 
+				  ae3d::GfxDevice::BlendMode blendMode, 
+				  ae3d::GfxDevice::DepthFunc depthFunc, 
+				  ae3d::GfxDevice::CullMode cullMode, 
+				  ae3d::GfxDevice::FillMode fillMode, 
+				  VkRenderPass renderPass, 
+				  ae3d::GfxDevice::PrimitiveTopology topology, 
+				  std::uint64_t hash )
+*/
 void PipelineStateObject::Create(std::shared_ptr<Material> material)
 {
 	this->material = material;

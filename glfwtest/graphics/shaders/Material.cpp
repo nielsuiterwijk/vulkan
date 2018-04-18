@@ -18,11 +18,7 @@ Material::Material(const std::string& fileName) :
 
 	vertex = ShaderCache::GetVertexShader(fileName);
 	fragment = ShaderCache::GetFragmentShader(fileName);
-
-	::Sleep(100);
-
-	shaderStages.push_back(vertex->GetShaderStageCreateInfo());
-	shaderStages.push_back(fragment->GetShaderStageCreateInfo());
+	
 
 	UniformBuffer* ub = new UniformBuffer((void*)(new CameraUBO()), sizeof(CameraUBO), descripterPool);
 	uniformBuffers.push_back(ub);
@@ -42,12 +38,25 @@ Material::~Material()
 	std::cout << "Destroyed material" << std::endl;
 }
 
-const std::vector<VkPipelineShaderStageCreateInfo>& Material::GetShaderStages() const
+const std::vector<VkPipelineShaderStageCreateInfo>& Material::GetShaderStages()
 {
+	//TODO: Not the right place, should be done on a callback of some sorts.
+	if (IsLoaded() && shaderStages.size() == 0)
+	{
+		std::cout << "Initializing shader stages" << std::endl;
+		shaderStages.push_back(vertex->GetShaderStageCreateInfo());
+		shaderStages.push_back(fragment->GetShaderStageCreateInfo());
+	}
+
 	return shaderStages;
 }
 
 const std::vector<UniformBuffer*>& Material::GetUniformBuffers() const
 {
 	return uniformBuffers;
+}
+
+bool Material::IsLoaded() const 
+{ 
+	return vertex->IsLoaded() && fragment->IsLoaded();
 }

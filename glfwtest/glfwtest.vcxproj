@@ -201,6 +201,7 @@
     <ClCompile Include="RavenApp.cpp" />
     <ClCompile Include="helpers\Timer.cpp" />
     <ClCompile Include="graphics\VulkanInstance.cpp" />
+    <ClCompile Include="raven\model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="graphics\buffers\CommandBuffer.h" />
@@ -384,6 +385,7 @@
     <ClInclude Include="includes\stb_image.h" />
     <ClInclude Include="io\FileSystem.h" />
     <ClInclude Include="RavenApp.h" />
+    <ClInclude Include="raven\model.h" />
     <ClInclude Include="threading\Task.h" />
     <ClInclude Include="threading\ThreadPool.h" />
     <ClInclude Include="helpers\Timer.h" />

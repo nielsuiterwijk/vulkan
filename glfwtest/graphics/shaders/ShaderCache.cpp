@@ -17,7 +17,7 @@ const std::shared_ptr<VertexShader> ShaderCache::GetVertexShader(const std::stri
 	else
 	{
 		std::shared_ptr<VertexShader> vertexShader = std::make_shared<VertexShader>(filename);
-
+		
 		vertexShaders.insert(std::make_pair(filename, vertexShader));
 
 		return vertexShader;
@@ -35,7 +35,7 @@ const std::shared_ptr<FragmentShader> ShaderCache::GetFragmentShader(const std::
 	else
 	{
 		std::shared_ptr<FragmentShader> fragmentShader = std::make_shared<FragmentShader>(filename);
-
+		
 		fragmentShaders.insert(std::make_pair(filename, fragmentShader));
 
 		return fragmentShader;

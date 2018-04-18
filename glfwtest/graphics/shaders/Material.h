@@ -18,9 +18,11 @@ public:
 	Material(const std::string& fileName);
 	~Material();
 
-	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages() const;
+	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages();
 
 	const std::vector<UniformBuffer*>& GetUniformBuffers() const;
+
+	bool IsLoaded() const;
 
 private:
 	std::shared_ptr<VertexShader> vertex;

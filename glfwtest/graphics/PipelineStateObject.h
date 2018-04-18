@@ -25,6 +25,8 @@ public:
 
 	void Build();
 
+	bool IsDirty() const { return isDirty; }
+
 private:
 	InstanceWrapper<VkPipelineLayout> pipelineLayout;
 	InstanceWrapper<VkPipeline> graphicsPipeline;
