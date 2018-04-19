@@ -33,9 +33,13 @@
     <ClCompile Include="graphics\DepthBuffer.cpp" />
     <ClCompile Include="graphics\textures\Texture2D.cpp" />
     <ClCompile Include="graphics\FrameBuffer.cpp" />
-    <ClCompile Include="includes\stb_image.cpp" />
     <ClCompile Include="io\FileSystem.cpp" />
     <ClCompile Include="raven\model.cpp" />
+    <ClCompile Include="includes\imgui\imgui.cpp" />
+    <ClCompile Include="includes\imgui\imgui_demo.cpp" />
+    <ClCompile Include="includes\imgui\imgui_draw.cpp" />
+    <ClCompile Include="includes\stb\stb_image.cpp" />
+    <ClCompile Include="graphics\textures\TextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -573,8 +577,15 @@
     <ClInclude Include="graphics\DepthBuffer.h" />
     <ClInclude Include="graphics\textures\Texture2D.h" />
     <ClInclude Include="graphics\FrameBuffer.h" />
-    <ClInclude Include="includes\stb_image.h" />
     <ClInclude Include="raven\model.h" />
+    <ClInclude Include="includes\imgui\imconfig.h" />
+    <ClInclude Include="includes\imgui\imgui.h" />
+    <ClInclude Include="includes\imgui\imgui_internal.h" />
+    <ClInclude Include="includes\stb\stb_image.h" />
+    <ClInclude Include="includes\stb\stb_rect_pack.h" />
+    <ClInclude Include="includes\stb\stb_textedit.h" />
+    <ClInclude Include="includes\stb\stb_truetype.h" />
+    <ClInclude Include="graphics\textures\TextureLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

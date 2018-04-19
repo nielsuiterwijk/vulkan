@@ -13,6 +13,18 @@ Texture2D::Texture2D() :
 
 }
 
+Texture2D::Texture2D(const std::string& fileName) :
+	width(-1),
+	height(-1),
+	image(),
+	imageView(),
+	imageDeviceMemory(),
+	format(VK_FORMAT_UNDEFINED)
+{
+
+	
+}
+
 Texture2D::~Texture2D()
 {
 	imageView = nullptr;

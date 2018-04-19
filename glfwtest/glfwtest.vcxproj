@@ -105,7 +105,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG=1</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)glfwtest\includes\;$(SolutionDir)glfwtest\includes\glm;%(AdditionalIncludeDirectories);$(SolutionDir)glfwtest\;$(SolutionDir)glfwtest\includes\tinyobj</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -122,7 +122,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG=1</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)glfwtest\includes\;$(SolutionDir)glfwtest\includes\glm;%(AdditionalIncludeDirectories);$(SolutionDir)glfwtest\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -191,10 +191,14 @@
     <ClCompile Include="graphics\shaders\ShaderCache.cpp" />
     <ClCompile Include="graphics\shaders\VertexShader.cpp" />
     <ClCompile Include="graphics\textures\Texture2D.cpp" />
+    <ClCompile Include="graphics\textures\TextureLoader.cpp" />
     <ClCompile Include="graphics\VulkanSwapChain.cpp" />
     <ClCompile Include="helpers\DebugAssert.cpp" />
     <ClCompile Include="graphics\GraphicsDevice.cpp" />
-    <ClCompile Include="includes\stb_image.cpp" />
+    <ClCompile Include="includes\imgui\imgui.cpp" />
+    <ClCompile Include="includes\imgui\imgui_demo.cpp" />
+    <ClCompile Include="includes\imgui\imgui_draw.cpp" />
+    <ClCompile Include="includes\stb\stb_image.cpp" />
     <ClCompile Include="includes\tinyobj\tiny_obj_loader.cpp" />
     <ClCompile Include="io\FileSystem.cpp" />
     <ClCompile Include="main.cpp" />
@@ -225,6 +229,7 @@
     <ClInclude Include="graphics\shaders\Shader.h" />
     <ClInclude Include="graphics\shaders\VertexShader.h" />
     <ClInclude Include="graphics\textures\Texture2D.h" />
+    <ClInclude Include="graphics\textures\TextureLoader.h" />
     <ClInclude Include="graphics\VulkanSwapChain.h" />
     <ClInclude Include="helpers\DebugAssert.h" />
     <ClInclude Include="graphics\helpers\VulkanDebugHook.h" />
@@ -379,10 +384,16 @@
     <ClInclude Include="includes\glm\vec3.hpp" />
     <ClInclude Include="includes\glm\vec4.hpp" />
     <ClInclude Include="includes\glm\vector_relational.hpp" />
+    <ClInclude Include="includes\imgui\imconfig.h" />
+    <ClInclude Include="includes\imgui\imgui.h" />
+    <ClInclude Include="includes\imgui\imgui_internal.h" />
     <ClInclude Include="includes\standard.h" />
     <ClInclude Include="graphics\helpers\InstanceWrapper.h" />
     <ClInclude Include="helpers\Integer.h" />
-    <ClInclude Include="includes\stb_image.h" />
+    <ClInclude Include="includes\stb\stb_image.h" />
+    <ClInclude Include="includes\stb\stb_rect_pack.h" />
+    <ClInclude Include="includes\stb\stb_textedit.h" />
+    <ClInclude Include="includes\stb\stb_truetype.h" />
     <ClInclude Include="io\FileSystem.h" />
     <ClInclude Include="RavenApp.h" />
     <ClInclude Include="raven\model.h" />

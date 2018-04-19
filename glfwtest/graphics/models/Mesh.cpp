@@ -41,7 +41,9 @@ Mesh::Mesh() :
 	delete [] indexData;
 }
 
-Mesh::Mesh(const std::string& fileName) : //TODO: implement glTF? https://godotengine.org/article/we-should-all-use-gltf-20-export-3d-assets-game-engines
+//TODO: implement glTF? https://godotengine.org/article/we-should-all-use-gltf-20-export-3d-assets-game-engines
+//TODO: Implement "MeshFileLoader" so it can load glTF & STL files
+Mesh::Mesh(const std::string& fileName) : 
 	triangleCount(0),
 	indexBuffer(nullptr),
 	vertexBuffer(nullptr)
@@ -107,6 +109,7 @@ Mesh::Mesh(const std::string& fileName) : //TODO: implement glTF? https://godote
 		glm::vec3 edge2 = v1.pos - v3.pos;
 		glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
 
+		//Normal to color
 		vertices[3 * i + 0].color = glm::vec3(0.5f, 0.5f, 0.5f) + (normal * 0.5f);
 		vertices[3 * i + 1].color = glm::vec3(0.5f, 0.5f, 0.5f) + (normal * 0.5f);
 		vertices[3 * i + 2].color = glm::vec3(0.5f, 0.5f, 0.5f) + (normal * 0.5f);
