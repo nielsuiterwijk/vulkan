@@ -5,7 +5,6 @@
 #include "graphics/buffers/UniformBuffer.h"
 
 PipelineStateObject::PipelineStateObject() :
-	pipelineLayout(),
 	graphicsPipeline(),
 	material(nullptr),
 	isDirty(true)
@@ -13,7 +12,6 @@ PipelineStateObject::PipelineStateObject() :
 }
 
 PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material) :
-	pipelineLayout(GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::GlobalAllocator.Get()),
 	graphicsPipeline(GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get()),
 	material(material),
 	isDirty(true)
@@ -25,7 +23,6 @@ PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material) :
 
 PipelineStateObject::~PipelineStateObject()
 {
-	pipelineLayout = nullptr;
 	graphicsPipeline = nullptr;
 	material = nullptr;
 	std::cout << "Destroyed PSO" << std::endl;
@@ -49,10 +46,8 @@ void PipelineStateObject::Reload()
 void PipelineStateObject::Create(std::shared_ptr<Material> material)
 {
 	this->material = material;
-	pipelineLayout = nullptr;
 	graphicsPipeline = nullptr;
 
-	pipelineLayout = InstanceWrapper<VkPipelineLayout>(GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::GlobalAllocator.Get());
 	graphicsPipeline = InstanceWrapper<VkPipeline>(GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get());
 
 
@@ -148,25 +143,7 @@ void PipelineStateObject::Create(std::shared_ptr<Material> material)
 	depthStencil.stencilTestEnable = VK_FALSE;
 	depthStencil.front = {}; // Optional
 	depthStencil.back = {}; // Optional
-
-	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
-	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 0; // Optional
-	pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
-	pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
-	pipelineLayoutInfo.pPushConstantRanges = 0; // Optional
-
-	if (material != nullptr)
-	{
-		pipelineLayoutInfo.setLayoutCount = material->GetUniformBuffers().size();
-		pipelineLayoutInfo.pSetLayouts = &material->GetUniformBuffers()[0]->GetDescriptorSetLayout();
-	}
-
-	if (vkCreatePipelineLayout(GraphicsContext::LogicalDevice, &pipelineLayoutInfo, pipelineLayout.AllocationCallbacks(), pipelineLayout.Replace()) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create pipeline layout!");
-	}
-
+	
 	pipelineInfo = {};
 	if (material != nullptr)
 	{
@@ -197,12 +174,6 @@ void PipelineStateObject::SetShader(const std::vector<VkPipelineShaderStageCreat
 	isDirty = true;
 }
 
-const InstanceWrapper<VkPipelineLayout>& PipelineStateObject::GetLayout() const
-{
-	assert(!isDirty);
-	return pipelineLayout;
-}
-
 const InstanceWrapper<VkPipeline>& PipelineStateObject::GetPipeLine() const
 {
 	assert(!isDirty);
@@ -220,7 +191,7 @@ void PipelineStateObject::Build()
 	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = nullptr; // Optional
-	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.layout = GraphicsContext::PipelineLayout;
 	pipelineInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional

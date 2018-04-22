@@ -6,8 +6,9 @@ struct BufferType
 {
 	enum Enum
 	{
-		Static,
-		Dynamic
+		Static, //Upload & forget
+		Dynamic, //Buffers that reguraly get updated from the gpu, keeps a CPU shadow copy
+		Staging //Used for uploading, for example, pixels to the gpu but then transition those into an image buffer.
 	};
 };
 
@@ -28,6 +29,9 @@ public:
 	}
 
 	void CopyStagingToDevice();
+	void CopyStagingToImage(VkImage image, uint32_t width, uint32_t height);
+
+
 	void Map(void* bufferData);
 
 private:

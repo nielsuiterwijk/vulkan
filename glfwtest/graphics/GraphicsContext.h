@@ -22,12 +22,16 @@ public:
 	static std::shared_ptr<RenderPass> RenderPass;
 	static std::shared_ptr<VulkanSwapChain> SwapChain;
 	static std::shared_ptr<VulkanInstance> VulkanInstance;
+	static std::shared_ptr<VulkanDescriptorPool> DescriptorPool;
 
 	static VkPhysicalDevice PhysicalDevice;
 
+	static InstanceWrapper<VkPipelineLayout> PipelineLayout;
 	static InstanceWrapper<VkDevice> LogicalDevice;
 
 	static QueueFamilyIndices FamilyIndices;
+
+	static std::mutex TransportQueueLock;
 
 	static VkQueue TransportQueue;
 	static VkQueue GraphicsQueue;

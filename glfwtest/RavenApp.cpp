@@ -16,6 +16,7 @@
 
 #include "graphics/memory/GPUAllocator.h"
 #include "graphics/models/Mesh.h"
+#include "graphics/textures/TextureLoader.h"
 
 RavenApp::RavenApp() :
 	window(nullptr)
@@ -110,6 +111,7 @@ bool RavenApp::Initialize()
 
 	renderobject = new RenderObject();
 
+
 	
 	return true;
 }
@@ -117,34 +119,45 @@ bool RavenApp::Initialize()
 
 void RavenApp::UpdateThread(RavenApp* app)
 {
-	Timer timer;
 	//CameraUBO ubo = {};
+
+	auto previousTime = std::chrono::high_resolution_clock::now();
 	
+	float statsTimer = 0.0f;
 
 	while (app->run)
 	{
-		timer.Start();
+		float delta = std::chrono::duration<float, std::chrono::seconds::period>(std::chrono::high_resolution_clock::now() - previousTime).count();
+		previousTime = std::chrono::high_resolution_clock::now();
 
-		if (app->renderobject->material3D != nullptr)
-		{			
-			CameraUBO* ubo = app->renderobject->material3D->GetUniformBuffers()[0]->Get<CameraUBO>();
+		if (app->renderobject->standardMaterial != nullptr)
+		{
+			static auto startTime = std::chrono::high_resolution_clock::now();
 
 			app->objectMutex.lock();
 
-				static auto startTime = std::chrono::high_resolution_clock::now();
+				CameraUBO* ubo = app->renderobject->standardMaterial->GetUniformBuffers()[0]->Get<CameraUBO>();
 
 				auto currentTime = std::chrono::high_resolution_clock::now();
 				float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 				ubo->model = glm::rotate(glm::mat4(1.0f), time * glm::radians(30.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 				ubo->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-				ubo->proj = glm::perspective(glm::radians(45.0f), GraphicsContext::WindowSize.x / (float)GraphicsContext::WindowSize.y, 0.1f, 10.0f);
+				ubo->proj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.1f, 10.0f);
 				ubo->proj[1][1] *= -1;
 
 			app->objectMutex.unlock();
 		}
 
-		timer.Stop();
+		statsTimer += delta;
+
+		if (statsTimer > 30.0f)
+		{
+			GraphicsContext::GlobalAllocator.PrintStats();
+			statsTimer = 0;
+		}
+
+
 		Sleep(16);
 	}
 	
@@ -228,8 +241,8 @@ void RavenApp::RenderThread(RavenApp* app)
 			result = vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, renderFence);
 			if (result != VK_SUCCESS)
 			{
-				std::cout << "vkWaitForFences error: " << Vulkan::GetVkResultAsString(result) << std::endl;
-				throw std::runtime_error("failed to submit draw command buffer!");
+				std::cout << "vkQueueSubmit error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+				//throw std::runtime_error("failed to submit draw command buffer!");
 			}
 
 			result = vkWaitForFences(GraphicsContext::LogicalDevice, 1, &renderFence, true, 5000000000);
@@ -265,10 +278,10 @@ void RavenApp::RenderThread(RavenApp* app)
 		timer.Stop();
 		accumelatedTime += timer.GetTimeInSeconds();
 
-		if (accumelatedTime > 1.0f)
+		if (accumelatedTime > 2.0f)
 		{
 			std::cout << "Acquire: " << acquireTimer.GetTimeInSeconds() << " Render: " << renderQueuTimer.GetTimeInSeconds() << " Present: " << presentTimer.GetTimeInSeconds() << std::endl;
-			accumelatedTime -= 1.0f;
+			accumelatedTime -= 2.0f;
 		}
 
 	}

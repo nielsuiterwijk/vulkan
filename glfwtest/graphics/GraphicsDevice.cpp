@@ -26,10 +26,14 @@ std::shared_ptr<CommandBufferPool> GraphicsContext::CommandBufferPool = nullptr;
 std::shared_ptr<RenderPass> GraphicsContext::RenderPass = nullptr;
 std::shared_ptr<VulkanSwapChain> GraphicsContext::SwapChain = nullptr;
 std::shared_ptr<VulkanInstance> GraphicsContext::VulkanInstance = nullptr;
+std::shared_ptr<VulkanDescriptorPool> GraphicsContext::DescriptorPool = nullptr;
 
+InstanceWrapper<VkPipelineLayout> GraphicsContext::PipelineLayout = { GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::GlobalAllocator.Get() };
 InstanceWrapper<VkDevice> GraphicsContext::LogicalDevice = { vkDestroyDevice, GraphicsContext::GlobalAllocator.Get() };
 
 QueueFamilyIndices GraphicsContext::FamilyIndices = {};
+
+std::mutex GraphicsContext::TransportQueueLock = {};
 
 VkQueue GraphicsContext::TransportQueue = {};
 VkQueue GraphicsContext::GraphicsQueue = {};
@@ -84,7 +88,7 @@ void GraphicsDevice::Initialize(const glm::u32vec2& windowSize, std::shared_ptr<
 	GraphicsContext::FamilyIndices = FindQueueFamilies(GraphicsContext::PhysicalDevice, GraphicsContext::SwapChain->GetSurface());
 
 	CreateLogicalDevice();
-
+	
 	GraphicsContext::DeviceAllocator = new GPUAllocator(16 * 1024 * 1024, 8);
 
 	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.transportFamily, 0, &GraphicsContext::TransportQueue);
@@ -99,8 +103,15 @@ void GraphicsDevice::Initialize(const glm::u32vec2& windowSize, std::shared_ptr<
 
 	GraphicsContext::RenderPass = std::make_shared<RenderPass>(GraphicsContext::SwapChain->GetSurfaceFormat().format, GraphicsContext::SwapChain->GetDepthBuffer().GetFormat());
 	GraphicsContext::SwapChain->SetupFrameBuffers();
-
 	
+
+	CreateDescriptorPool();
+	
+}
+
+void GraphicsDevice::CreateDescriptorPool()
+{
+	GraphicsContext::DescriptorPool = std::make_shared<VulkanDescriptorPool>(10);
 }
 
 
@@ -175,8 +186,8 @@ void GraphicsDevice::CreateLogicalDevice()
 		queueCreateInfos.push_back(queueCreateInfo);
 	}
 
-	//No need for now
 	VkPhysicalDeviceFeatures deviceFeatures = {};
+	deviceFeatures.samplerAnisotropy = VK_TRUE;
 
 	VkDeviceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -215,9 +226,9 @@ void GraphicsDevice::CreatePhysicalDevice(const InstanceWrapper<VkSurfaceKHR>&  
 	for (const auto& vulkanPhysicalDevice : devices)
 	{
 		VkPhysicalDeviceProperties deviceProperties;
-		VkPhysicalDeviceFeatures deviceFeatures;
+		VkPhysicalDeviceFeatures supportedFeatures;
 		vkGetPhysicalDeviceProperties(vulkanPhysicalDevice, &deviceProperties);
-		vkGetPhysicalDeviceFeatures(vulkanPhysicalDevice, &deviceFeatures);
+		vkGetPhysicalDeviceFeatures(vulkanPhysicalDevice, &supportedFeatures);
 
 		std::cout << "Vendor: " << Vulkan::GetVendorName(deviceProperties.vendorID) << " GPU: " << deviceProperties.deviceName << std::endl;
 
@@ -237,7 +248,8 @@ void GraphicsDevice::CreatePhysicalDevice(const InstanceWrapper<VkSurfaceKHR>&  
 
 		std::cout << "hasValidQueues: " << hasValidQueues << " hasValidExtensions: " << hasValidExtensions << " isDiscreteGPU: " << isDiscreteGPU << " hasValidSwapchain: " << hasValidSwapchain << std::endl;
 
-		if (hasValidQueues && hasValidExtensions && isDiscreteGPU && hasValidSwapchain)
+		//TODO: Put the anisotrophy filter inside a feature object
+		if (hasValidQueues && hasValidExtensions && isDiscreteGPU && hasValidSwapchain && supportedFeatures.samplerAnisotropy)
 		{
 			GraphicsContext::PhysicalDevice = vulkanPhysicalDevice;
 		}

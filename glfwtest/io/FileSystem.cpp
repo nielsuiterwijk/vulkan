@@ -31,6 +31,7 @@ std::vector<char> FileSystem::ReadFile(const std::string& filename)
 
 	if (!file.is_open())
 	{
+		std::cout << "[FileSystem] Failed loading " << filename.c_str() << std::endl;
 		throw std::runtime_error("failed to open file!");
 	}
 

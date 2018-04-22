@@ -20,7 +20,6 @@ public:
 	void SetVertices(const VkVertexInputBindingDescription& input, const std::vector<VkVertexInputAttributeDescription>& descriptions);
 	void SetShader(const std::vector<VkPipelineShaderStageCreateInfo>& shaders);
 
-	const InstanceWrapper<VkPipelineLayout>& GetLayout() const;
 	const InstanceWrapper<VkPipeline>& GetPipeLine() const;
 
 	void Build();
@@ -28,7 +27,7 @@ public:
 	bool IsDirty() const { return isDirty; }
 
 private:
-	InstanceWrapper<VkPipelineLayout> pipelineLayout;
+	
 	InstanceWrapper<VkPipeline> graphicsPipeline;
 
 	std::shared_ptr<Material> material;

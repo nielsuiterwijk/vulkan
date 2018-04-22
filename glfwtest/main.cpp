@@ -29,7 +29,6 @@ int main()
 	Integer::RunSanityCheck();
 
 	FileSystem::Start();
-	FileSystem::LoadFileAsync("models/chalet.jpg", AsyncCallback);
 
 	std::cout << "size of size_t: " << sizeof(size_t) << std::endl;
 

@@ -26,6 +26,10 @@ VulkanBuffer::VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType
 	case BufferType::Dynamic:
 		SetupLocalDynamicBuffer(bufferData, flags);
 		break;
+
+	case BufferType::Staging:
+		SetupStagingBuffer(bufferData);
+		break;
 	default:
 		assert(false && "Not implemented.");
 		break;
@@ -38,12 +42,20 @@ VulkanBuffer::~VulkanBuffer()
 {
 	if (stagingMemory != nullptr)
 	{
+		std::cout << "freeing staging buffer" << std::endl;
+
 		vkDestroyBuffer(GraphicsContext::LogicalDevice, stagingBuffer, GraphicsContext::GlobalAllocator.Get());
 		vkFreeMemory(GraphicsContext::LogicalDevice, stagingMemory, GraphicsContext::GlobalAllocator.Get());
 	}
 
-	vkDestroyBuffer(GraphicsContext::LogicalDevice, deviceBuffer, GraphicsContext::GlobalAllocator.Get());
-	vkFreeMemory(GraphicsContext::LogicalDevice, nativeMemory, GraphicsContext::GlobalAllocator.Get());
+	if (deviceBuffer != nullptr)
+	{
+		std::cout << "freeing device buffer" << std::endl;
+
+		vkDestroyBuffer(GraphicsContext::LogicalDevice, deviceBuffer, GraphicsContext::GlobalAllocator.Get());
+		vkFreeMemory(GraphicsContext::LogicalDevice, nativeMemory, GraphicsContext::GlobalAllocator.Get());
+
+	}
 }
 
 
@@ -74,6 +86,7 @@ void VulkanBuffer::Map(void* bufferData)
 	switch (bufferType)
 	{
 	case BufferType::Static:
+	case BufferType::Staging:
 		vkMapMemory(GraphicsContext::LogicalDevice, stagingMemory, 0, size, 0, &data);
 		memcpy(data, bufferData, size);
 		vkUnmapMemory(GraphicsContext::LogicalDevice, stagingMemory);
@@ -129,26 +142,67 @@ void VulkanBuffer::SetupStagingBuffer(void* bufferData)
 
 void VulkanBuffer::CopyStagingToDevice()
 {
-	auto buffer = GraphicsContext::CommandBufferPoolTransient->Create();
+	auto commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
 
-	buffer->StartRecording(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+	commandBuffer->StartRecording(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
 	VkBufferCopy copyRegion = {};
 	copyRegion.srcOffset = 0; // Optional
 	copyRegion.dstOffset = 0; // Optional
 	copyRegion.size = size;
-	vkCmdCopyBuffer(buffer->GetNative(), stagingBuffer, deviceBuffer, 1, &copyRegion);
+	vkCmdCopyBuffer(commandBuffer->GetNative(), stagingBuffer, deviceBuffer, 1, &copyRegion);
 
-	buffer->StopRecording();
+	commandBuffer->StopRecording();
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &buffer->GetNative();
+	submitInfo.pCommandBuffers = &commandBuffer->GetNative();
+	
 
+	GraphicsContext::TransportQueueLock.lock();
+	//TODO: This causes waits, needs to be async
+	vkQueueSubmit(GraphicsContext::TransportQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(GraphicsContext::TransportQueue);
+	GraphicsContext::TransportQueueLock.unlock();
+
+	GraphicsContext::CommandBufferPoolTransient->Free(commandBuffer);
+}
+
+void VulkanBuffer::CopyStagingToImage(VkImage image, uint32_t width, uint32_t height)
+{
+	auto commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
+
+	commandBuffer->StartRecording(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+	VkBufferImageCopy region = {};
+	region.bufferOffset = 0;
+	region.bufferRowLength = 0;
+	region.bufferImageHeight = 0;
+
+	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	region.imageSubresource.mipLevel = 0;
+	region.imageSubresource.baseArrayLayer = 0;
+	region.imageSubresource.layerCount = 1;
+
+	region.imageOffset = { 0, 0, 0 };
+	region.imageExtent = { width, height, 1	};
+
+	vkCmdCopyBufferToImage(commandBuffer->GetNative(), stagingBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+	commandBuffer->StopRecording();
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer->GetNative();
+
+	GraphicsContext::TransportQueueLock.lock();
 	//TODO: This causes waits, needs to be async
 	vkQueueSubmit(GraphicsContext::TransportQueue, 1, &submitInfo, VK_NULL_HANDLE);
 	vkQueueWaitIdle(GraphicsContext::TransportQueue);
 
-	GraphicsContext::CommandBufferPoolTransient->Free(buffer);
+	GraphicsContext::TransportQueueLock.unlock();
+
+	GraphicsContext::CommandBufferPoolTransient->Free(commandBuffer);
 }

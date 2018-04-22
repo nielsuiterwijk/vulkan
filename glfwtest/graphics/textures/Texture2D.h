@@ -8,7 +8,6 @@ class Texture2D
 {
 public: 
 	Texture2D(); 
-	Texture2D(const std::string& fileName);
 	virtual ~Texture2D();
 
 
@@ -20,13 +19,13 @@ public:
 
 	void Transition(VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
-	VkImageView GetImageView() { return imageView; }
-
+	
+	VkImageView GetImageView() const { return imageView; }
 	VkFormat GetFormat() const { return format; }
+	VkImage GetImage() const { return image; }
 
-private:
-	void FileLoaded(std::vector<char> fileData);
-
+	bool IsLoaded() const;
+	
 protected:
 	InstanceWrapper<VkImage> image;
 	InstanceWrapper<VkImageView> imageView;

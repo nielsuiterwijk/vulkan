@@ -14,16 +14,18 @@ public:
 
 	~RenderObject()
 	{
-		fixedMaterial = nullptr;
-		material2D = nullptr;
-		material3D = nullptr;
+		//fixedMaterial = nullptr;
+		//material2D = nullptr;
+		//material3D = nullptr;
+		standardMaterial = nullptr;
 	}
 
 	void Load(const Mesh& m)
 	{
-		fixedMaterial = GraphicsDevice::Instance().CreateMaterial("fixed");
+		/*fixedMaterial = GraphicsDevice::Instance().CreateMaterial("fixed");
 		material2D = GraphicsDevice::Instance().CreateMaterial("basic2d");
-		material3D = GraphicsDevice::Instance().CreateMaterial("basic3d");
+		material3D = GraphicsDevice::Instance().CreateMaterial("basic3d");*/
+		standardMaterial = GraphicsDevice::Instance().CreateMaterial("standard");
 
 		/*psoFixed.Create(fixedMaterial);
 		psoFixed.Build();
@@ -43,18 +45,18 @@ public:
 	{
 		std::shared_ptr<CommandBuffer> commandBuffer = commandBuffers[imageIndex];
 
-		if (!material3D->IsLoaded())
+		if (!standardMaterial->IsLoaded())
 			return;
 		
 
 		if (psoBasic3D.IsDirty())
 		{
-			psoBasic3D.Create(material3D);
+			psoBasic3D.Create(standardMaterial);
 			psoBasic3D.SetVertices(mesh.GetBindingDescription(), mesh.GetAttributeDescriptions());
 			psoBasic3D.Build();
 		}
 
-		material3D->GetUniformBuffers()[0]->Upload();
+		standardMaterial->GetUniformBuffers()[0]->Upload();
 		
 		{
 			commandBuffer->StartRecording(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
@@ -76,7 +78,7 @@ public:
 			vkCmdBeginRenderPass(commandBuffer->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 			{
 				//mesh.SetupCommandBuffer(commandBuffer, psoBasic2D, material2D);
-				mesh.SetupCommandBuffer(commandBuffer, psoBasic3D, material3D);
+				mesh.SetupCommandBuffer(commandBuffer, psoBasic3D, standardMaterial);
 			}
 			vkCmdEndRenderPass(commandBuffer->GetNative());
 			commandBuffer->StopRecording();
@@ -113,9 +115,10 @@ public:
 	}
 
 public:
-	std::shared_ptr<Material> fixedMaterial;
-	std::shared_ptr<Material> material2D;
-	std::shared_ptr<Material> material3D;
+	//std::shared_ptr<Material> fixedMaterial;
+	//std::shared_ptr<Material> material2D;
+	//std::shared_ptr<Material> material3D;
+	std::shared_ptr<Material> standardMaterial;
 
 	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
 

@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <map>
 #include <sstream>
+#include <iomanip>
 
 #include "helpers/Singleton.h"
 #include "helpers\Helpers.h"
@@ -107,7 +108,22 @@ public:
 			std::string deltaTotalReallocations = (trackers[i].totalReallocations - previousTotalReallocations) > 0 ? "+" + ss.str() : ss.str();
 			ss.str(std::string());
 
-			std::cout << "[Vulkan] " << Vulkan::GetAllocationScopeName(trackers[i].scope) << " allocated: " << Helpers::MemorySizeToString(memoryAllocated) << " (" << deltaAllocatedString << " bytes.)" << " allocs: " << trackers[i].totalAllocations << " (" << deltaTotalAllocations << ")" << " reallocs: " << trackers[i].totalReallocations << " (" << deltaTotalReallocations << ")" << std::endl;
+			std::string allocName = std::string(Vulkan::GetAllocationScopeName(trackers[i].scope)) + " allocated: ";
+			ss << std::setw(23) << allocName;
+			allocName = ss.str();
+
+			ss.str(std::string());
+			ss << trackers[i].totalAllocations;
+			std::string allocCount = "allocs: " + ss.str() + (" (" + deltaTotalAllocations + ")");
+
+			ss.str(std::string());
+			ss << trackers[i].totalReallocations;
+			std::string reallocCount = "reallocs: " + ss.str() + (" (" + deltaTotalReallocations + ")");
+			
+			std::cout << "[Vulkan] " << allocName <<
+				std::left << std::setw(28) << Helpers::MemorySizeToString(memoryAllocated) + (" (" + deltaAllocatedString + " bytes.)") <<
+				std::left << std::setw(18) << allocCount  <<
+				std::left << std::setw(18) << reallocCount << std::endl;
 
 			
 

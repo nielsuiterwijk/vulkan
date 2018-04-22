@@ -13,20 +13,9 @@ Texture2D::Texture2D() :
 
 }
 
-Texture2D::Texture2D(const std::string& fileName) :
-	width(-1),
-	height(-1),
-	image(),
-	imageView(),
-	imageDeviceMemory(),
-	format(VK_FORMAT_UNDEFINED)
-{
-
-	
-}
-
 Texture2D::~Texture2D()
 {
+	//Destroy view -> image -> memory
 	imageView = nullptr;
 	image = nullptr;
 	imageDeviceMemory = nullptr;
@@ -165,8 +154,18 @@ void Texture2D::Transition(VkFormat format, VkImageLayout oldLayout, VkImageLayo
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer->GetNative();
 
-	vkQueueSubmit(GraphicsContext::TransportQueue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(GraphicsContext::TransportQueue);
+	GraphicsContext::TransportQueueLock.lock();
+	VkResult result = vkQueueSubmit(GraphicsContext::TransportQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	assert(result == VK_SUCCESS);
+	result = vkQueueWaitIdle(GraphicsContext::TransportQueue);
+	assert(result == VK_SUCCESS);
+	GraphicsContext::TransportQueueLock.unlock();
+
 
 	GraphicsContext::CommandBufferPoolTransient->Free(commandBuffer);
+}
+
+bool Texture2D::IsLoaded() const
+{
+	return imageView != nullptr;
 }

@@ -13,15 +13,14 @@ struct CameraUBO
 	glm::mat4 proj;
 };
 
+//TODO: make class templatized
 class UniformBuffer
 {
 public:
 	//TODO: Clarify ownership of the pointer, probably should be a weak_ptr?
-	UniformBuffer(void* data, size_t size, const VulkanDescriptorPool& descriptorPool);
+	UniformBuffer(void* data, size_t size);
 	~UniformBuffer();
-
-	const VkDescriptorSetLayout& GetDescriptorSetLayout() const;
-	const VkDescriptorSet& GetDescriptorSet() const;
+	
 	void Upload();
 
 	template <class T>
@@ -30,12 +29,15 @@ public:
 		return static_cast<T*>(data); 
 	}
 
+	const VkDescriptorBufferInfo& GetDescriptorInfo() const
+	{
+		return bufferInfo;
+	}
+
 private:
 	void* data;
 	size_t size;
-
-	VkDescriptorSet descriptorSet;
-	VkDescriptorSetLayout descriptorSetLayout;
-
+	
 	VulkanBuffer vulkanBuffer;
+	VkDescriptorBufferInfo bufferInfo;
 };

@@ -114,6 +114,7 @@ public:
 		case VK_ERROR_INVALID_EXTERNAL_HANDLE_KHX:
 			return "VK_ERROR_INVALID_EXTERNAL_HANDLE_KHX";
 		default:
+			return "invalid";
 			break;
 		}
 	}

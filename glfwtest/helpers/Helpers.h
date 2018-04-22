@@ -57,4 +57,10 @@ namespace Helpers
 		return ValueToString(RoundToTwoDecimals(size_d)) + " " + sizes[div];
 	}
 
+	static void PadString(std::string& text, size_t num, char paddingChar = ' ')
+	{
+		if (num > text.size())
+			text.insert(0, num - text.size(), paddingChar);
+	}
+
 }

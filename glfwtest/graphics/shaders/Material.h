@@ -10,6 +10,7 @@
 class UniformBuffer;
 class VertexShader;
 class FragmentShader;
+class TextureSampler;
 
 //.material file, which is a meta file to the textures and shaders needed.
 class Material
@@ -22,15 +23,20 @@ public:
 
 	const std::vector<UniformBuffer*>& GetUniformBuffers() const;
 
+	std::shared_ptr<TextureSampler> GetSampler() const { return sampler; }
+	std::shared_ptr<Texture2D> GetTexture() const { return texture; }
+	
+
 	bool IsLoaded() const;
 
 private:
 	std::shared_ptr<VertexShader> vertex;
 	std::shared_ptr<FragmentShader> fragment;
 
+	std::shared_ptr<Texture2D> texture;
+	std::shared_ptr<TextureSampler> sampler;
+
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-
-	VulkanDescriptorPool descripterPool;
-
+	
 	std::vector<UniformBuffer*> uniformBuffers;
 };

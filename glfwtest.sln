@@ -7,12 +7,19 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glfwtest", "glfwtest\glfwte
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug Optimized|x64 = Debug Optimized|x64
+		Debug Optimized|x86 = Debug Optimized|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug Optimized|x64.ActiveCfg = Debug Optimized|x64
+		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug Optimized|x64.Build.0 = Debug Optimized|x64
+		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug Optimized|x64.Deploy.0 = Debug Optimized|x64
+		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug Optimized|x86.ActiveCfg = Debug|Win32
+		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug Optimized|x86.Build.0 = Debug|Win32
 		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug|x64.ActiveCfg = Debug|x64
 		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug|x64.Build.0 = Debug|x64
 		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug|x86.ActiveCfg = Debug|Win32

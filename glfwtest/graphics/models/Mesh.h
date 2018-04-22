@@ -38,7 +38,7 @@ struct Vertex
 struct Vertex3D
 {
 	glm::vec3 pos;
-	//glm::vec2 texCoords;
+	glm::vec2 texCoords;
 	glm::vec3 color;
 
 	static void GetBindingDescription(VkVertexInputBindingDescription& bindingDescription)
@@ -50,22 +50,22 @@ struct Vertex3D
 
 	static void GetAttributeDescriptions(std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
 	{
-		attributeDescriptions.resize(2);
+		attributeDescriptions.resize(3);
 
 		attributeDescriptions[0].binding = 0;
 		attributeDescriptions[0].location = 0;
 		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attributeDescriptions[0].offset = offsetof(Vertex3D, pos);
 
-		/*attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 1;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[0].offset = offsetof(Vertex3D, texCoords);*/
-
 		attributeDescriptions[1].binding = 0;
 		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[1].offset = offsetof(Vertex3D, color);
+		attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions[1].offset = offsetof(Vertex3D, texCoords);
+
+		attributeDescriptions[2].binding = 0;
+		attributeDescriptions[2].location = 2;
+		attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[2].offset = offsetof(Vertex3D, color);
 	}
 };
 

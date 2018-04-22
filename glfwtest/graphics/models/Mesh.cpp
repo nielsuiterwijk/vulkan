@@ -78,11 +78,11 @@ Mesh::Mesh(const std::string& fileName) :
 				attrib.vertices[3 * index.vertex_index + 2]
 			};
 
-			/*vertex.texCoords = 
+			vertex.texCoords = 
 			{
 				attrib.texcoords[2 * index.texcoord_index + 0],
-				attrib.texcoords[2 * index.texcoord_index + 1]
-			};*/
+				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+			};
 
 			vertex.color = 
 			{ 
@@ -93,13 +93,13 @@ Mesh::Mesh(const std::string& fileName) :
 			};
 
 			vertices.push_back(vertex);
-			indices.push_back(indices.size());
+			indices.push_back(static_cast<uint32_t>(indices.size()));
 		}
 	}
 
 	triangleCount = static_cast<uint32_t>(indices.size()) / 3;
 
-	for (size_t i = 0; i < triangleCount; i++)
+	/*for (size_t i = 0; i < triangleCount; i++)
 	{
 		Vertex3D v1 = vertices[3 * i + 0];
 		Vertex3D v2 = vertices[3 * i + 1];
@@ -113,7 +113,7 @@ Mesh::Mesh(const std::string& fileName) :
 		vertices[3 * i + 0].color = glm::vec3(0.5f, 0.5f, 0.5f) + (normal * 0.5f);
 		vertices[3 * i + 1].color = glm::vec3(0.5f, 0.5f, 0.5f) + (normal * 0.5f);
 		vertices[3 * i + 2].color = glm::vec3(0.5f, 0.5f, 0.5f) + (normal * 0.5f);
-	}
+	}*/
 
 	loadTimer.Stop();
 	std::cout << "Allocating vertices & indices took: " << loadTimer.GetTimeInSeconds() << " seconds." << std::endl;
@@ -158,9 +158,11 @@ void Mesh::SetupCommandBuffer(std::shared_ptr<CommandBuffer> commandBuffer, cons
 	vkCmdBindVertexBuffers(commandBuffer->GetNative(), 0, 1, vertexBuffers, offsets);
 
 	vkCmdBindIndexBuffer(commandBuffer->GetNative(), indexBuffer->GetNative(), 0, VK_INDEX_TYPE_UINT32);
-		
 	
-	vkCmdBindDescriptorSets(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetLayout(), 0, 1, &material->GetUniformBuffers()[0]->GetDescriptorSet(), 0, nullptr);
+	VkDescriptorSet set = GraphicsContext::DescriptorPool->GetDescriptorSet(material->GetUniformBuffers()[0], material->GetTexture().get(), material->GetSampler().get());
+
+	//https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdBindDescriptorSets.html
+	vkCmdBindDescriptorSets(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsContext::PipelineLayout, 0, 1, &set, 0, nullptr);
 
 	vkCmdDrawIndexed(commandBuffer->GetNative(), triangleCount * 3, 1, 0, 0, 0);
 

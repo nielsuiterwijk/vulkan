@@ -5,12 +5,14 @@
 #include "FragmentShader.h"
 #include "graphics/buffers/UniformBuffer.h"
 
+#include "graphics/textures/TextureSampler.h"
+#include "graphics/textures/TextureLoader.h"
+
 #include <thread>
 #include <iostream>
 #include <windows.h>
 
-Material::Material(const std::string& fileName) :
-	descripterPool(1)
+Material::Material(const std::string& fileName)
 {
 	std::cout << "Creating material: " << fileName << std::endl;
 	//TODO: read the meta data and load in.
@@ -20,8 +22,12 @@ Material::Material(const std::string& fileName) :
 	fragment = ShaderCache::GetFragmentShader(fileName);
 	
 
-	UniformBuffer* ub = new UniformBuffer((void*)(new CameraUBO()), sizeof(CameraUBO), descripterPool);
+	UniformBuffer* ub = new UniformBuffer((void*)(new CameraUBO()), sizeof(CameraUBO));
 	uniformBuffers.push_back(ub);
+
+	//VkFilter min, VkFilter mag, VkSamplerMipmapMode mipmapMode, VkSamplerAddressMode addressMode
+	sampler = std::make_shared<TextureSampler>(VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+	texture = TextureLoader::Get("chalet.jpg");
 }
 
 Material::~Material()
@@ -58,5 +64,5 @@ const std::vector<UniformBuffer*>& Material::GetUniformBuffers() const
 
 bool Material::IsLoaded() const 
 { 
-	return vertex->IsLoaded() && fragment->IsLoaded();
+	return vertex->IsLoaded() && fragment->IsLoaded() && texture->IsLoaded();
 }
