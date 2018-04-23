@@ -19,7 +19,7 @@
 //#define IMGUI_API __declspec( dllimport )
 
 //---- Don't define obsolete functions/enums names. Consider enabling from time to time after updating to avoid using soon-to-be obsolete function/names
-//#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 
 //---- Don't implement default handlers for Windows (so as not to link with certain functions)
 //#define IMGUI_DISABLE_WIN32_DEFAULT_CLIPBOARD_FUNCTIONS   // Don't use and link with OpenClipboard/GetClipboardData/CloseClipboard etc.
@@ -47,15 +47,17 @@
 
 //---- Define constructor and implicit cast operators to convert back<>forth from your math types and ImVec2/ImVec4.
 // This will be inlined as part of ImVec2 and ImVec4 class declarations.
-/*
+#include "glm/vec2.hpp"
+#include "glm/vec4.hpp"
+
 #define IM_VEC2_CLASS_EXTRA                                                 \
-        ImVec2(const MyVec2& f) { x = f.x; y = f.y; }                       \
-        operator MyVec2() const { return MyVec2(x,y); }
+        ImVec2(const glm::vec2& f) { x = f.x; y = f.y; }                       \
+        operator glm::vec2() const { return glm::vec2(x,y); }
 
 #define IM_VEC4_CLASS_EXTRA                                                 \
-        ImVec4(const MyVec4& f) { x = f.x; y = f.y; z = f.z; w = f.w; }     \
-        operator MyVec4() const { return MyVec4(x,y,z,w); }
-*/
+        ImVec4(const glm::vec4& f) { x = f.x; y = f.y; z = f.z; w = f.w; }     \
+        operator glm::vec4() const { return glm::vec4(x,y,z,w); }
+
 
 //---- Use 32-bit vertex indices (default is 16-bit) to allow meshes with more than 64K vertices. Render function needs to support it.
 //#define ImDrawIdx unsigned int

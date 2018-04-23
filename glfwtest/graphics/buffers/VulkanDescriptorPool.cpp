@@ -19,6 +19,7 @@ VulkanDescriptorPool::~VulkanDescriptorPool()
 {
 	descriptorPool = nullptr;
 	descriptorSetLayout = nullptr;
+	GraphicsContext::PipelineLayout = nullptr;
 }
 
 VkDescriptorPool VulkanDescriptorPool::GetNative() const

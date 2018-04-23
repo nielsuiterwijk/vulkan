@@ -4,6 +4,8 @@
 #include "graphics/GraphicsDevice.h"
 #include "graphics/RenderObject.h"
 
+#include "helpers/IMGUIVulkan.h"
+
 struct GLFWwindow;
 
 class RavenApp
@@ -22,21 +24,22 @@ public:
 	RavenApp& operator=(const RavenApp&) & = default;  // Copy assignment operator
 	RavenApp& operator=(RavenApp&&) & = default;       // Move assignment operator
 
+public:
+	static std::vector<std::function<void(int, int, int)>> OnMouseButton;
+	static std::vector<std::function<void(double, double)>> OnMouseScroll;
+	static std::vector<std::function<void(int, int, int, int)>> OnKey;
+	static std::vector<std::function<void(unsigned int)>> OnChar;
+
 private:
 	static void UpdateThread(RavenApp* app);
 	static void RenderThread(RavenApp* app); 
 	
-	static void OnWindowResized(GLFWwindow* window, int width, int height)
-	{
-		if (width == 0 || height == 0)
-			return;
+	static void OnWindowResized(GLFWwindow* window, int width, int height);
 
-		GraphicsContext::WindowSize = glm::ivec2(width, height);
-
-		GraphicsDevice::Instance().SwapchainInvalidated();
-
-		RavenApp* app = reinterpret_cast<RavenApp*>(glfwGetWindowUserPointer(window));
-	}
+	static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+	static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+	static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	static void CharCallback(GLFWwindow* window, unsigned int c);
 
 private:
 	GLFWwindow* window;
@@ -45,4 +48,6 @@ private:
 	//objects..
 	RenderObject* renderobject;
 	std::mutex objectMutex;
+
+	IMGUIVulkan imgui;
 };

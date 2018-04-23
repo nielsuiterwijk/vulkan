@@ -62,9 +62,12 @@ void GraphicsDevice::Finalize()
 	GraphicsContext::CommandBufferPool = nullptr;
 
 	GraphicsContext::RenderPass = nullptr;
+	GraphicsContext::DescriptorPool = nullptr;
+
 	ShaderCache::Destroy();
 
 	GraphicsContext::SwapChain->DestroySwapchain();
+
 
 	delete GraphicsContext::DeviceAllocator;
 

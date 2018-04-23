@@ -22,3 +22,4 @@
 #include <memory>
 #include <thread>
 #include <vector>
+#include <functional>

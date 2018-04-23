@@ -41,6 +41,7 @@
     <ClCompile Include="includes\stb\stb_image.cpp" />
     <ClCompile Include="graphics\textures\TextureLoader.cpp" />
     <ClCompile Include="graphics\textures\TextureSampler.cpp" />
+    <ClCompile Include="helpers\IMGUIVulkan.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -588,6 +589,7 @@
     <ClInclude Include="includes\stb\stb_truetype.h" />
     <ClInclude Include="graphics\textures\TextureLoader.h" />
     <ClInclude Include="graphics\textures\TextureSampler.h" />
+    <ClInclude Include="helpers\IMGUIVulkan.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

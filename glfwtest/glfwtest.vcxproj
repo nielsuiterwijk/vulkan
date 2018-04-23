@@ -272,6 +272,7 @@
     <ClCompile Include="graphics\VulkanSwapChain.cpp" />
     <ClCompile Include="helpers\DebugAssert.cpp" />
     <ClCompile Include="graphics\GraphicsDevice.cpp" />
+    <ClCompile Include="helpers\IMGUIVulkan.cpp" />
     <ClCompile Include="includes\imgui\imgui.cpp" />
     <ClCompile Include="includes\imgui\imgui_demo.cpp" />
     <ClCompile Include="includes\imgui\imgui_draw.cpp" />
@@ -314,6 +315,7 @@
     <ClInclude Include="graphics\helpers\VulkanHelpers.h" />
     <ClInclude Include="graphics\GraphicsDevice.h" />
     <ClInclude Include="helpers\Helpers.h" />
+    <ClInclude Include="helpers\IMGUIVulkan.h" />
     <ClInclude Include="helpers\Singleton.h" />
     <ClInclude Include="includes\glm\common.hpp" />
     <ClInclude Include="includes\glm\detail\func_common.hpp" />

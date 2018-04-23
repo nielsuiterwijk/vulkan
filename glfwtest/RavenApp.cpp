@@ -18,8 +18,17 @@
 #include "graphics/models/Mesh.h"
 #include "graphics/textures/TextureLoader.h"
 
+#include "imgui/imgui.h"
+
+
+std::vector<std::function<void(int, int, int)>> RavenApp::OnMouseButton = {};
+std::vector<std::function<void(double, double)>> RavenApp::OnMouseScroll = {};
+std::vector<std::function<void(int, int, int, int)>> RavenApp::OnKey = {};
+std::vector<std::function<void(unsigned int)>> RavenApp::OnChar = {};
+
 RavenApp::RavenApp() :
-	window(nullptr)
+	window(nullptr),
+	imgui()
 {
 
 }
@@ -88,7 +97,12 @@ bool RavenApp::Initialize()
 
 
 	glfwSetWindowUserPointer(window, this);
+
 	glfwSetWindowSizeCallback(window, RavenApp::OnWindowResized);
+	glfwSetMouseButtonCallback(window, RavenApp::MouseButtonCallback);
+	glfwSetScrollCallback(window, RavenApp::ScrollCallback);
+	glfwSetKeyCallback(window, RavenApp::KeyCallback);
+	glfwSetCharCallback(window, RavenApp::CharCallback);
 
 	GraphicsContext::VulkanInstance->CreateInstance(windowExtensionsNeeded);
 	GraphicsContext::VulkanInstance->HookDebugCallback();
@@ -111,6 +125,9 @@ bool RavenApp::Initialize()
 
 	renderobject = new RenderObject();
 
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	imgui.Init(window, true);
 
 	
 	return true;
@@ -349,4 +366,48 @@ void RavenApp::Run()
 	renderThread.join();               // pauses until second finishes
 
 	vkDeviceWaitIdle(GraphicsContext::LogicalDevice);
+}	
+
+void RavenApp::OnWindowResized(GLFWwindow* window, int width, int height)
+{
+	if (width == 0 || height == 0)
+		return;
+
+	GraphicsContext::WindowSize = glm::ivec2(width, height);
+
+	GraphicsDevice::Instance().SwapchainInvalidated();
+
+	RavenApp* app = reinterpret_cast<RavenApp*>(glfwGetWindowUserPointer(window));
+}
+
+void RavenApp::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+	for (size_t i = 0; i < OnMouseButton.size(); i++)
+	{
+		OnMouseButton[i](button, action, mods);
+	}
+}
+
+void RavenApp::ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	for (size_t i = 0; i < OnMouseScroll.size(); i++)
+	{
+		OnMouseScroll[i](xoffset, yoffset);
+	}
+}
+
+void RavenApp::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	for (size_t i = 0; i < OnKey.size(); i++)
+	{
+		OnKey[i](key, scancode, action, mods);
+	}
+}
+
+void RavenApp::CharCallback(GLFWwindow* window, unsigned int c)
+{
+	for (size_t i = 0; i < OnChar.size(); i++)
+	{
+		OnChar[i](c);
+	}
 }
