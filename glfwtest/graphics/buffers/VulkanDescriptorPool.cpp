@@ -50,26 +50,26 @@ VkDescriptorSet VulkanDescriptorPool::GetDescriptorSet(UniformBuffer* uniformBuf
 	samplerDescription.imageView = texture->GetImageView();
 	samplerDescription.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	// Binding 1 : Image
+
 	VkWriteDescriptorSet imageSet = {};
 	imageSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	imageSet.dstSet = destinationDescriptorSet;
 	imageSet.descriptorCount = 1;
-	imageSet.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+	imageSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	imageSet.pImageInfo = &samplerDescription;
 	imageSet.dstBinding = 1;
 
-	// Binding 2 : Sampler
-	VkWriteDescriptorSet samplerSet = {};
+
+	/*VkWriteDescriptorSet samplerSet = {};
 	samplerSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	samplerSet.dstSet = destinationDescriptorSet;
 	samplerSet.descriptorCount = 1;
 	samplerSet.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
 	samplerSet.pImageInfo = &samplerDescription;
-	samplerSet.dstBinding = 2;
+	samplerSet.dstBinding = 2;*/
 
-	constexpr int setCount = 3;
-	VkWriteDescriptorSet sets[setCount] = { uboSet, imageSet, samplerSet };
+	constexpr int setCount = 2;
+	VkWriteDescriptorSet sets[setCount] = { uboSet, imageSet};
 	vkUpdateDescriptorSets(GraphicsContext::LogicalDevice, setCount, sets, 0, nullptr);	
 
 	return destinationDescriptorSet;
@@ -89,21 +89,21 @@ void VulkanDescriptorPool::CreateLayouts()
 	// Binding 1 : Image
 	VkDescriptorSetLayoutBinding layoutBindingImage = {};
 	layoutBindingImage.binding = 1;
-	layoutBindingImage.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+	layoutBindingImage.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	layoutBindingImage.descriptorCount = 1;
 	layoutBindingImage.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
 	layoutBindingImage.pImmutableSamplers = nullptr;
 
 	// Binding 2 : Sampler
-	VkDescriptorSetLayoutBinding layoutBindingSampler = {};
+	/*VkDescriptorSetLayoutBinding layoutBindingSampler = {};
 	layoutBindingSampler.binding = 2;
 	layoutBindingSampler.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
 	layoutBindingSampler.descriptorCount = 1;
 	layoutBindingSampler.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
-	layoutBindingSampler.pImmutableSamplers = nullptr;
+	layoutBindingSampler.pImmutableSamplers = nullptr;*/
 
-	constexpr int bindingCount = 3;
-	const VkDescriptorSetLayoutBinding bindings[bindingCount] = { layoutBindingUBO, layoutBindingImage, layoutBindingSampler };
+	constexpr int bindingCount = 2;
+	const VkDescriptorSetLayoutBinding bindings[bindingCount] = { layoutBindingUBO, layoutBindingImage };
 
 	VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
 	descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -132,13 +132,11 @@ void VulkanDescriptorPool::CreateLayouts()
 
 void VulkanDescriptorPool::CreatePoolAndSets(uint32_t count)
 {
-	std::array<VkDescriptorPoolSize, 3> poolSizes = {};
+	std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	poolSizes[0].descriptorCount = count;
-	poolSizes[1].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	poolSizes[1].descriptorCount = count;
-	poolSizes[2].type = VK_DESCRIPTOR_TYPE_SAMPLER;
-	poolSizes[2].descriptorCount = count;
 
 	VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 	descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

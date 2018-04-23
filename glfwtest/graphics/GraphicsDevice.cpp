@@ -33,6 +33,8 @@ InstanceWrapper<VkDevice> GraphicsContext::LogicalDevice = { vkDestroyDevice, Gr
 
 QueueFamilyIndices GraphicsContext::FamilyIndices = {};
 
+VkEvent GraphicsContext::TransportEvent = {};
+VulkanSemaphore* GraphicsContext::TransportSemaphore = nullptr;
 std::mutex GraphicsContext::TransportQueueLock = {};
 
 VkQueue GraphicsContext::TransportQueue = {};
@@ -66,6 +68,8 @@ void GraphicsDevice::Finalize()
 
 	delete GraphicsContext::DeviceAllocator;
 
+	vkDestroyEvent(GraphicsContext::LogicalDevice, GraphicsContext::TransportEvent, GraphicsContext::GlobalAllocator.Get());
+
 	GraphicsContext::LogicalDevice = nullptr;
 	//a = nullptr;
 
@@ -88,6 +92,16 @@ void GraphicsDevice::Initialize(const glm::u32vec2& windowSize, std::shared_ptr<
 	GraphicsContext::FamilyIndices = FindQueueFamilies(GraphicsContext::PhysicalDevice, GraphicsContext::SwapChain->GetSurface());
 
 	CreateLogicalDevice();
+
+	//TODO: Wrap vkEvent into a VulkanEvent object
+	{
+		VkEventCreateInfo eventInfo = {};
+		eventInfo.pNext = nullptr;
+		eventInfo.flags = 0;
+		eventInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
+
+		vkCreateEvent(GraphicsContext::LogicalDevice, &eventInfo, GraphicsContext::GlobalAllocator.Get(), &GraphicsContext::TransportEvent);
+	}
 	
 	GraphicsContext::DeviceAllocator = new GPUAllocator(16 * 1024 * 1024, 8);
 

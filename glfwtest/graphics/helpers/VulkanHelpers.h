@@ -111,8 +111,6 @@ public:
 			return "VK_ERROR_INVALID_SHADER_NV";
 		case VK_ERROR_OUT_OF_POOL_MEMORY_KHR:
 			return "VK_ERROR_OUT_OF_POOL_MEMORY_KHR";
-		case VK_ERROR_INVALID_EXTERNAL_HANDLE_KHX:
-			return "VK_ERROR_INVALID_EXTERNAL_HANDLE_KHX";
 		default:
 			return "invalid";
 			break;

@@ -31,6 +31,8 @@ public:
 
 	static QueueFamilyIndices FamilyIndices;
 
+	static VkEvent TransportEvent;
+	static VulkanSemaphore* TransportSemaphore;
 	static std::mutex TransportQueueLock;
 
 	static VkQueue TransportQueue;

@@ -182,11 +182,14 @@ void RavenApp::RenderThread(RavenApp* app)
 	fenceInfo.pNext = VK_NULL_HANDLE;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
+	RenderObject clear;
+
 
 	vkCreateFence(GraphicsContext::LogicalDevice, &fenceInfo, GraphicsContext::GlobalAllocator.Get(), &renderFence);
 
 	Timer timer;
 	Timer acquireTimer;
+	Timer drawCallTimer;
 	Timer renderQueuTimer;
 	Timer presentTimer;
 
@@ -200,26 +203,42 @@ void RavenApp::RenderThread(RavenApp* app)
 
 		GraphicsDevice::Instance().Lock();
 
+		
+
 		//draw
 		{
 			acquireTimer.Start();
 			//Prepare
 			uint32_t imageIndex = GraphicsContext::SwapChain->PrepareBackBuffer();
 			const InstanceWrapper<VkSemaphore>& backBufferSemaphore = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).GetLock();
+
+			VkSemaphore signalSemaphores[] = { renderSemaphore.GetNative() }; //This semaphore will be signaled when done with rendering the queue
+
 			//Sleep(4);
 			acquireTimer.Stop();			
+			drawCallTimer.Start();
 
-			renderQueuTimer.Start();
-
+			std::vector<VkCommandBuffer> commandBuffersToDraw;
 			{
+				commandBuffersToDraw.push_back(clear.ClearBackbuffer(imageIndex)->GetNative());
+
 				app->objectMutex.lock();
 				//TODO: let it return a command buffer to add to a list.
 				//TODO: Make the prepare threadsafe by doing a copy?
 				//TODO: dont pass the mesh, it should be owned / held by the renderObject
-				app->renderobject->PrepareDraw(imageIndex, chalet);
+				std::shared_ptr<CommandBuffer> commandBuffer = app->renderobject->PrepareDraw(imageIndex, chalet);
+
+				if (commandBuffer != nullptr)
+				{
+					commandBuffersToDraw.push_back(commandBuffer->GetNative());
+				}
+				
 				app->objectMutex.unlock();
 				//ro.PrepareDraw(imageIndex);
 			}
+			drawCallTimer.Stop();
+
+			renderQueuTimer.Start();
 
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -230,13 +249,13 @@ void RavenApp::RenderThread(RavenApp* app)
 			submitInfo.pWaitSemaphores = waitSemaphores;
 			submitInfo.pWaitDstStageMask = waitStages;
 
-			submitInfo.commandBufferCount = 1;
-			submitInfo.pCommandBuffers = &app->renderobject->commandBuffers[imageIndex]->GetNative(); //TODO: make use of local vector of commandBuffers
+			submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffersToDraw.size());
+			submitInfo.pCommandBuffers = commandBuffersToDraw.data(); 
 
-			VkSemaphore signalSemaphores[] = { renderSemaphore.GetNative() }; //This semaphore will be signaled when done with rendering the queue
 			submitInfo.signalSemaphoreCount = 1;
 			submitInfo.pSignalSemaphores = signalSemaphores;
 			vkResetFences(GraphicsContext::LogicalDevice, 1, &renderFence);
+			GraphicsContext::TransportQueueLock.lock();
 			//Draw (wait untill surface is available)
 			result = vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, renderFence);
 			if (result != VK_SUCCESS)
@@ -244,6 +263,7 @@ void RavenApp::RenderThread(RavenApp* app)
 				std::cout << "vkQueueSubmit error: " << Vulkan::GetVkResultAsString(result) << std::endl;
 				//throw std::runtime_error("failed to submit draw command buffer!");
 			}
+			GraphicsContext::TransportQueueLock.unlock();
 
 			result = vkWaitForFences(GraphicsContext::LogicalDevice, 1, &renderFence, true, 5000000000);
 			if (result != VK_SUCCESS)
@@ -260,6 +280,7 @@ void RavenApp::RenderThread(RavenApp* app)
 			presentInfo.waitSemaphoreCount = 1;
 			presentInfo.pWaitSemaphores = signalSemaphores;
 
+
 			VkSwapchainKHR swapChains[] = { GraphicsContext::SwapChain->GetNative() };
 			presentInfo.swapchainCount = 1;
 			presentInfo.pSwapchains = swapChains;
@@ -269,7 +290,11 @@ void RavenApp::RenderThread(RavenApp* app)
 			presentTimer.Start();
 			vkQueueWaitIdle(GraphicsContext::PresentQueue);
 			//Present (wait until drawing is done)
-			vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
+			result = vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
+			if (result != VK_SUCCESS)
+			{
+				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+			}
 			presentTimer.Stop();
 		}
 		GraphicsDevice::Instance().Unlock();
@@ -280,7 +305,7 @@ void RavenApp::RenderThread(RavenApp* app)
 
 		if (accumelatedTime > 2.0f)
 		{
-			std::cout << "Acquire: " << acquireTimer.GetTimeInSeconds() << " Render: " << renderQueuTimer.GetTimeInSeconds() << " Present: " << presentTimer.GetTimeInSeconds() << std::endl;
+			std::cout << "a: " << acquireTimer.GetTimeInSeconds() << " d: " << drawCallTimer.GetTimeInSeconds() << " q: " << renderQueuTimer.GetTimeInSeconds() << " p: " << presentTimer.GetTimeInSeconds() << std::endl;
 			accumelatedTime -= 2.0f;
 		}
 

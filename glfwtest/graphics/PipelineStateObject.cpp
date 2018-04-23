@@ -4,17 +4,35 @@
 #include "RenderPass.h"
 #include "graphics/buffers/UniformBuffer.h"
 
+
+
 PipelineStateObject::PipelineStateObject() :
 	graphicsPipeline(),
 	material(nullptr),
-	isDirty(true)
+	isDirty(true),
+	vertexInputInfo(),
+	colorBlending(),
+	colorBlendAttachment(),
+	multisampling(),
+	rasterizer(),
+	viewportState(),
+	inputAssembly(),
+	depthStencil()
 {
 }
 
 PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material) :
 	graphicsPipeline(GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get()),
 	material(material),
-	isDirty(true)
+	isDirty(true),
+	vertexInputInfo(),
+	colorBlending(),
+	colorBlendAttachment(),
+	multisampling(),
+	rasterizer(),
+	viewportState(),
+	inputAssembly(),
+	depthStencil()
 {
 	Create(material);
 
@@ -137,12 +155,12 @@ void PipelineStateObject::Create(std::shared_ptr<Material> material)
 	depthStencil.depthWriteEnable = VK_TRUE;
 	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
 	depthStencil.depthBoundsTestEnable = VK_FALSE;
-	depthStencil.minDepthBounds = 0.0f; // Optional
-	depthStencil.maxDepthBounds = 1.0f; // Optional
+	depthStencil.minDepthBounds = 0.0f;
+	depthStencil.maxDepthBounds = 1.0f; 
 	//Stencil operations
 	depthStencil.stencilTestEnable = VK_FALSE;
-	depthStencil.front = {}; // Optional
-	depthStencil.back = {}; // Optional
+	depthStencil.front = {}; 
+	depthStencil.back = {};
 	
 	pipelineInfo = {};
 	if (material != nullptr)

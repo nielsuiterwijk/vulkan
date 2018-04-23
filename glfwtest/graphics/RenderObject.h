@@ -41,13 +41,45 @@ public:
 		GraphicsContext::CommandBufferPool->Create(commandBuffers, 3);
 	}
 
-	void PrepareDraw(uint32_t imageIndex, const Mesh& mesh)
+	std::shared_ptr<CommandBuffer> ClearBackbuffer(uint32_t imageIndex)
 	{
+		if (commandBuffers.size() == 0)
+		{
+			GraphicsContext::CommandBufferPool->Create(commandBuffers, 3);
+		}
+
 		std::shared_ptr<CommandBuffer> commandBuffer = commandBuffers[imageIndex];
 
+		commandBuffer->StartRecording(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+
+		VkRenderPassBeginInfo renderPassInfo = {};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
+		renderPassInfo.framebuffer = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).GetNative();
+		renderPassInfo.renderArea.offset = { 0, 0 };
+		renderPassInfo.renderArea.extent = GraphicsContext::SwapChain->GetExtent();
+
+		std::array<VkClearValue, 2> clearValues = {};
+		clearValues[0].color = { 100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1.0f }; // = cornflower blue :)
+		clearValues[1].depthStencil = { 1.0f, 0 }; //1.0 means pixel is furthest away, so stuff can be rendered on top of it.
+
+		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues = clearValues.data();
+
+		vkCmdBeginRenderPass(commandBuffer->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdEndRenderPass(commandBuffer->GetNative());
+		commandBuffer->StopRecording();
+
+		return commandBuffer;
+	}
+
+
+	std::shared_ptr<CommandBuffer> PrepareDraw(uint32_t imageIndex, const Mesh& mesh)
+	{
 		if (!standardMaterial->IsLoaded())
-			return;
-		
+			return nullptr;
+
+		std::shared_ptr<CommandBuffer> commandBuffer = commandBuffers[imageIndex];
 
 		if (psoBasic3D.IsDirty())
 		{
@@ -83,6 +115,8 @@ public:
 			vkCmdEndRenderPass(commandBuffer->GetNative());
 			commandBuffer->StopRecording();
 		}
+
+		return commandBuffer;
 	}
 
 	void PrepareDraw(uint32_t imageIndex)
