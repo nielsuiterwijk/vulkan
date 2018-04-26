@@ -49,5 +49,5 @@ private:
 	RenderObject* renderobject;
 	std::mutex objectMutex;
 
-	IMGUIVulkan imgui;
+	IMGUIVulkan imguiVulkan;
 };

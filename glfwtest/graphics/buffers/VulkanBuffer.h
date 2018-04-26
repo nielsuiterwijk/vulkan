@@ -28,11 +28,13 @@ public:
 		return &nativeMemory;
 	}
 
+	size_t GetSize() const { return size; }
+
 	void CopyStagingToDevice();
 	void CopyStagingToImage(VkImage image, uint32_t width, uint32_t height);
 
 
-	void Map(void* bufferData);
+	void Map(void* bufferData, uint32_t sizeToMap = -1);
 
 private:
 	void SetupStagingBuffer(void* bufferData);

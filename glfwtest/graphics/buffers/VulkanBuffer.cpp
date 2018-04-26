@@ -80,20 +80,26 @@ void VulkanBuffer::SetupLocalDynamicBuffer(void* bufferData, VkBufferUsageFlags 
 }
 
 
-void VulkanBuffer::Map(void* bufferData)
+void VulkanBuffer::Map(void* bufferData, uint32_t sizeToMap)
 {
+	if (bufferData == nullptr)
+		return;
+
+	if (sizeToMap == -1)
+		sizeToMap = size;
+
 	void* data;
 	switch (bufferType)
 	{
 	case BufferType::Static:
 	case BufferType::Staging:
-		vkMapMemory(GraphicsContext::LogicalDevice, stagingMemory, 0, size, 0, &data);
-		memcpy(data, bufferData, size);
+		vkMapMemory(GraphicsContext::LogicalDevice, stagingMemory, 0, sizeToMap, 0, &data);
+		memcpy(data, bufferData, sizeToMap);
 		vkUnmapMemory(GraphicsContext::LogicalDevice, stagingMemory);
 		break;
 	case BufferType::Dynamic:
-		vkMapMemory(GraphicsContext::LogicalDevice, nativeMemory, 0, size, 0, &data);
-		memcpy(data, bufferData, size);
+		vkMapMemory(GraphicsContext::LogicalDevice, nativeMemory, 0, sizeToMap, 0, &data);
+		memcpy(data, bufferData, sizeToMap);
 		vkUnmapMemory(GraphicsContext::LogicalDevice, nativeMemory);
 		break;
 	default:

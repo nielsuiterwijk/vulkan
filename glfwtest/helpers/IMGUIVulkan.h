@@ -2,9 +2,14 @@
 
 #include "standard.h"
 
+#include "imgui/imgui.h"
+
 #include "graphics/PipelineStateObject.h"
 
 class CommandBuffer;
+class TextureSampler;
+class VulkanBuffer;
+
 
 //Adopted from: https://github.com/ocornut/imgui/tree/master/examples/vulkan_example
 class IMGUIVulkan
@@ -15,8 +20,8 @@ public:
 
 	bool Init(GLFWwindow* window, bool installCallbacks);
 	void Shutdown();
-	void NewFrame();
-	void Render();
+	void NewFrame(float deltaTime);
+	std::shared_ptr<CommandBuffer> Render(uint32_t frameIndex);
 
 private:
 	void MouseButtonCallback(int button, int action, int mods);
@@ -35,12 +40,25 @@ private:
 	}
 
 private:
+	TextureSampler* sampler;
+	Texture2D* imguiFont;
 	std::shared_ptr<Material> material2d;
 	PipelineStateObject psoBasic2D;
+
+	VulkanBuffer* indexBuffer;
+	VulkanBuffer* vertexBuffer; 
+	
+	ImDrawVert* cpuVertex;// = new ImDrawVert[draw_data->TotalVtxCount];
+	ImDrawIdx* cpuIndex;// = new ImDrawIdx[draw_data->TotalIdxCount];
 
 	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
 
 	std::vector<bool> mousePressed;
 	std::vector<GLFWcursor*> mouseCursors;
+
+	bool show_demo_window;
+	
+
+	GLFWwindow* window;
 
 };

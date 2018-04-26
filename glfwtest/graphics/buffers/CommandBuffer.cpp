@@ -40,6 +40,7 @@ void CommandBuffer::Finalize()
 
 void CommandBuffer::StartRecording(VkCommandBufferUsageFlagBits flag)
 {
+	//TODO: add error checking for the different states?
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = flag;

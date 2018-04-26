@@ -119,13 +119,13 @@ void VulkanDescriptorPool::CreateLayouts()
 	//`a pipeline layout object which describes the complete set of resources that CAN be accessed by a pipeline.`
 	//Thats why you can bind any potential descriptors, even if you don't use them
 	{
-		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
-		pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pPipelineLayoutCreateInfo.pNext = nullptr;
-		pPipelineLayoutCreateInfo.setLayoutCount = 1;
-		pPipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
+		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
+		pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutCreateInfo.pNext = nullptr;
+		pipelineLayoutCreateInfo.setLayoutCount = 1;
+		pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
 
-		result = vkCreatePipelineLayout(GraphicsContext::LogicalDevice, &pPipelineLayoutCreateInfo, GraphicsContext::PipelineLayout.AllocationCallbacks(), GraphicsContext::PipelineLayout.Replace());
+		result = vkCreatePipelineLayout(GraphicsContext::LogicalDevice, &pipelineLayoutCreateInfo, GraphicsContext::PipelineLayout.AllocationCallbacks(), GraphicsContext::PipelineLayout.Replace());
 		assert(result == VK_SUCCESS);
 	}
 

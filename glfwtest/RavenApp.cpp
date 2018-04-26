@@ -28,7 +28,7 @@ std::vector<std::function<void(unsigned int)>> RavenApp::OnChar = {};
 
 RavenApp::RavenApp() :
 	window(nullptr),
-	imgui()
+	imguiVulkan()
 {
 
 }
@@ -125,9 +125,8 @@ bool RavenApp::Initialize()
 
 	renderobject = new RenderObject();
 
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	imgui.Init(window, true);
+	ImGui::CreateContext(nullptr);
+	imguiVulkan.Init(window, true);
 
 	
 	return true;
@@ -162,6 +161,9 @@ void RavenApp::UpdateThread(RavenApp* app)
 				ubo->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 				ubo->proj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.1f, 10.0f);
 				ubo->proj[1][1] *= -1;
+
+
+				app->imguiVulkan.NewFrame(delta);
 
 			app->objectMutex.unlock();
 		}
@@ -240,10 +242,17 @@ void RavenApp::RenderThread(RavenApp* app)
 				commandBuffersToDraw.push_back(clear.ClearBackbuffer(imageIndex)->GetNative());
 
 				app->objectMutex.lock();
-				//TODO: let it return a command buffer to add to a list.
 				//TODO: Make the prepare threadsafe by doing a copy?
 				//TODO: dont pass the mesh, it should be owned / held by the renderObject
+				//TODO: find something more elegant then checking nullptr
 				std::shared_ptr<CommandBuffer> commandBuffer = app->renderobject->PrepareDraw(imageIndex, chalet);
+
+				if (commandBuffer != nullptr)
+				{
+					commandBuffersToDraw.push_back(commandBuffer->GetNative());
+				}
+
+				commandBuffer = app->imguiVulkan.Render(imageIndex);
 
 				if (commandBuffer != nullptr)
 				{

@@ -84,7 +84,7 @@ public:
 		if (psoBasic3D.IsDirty())
 		{
 			psoBasic3D.Create(standardMaterial);
-			psoBasic3D.SetVertices(mesh.GetBindingDescription(), mesh.GetAttributeDescriptions());
+			psoBasic3D.SetVertexLayout(mesh.GetBindingDescription(), mesh.GetAttributeDescriptions());
 			psoBasic3D.Build();
 		}
 

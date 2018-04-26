@@ -17,7 +17,7 @@ public:
 	void Create(std::shared_ptr<Material> material);
 	void Reload();
 
-	void SetVertices(const VkVertexInputBindingDescription& input, const std::vector<VkVertexInputAttributeDescription>& descriptions);
+	void SetVertexLayout(const VkVertexInputBindingDescription& input, const std::vector<VkVertexInputAttributeDescription>& descriptions);
 	void SetShader(const std::vector<VkPipelineShaderStageCreateInfo>& shaders);
 
 	const InstanceWrapper<VkPipeline>& GetPipeLine() const;
