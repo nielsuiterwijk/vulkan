@@ -1,5 +1,7 @@
 #pragma once
 
+#define MULTITHREADED_RENDERING 1
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 

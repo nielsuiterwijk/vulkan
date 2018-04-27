@@ -34,7 +34,7 @@ PipelineStateObject::PipelineStateObject(std::shared_ptr<Material> material) :
 	inputAssembly(),
 	depthStencil()
 {
-	Create(material);
+	Create(material, std::vector<VkDynamicState>(), true);
 
 	GraphicsDevice::Instance().OnSwapchainInvalidated(std::bind(&PipelineStateObject::Reload, this));
 }
@@ -48,7 +48,7 @@ PipelineStateObject::~PipelineStateObject()
 
 void PipelineStateObject::Reload()
 {
-	Create(material);
+	Create(material, std::vector<VkDynamicState>(), true);
 }
 
 /*void CreatePSO( VertexBuffer& vertexBuffer, 
@@ -61,7 +61,7 @@ void PipelineStateObject::Reload()
 				  GfxDevice::PrimitiveTopology topology, 
 				  std::uint64_t hash )
 */
-void PipelineStateObject::Create(std::shared_ptr<Material> material)
+void PipelineStateObject::Create(std::shared_ptr<Material> material, const std::vector<VkDynamicState>& dynamicStates, bool enableDepthTest)
 {
 	this->material = material;
 	graphicsPipeline = nullptr;
@@ -94,13 +94,24 @@ void PipelineStateObject::Create(std::shared_ptr<Material> material)
 	viewportState.scissorCount = 1;
 	viewportState.pScissors = &scissor;
 
+	activeDynamicStates.resize(dynamicStates.size());
+	for (size_t i = 0; i < dynamicStates.size(); i++)
+	{
+		activeDynamicStates[i] = dynamicStates[i];
+	}
+	
+	dynamicState = {};
+	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+	dynamicState.pDynamicStates = activeDynamicStates.data();
+	dynamicState.dynamicStateCount = static_cast<uint32_t>(activeDynamicStates.size());
+
 	rasterizer = {};
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rasterizer.depthClampEnable = VK_FALSE; //Setting this to VK_TRUE requires enabling a GPU feature.
 	rasterizer.rasterizerDiscardEnable = VK_FALSE; //If set to VK_TRUE, then geometry never passes through the rasterizer stage. This basically disables any output to the framebuffer.
 	rasterizer.polygonMode = VK_POLYGON_MODE_FILL; //Wireframe mode: VK_POLYGON_MODE_LINE or point cloud: VK_POLYGON_MODE_POINT
 	rasterizer.lineWidth = 1.0f;
-	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+	rasterizer.cullMode = VK_CULL_MODE_NONE;// VK_CULL_MODE_BACK_BIT;
 	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 	rasterizer.depthBiasConstantFactor = 0.0f; // Optional
@@ -121,7 +132,6 @@ void PipelineStateObject::Create(std::shared_ptr<Material> material)
 
 	 //Per frame buffer, default alpha blending
 	colorBlendAttachment = {};
-	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	colorBlendAttachment.blendEnable = VK_TRUE;
 	colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
@@ -129,6 +139,7 @@ void PipelineStateObject::Create(std::shared_ptr<Material> material)
 	colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 	colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 	colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	
 	//Global state
 	colorBlending = {};
@@ -151,22 +162,26 @@ void PipelineStateObject::Create(std::shared_ptr<Material> material)
 	vertexInputInfo.pVertexAttributeDescriptions = nullptr;
 
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	depthStencil.depthTestEnable = VK_TRUE;
-	depthStencil.depthWriteEnable = VK_TRUE;
-	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-	depthStencil.depthBoundsTestEnable = VK_FALSE;
-	depthStencil.minDepthBounds = 0.0f;
-	depthStencil.maxDepthBounds = 1.0f; 
-	//Stencil operations
-	depthStencil.stencilTestEnable = VK_FALSE;
-	depthStencil.front = {}; 
-	depthStencil.back = {};
+	if (enableDepthTest)
+	{
+		depthStencil.depthTestEnable = VK_TRUE;
+		depthStencil.depthWriteEnable = VK_TRUE;
+		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+		depthStencil.depthBoundsTestEnable = VK_FALSE;
+		depthStencil.minDepthBounds = 0.0f;
+		depthStencil.maxDepthBounds = 1.0f;
+		//Stencil operations
+		depthStencil.stencilTestEnable = VK_FALSE;
+		depthStencil.front = {};
+		depthStencil.back = {};
+	}
 	
 	pipelineInfo = {};
 	if (material != nullptr)
 	{
 		SetShader(material->GetShaderStages());
 	}
+	isDirty = true;
 }
 
 void PipelineStateObject::SetVertexLayout(const VkVertexInputBindingDescription& bindingDescription, const std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
@@ -208,7 +223,14 @@ void PipelineStateObject::Build()
 	pipelineInfo.pMultisampleState = &multisampling;
 	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
-	pipelineInfo.pDynamicState = nullptr; // Optional
+	if (dynamicState.dynamicStateCount == 0)
+	{
+		pipelineInfo.pDynamicState = nullptr;
+	}
+	else
+	{
+		pipelineInfo.pDynamicState = &dynamicState;
+	}
 	pipelineInfo.layout = GraphicsContext::PipelineLayout;
 	pipelineInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
 	pipelineInfo.subpass = 0;

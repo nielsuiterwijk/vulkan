@@ -42,7 +42,7 @@ VulkanBuffer::~VulkanBuffer()
 {
 	if (stagingMemory != nullptr)
 	{
-		std::cout << "freeing staging buffer" << std::endl;
+		std::cout << "freeing staging buffer of " << size << " bytes" << std::endl;
 
 		vkDestroyBuffer(GraphicsContext::LogicalDevice, stagingBuffer, GraphicsContext::GlobalAllocator.Get());
 		vkFreeMemory(GraphicsContext::LogicalDevice, stagingMemory, GraphicsContext::GlobalAllocator.Get());
@@ -50,7 +50,7 @@ VulkanBuffer::~VulkanBuffer()
 
 	if (deviceBuffer != nullptr)
 	{
-		std::cout << "freeing device buffer" << std::endl;
+		std::cout << "freeing device buffer of " << size << " bytes" << std::endl;
 
 		vkDestroyBuffer(GraphicsContext::LogicalDevice, deviceBuffer, GraphicsContext::GlobalAllocator.Get());
 		vkFreeMemory(GraphicsContext::LogicalDevice, nativeMemory, GraphicsContext::GlobalAllocator.Get());
@@ -79,8 +79,7 @@ void VulkanBuffer::SetupLocalDynamicBuffer(void* bufferData, VkBufferUsageFlags 
 	Map(bufferData);
 }
 
-
-void VulkanBuffer::Map(void* bufferData, uint32_t sizeToMap)
+void VulkanBuffer::Map(void* bufferData, uint32_t sizeToMap) const
 {
 	if (bufferData == nullptr)
 		return;
@@ -88,18 +87,24 @@ void VulkanBuffer::Map(void* bufferData, uint32_t sizeToMap)
 	if (sizeToMap == -1)
 		sizeToMap = size;
 
-	void* data;
+	assert(sizeToMap <= size);
+
+	VkResult result = VK_SUCCESS;
+	void* vulkanVirtualMappedMemoryAddress;
+
 	switch (bufferType)
 	{
 	case BufferType::Static:
 	case BufferType::Staging:
-		vkMapMemory(GraphicsContext::LogicalDevice, stagingMemory, 0, sizeToMap, 0, &data);
-		memcpy(data, bufferData, sizeToMap);
+		result = vkMapMemory(GraphicsContext::LogicalDevice, stagingMemory, 0, sizeToMap, 0, &vulkanVirtualMappedMemoryAddress);
+		assert(result == VK_SUCCESS);
+		memcpy(vulkanVirtualMappedMemoryAddress, bufferData, sizeToMap);
 		vkUnmapMemory(GraphicsContext::LogicalDevice, stagingMemory);
 		break;
 	case BufferType::Dynamic:
-		vkMapMemory(GraphicsContext::LogicalDevice, nativeMemory, 0, sizeToMap, 0, &data);
-		memcpy(data, bufferData, sizeToMap);
+		result = vkMapMemory(GraphicsContext::LogicalDevice, nativeMemory, 0, sizeToMap, 0, &vulkanVirtualMappedMemoryAddress);
+		assert(result == VK_SUCCESS);
+		memcpy(vulkanVirtualMappedMemoryAddress, bufferData, sizeToMap);
 		vkUnmapMemory(GraphicsContext::LogicalDevice, nativeMemory);
 		break;
 	default:

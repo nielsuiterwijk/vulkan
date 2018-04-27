@@ -248,3 +248,4 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+assets/imgui.ini

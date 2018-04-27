@@ -137,8 +137,7 @@ int32_t VulkanSwapChain::PrepareBackBuffer()
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR)
 	{
-		//todo: recreate SwapChain
-		throw std::runtime_error("VK_ERROR_OUT_OF_DATE_KHR");
+		return -1;
 	}
 	
 	assert(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR);

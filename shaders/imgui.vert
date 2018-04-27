@@ -22,6 +22,11 @@ void main()
 {
     fragColor = aColor;
     fragTexCoord = aUV;
-    //gl_Position = vec4(aPos * ubo.uScale + ubo.uTranslate, 0, 1);
-	gl_Position = vec4(aPos, 0, 1);
+	gl_Position = vec4(aPos * ubo.uScale + ubo.uTranslate, 0, 1);
+	//gl_Position = vec4(aPos, 0, 1);
+	
+//	vec2 scale = vec2(0.0015625, 0.002777);
+//	vec2 translate = vec2(-1, -1);
+	
+	//gl_Position = vec4(aPos * scale + translate, 0, 1);
 }

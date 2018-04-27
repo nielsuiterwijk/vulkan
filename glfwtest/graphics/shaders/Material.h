@@ -19,6 +19,8 @@ public:
 	Material(const std::string& fileName);
 	~Material();
 
+	void AddUniformBuffer(UniformBuffer* uniformBuffer);
+
 	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages();
 
 	const std::vector<UniformBuffer*>& GetUniformBuffers() const;

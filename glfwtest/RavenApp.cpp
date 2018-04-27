@@ -5,7 +5,6 @@
 #include <thread>
 
 #include "helpers/DebugAssert.h"
-#include "helpers/Timer.h"
 #include "helpers/Helpers.h"
 #include "graphics/GraphicsDevice.h"
 #include "graphics/VulkanInstance.h"
@@ -26,9 +25,17 @@ std::vector<std::function<void(double, double)>> RavenApp::OnMouseScroll = {};
 std::vector<std::function<void(int, int, int, int)>> RavenApp::OnKey = {};
 std::vector<std::function<void(unsigned int)>> RavenApp::OnChar = {};
 
+
+std::mutex RavenApp::queue_mutex;
+std::condition_variable RavenApp::renderThreadWait;
+std::condition_variable RavenApp::updateThreadWait;
+
 RavenApp::RavenApp() :
 	window(nullptr),
-	imguiVulkan()
+	imguiVulkan(nullptr),
+	updateFrameIndex(0),
+	renderFrameIndex(0),
+	accumelatedTime(0)
 {
 
 }
@@ -36,6 +43,11 @@ RavenApp::RavenApp() :
 RavenApp::~RavenApp()
 {
 	delete renderobject;
+	delete clear;
+	delete renderSemaphore;
+	delete imguiVulkan;
+
+	vkDestroyFence(GraphicsContext::LogicalDevice, renderFence, GraphicsContext::GlobalAllocator.Get());
 
 	GraphicsDevice::Instance().Finalize();
 
@@ -123,36 +135,242 @@ bool RavenApp::Initialize()
 
 	GraphicsContext::GlobalAllocator.PrintStats();
 
+	imguiVulkan = new IMGUIVulkan();
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext(nullptr);	
+	imguiVulkan->Init(window, true);
+	
+	VkFenceCreateInfo fenceInfo = {};
+	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceInfo.pNext = VK_NULL_HANDLE;
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+	vkCreateFence(GraphicsContext::LogicalDevice, &fenceInfo, GraphicsContext::GlobalAllocator.Get(), &renderFence);
+
 	renderobject = new RenderObject();
 
-	ImGui::CreateContext(nullptr);
-	imguiVulkan.Init(window, true);
+	//chalet = new Mesh("models/chalet.obj");
+	//renderobject->Load(*chalet);
 
+	clear = new RenderObject();
+	renderSemaphore = new VulkanSemaphore();
 	
 	return true;
 }
 
-
-void RavenApp::UpdateThread(RavenApp* app)
+#if MULTITHREADED_RENDERING
+void RavenApp::RenderThread(RavenApp* app)
 {
-	//CameraUBO ubo = {};
-
-	auto previousTime = std::chrono::high_resolution_clock::now();
-	
-	float statsTimer = 0.0f;
-
+	GraphicsContext::GlobalAllocator.PrintStats();
 	while (app->run)
 	{
+		Render(app);
+	}
+}
+#endif
+
+void RavenApp::Render(RavenApp* app)
+{
+	VkResult result;
+	{
+		std::unique_lock<std::mutex> lock(queue_mutex);
+		// Wait until update thread is done with the next frame
+		RavenApp::renderThreadWait.wait(lock, [=] { return app->updateFrameIndex > app->renderFrameIndex; });
+	}
+
+	if (!app->run)
+		return;
+
+	//std::cout << "Start of frame " << app->renderFrameIndex << " render " << std::endl;
+
+	app->timer.Start();
+
+	GraphicsDevice::Instance().Lock();
+
+
+
+	//draw
+	{
+		app->acquireTimer.Start();
+
+		result = vkWaitForFences(GraphicsContext::LogicalDevice, 1, &app->renderFence, true, 5000000000);
+		if (result != VK_SUCCESS)
+		{
+			std::cout << "vkWaitForFences error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+		}
+
+		//Prepare
+		uint32_t imageIndex = -1;
+		do
+		{
+			imageIndex = GraphicsContext::SwapChain->PrepareBackBuffer();
+
+			if (imageIndex == -1)
+			{
+				GraphicsDevice::Instance().Unlock();
+				GraphicsDevice::Instance().SwapchainInvalidated();
+				GraphicsDevice::Instance().Lock();
+			}
+
+		} while (imageIndex == -1);
+
+		const InstanceWrapper<VkSemaphore>& backBufferSemaphore = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).GetLock();
+
+		VkSemaphore signalSemaphores[] = { app->renderSemaphore->GetNative() }; //This semaphore will be signaled when done with rendering the queue
+
+																		  //Sleep(4);
+		app->acquireTimer.Stop();
+		app->drawCallTimer.Start();
+
+		std::vector<VkCommandBuffer> commandBuffersToDraw;
+		{
+			commandBuffersToDraw.push_back(app->clear->ClearBackbuffer(imageIndex)->GetNative());
+
+			app->objectMutex.lock();
+			//TODO: Make the prepare threadsafe by doing a copy?
+			//TODO: dont pass the mesh, it should be owned / held by the renderObject
+			//TODO: find something more elegant then checking nullptr
+			std::shared_ptr<CommandBuffer> commandBuffer = nullptr;
+			//commandBuffer = app->renderobject->PrepareDraw(imageIndex, *(app->chalet));
+
+			if (commandBuffer != nullptr)
+			{
+				commandBuffersToDraw.push_back(commandBuffer->GetNative());
+			}
+
+			commandBuffer = app->imguiVulkan->Render(imageIndex);
+
+			if (commandBuffer != nullptr)
+			{
+				commandBuffersToDraw.push_back(commandBuffer->GetNative());
+			}
+
+			app->objectMutex.unlock();
+			//ro.PrepareDraw(imageIndex);
+		}
+		app->drawCallTimer.Stop();
+
+		{
+			//As soon as we're done creating our command buffers, let the update thread know it can continue processing its next frame
+			app->renderFrameIndex++;
+			RavenApp::updateThreadWait.notify_one();
+		}
+
+		app->renderQueuTimer.Start();
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+		VkSemaphore waitSemaphores[] = { backBufferSemaphore }; //Wait until this semaphore is signaled to continue with executing the command buffers
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
+
+		submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffersToDraw.size());
+		submitInfo.pCommandBuffers = commandBuffersToDraw.data();
+
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
+		vkResetFences(GraphicsContext::LogicalDevice, 1, &app->renderFence);
+		GraphicsContext::TransportQueueLock.lock();
+		//Draw (wait until surface is available)
+		result = vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, app->renderFence);
+		if (result != VK_SUCCESS)
+		{
+			std::cout << "vkQueueSubmit error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+			//throw std::runtime_error("failed to submit draw command buffer!");
+		}
+		GraphicsContext::TransportQueueLock.unlock();
+
+
+		//Sleep(4);
+		app->renderQueuTimer.Stop();
+
+		VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = signalSemaphores;
+
+
+		VkSwapchainKHR swapChains[] = { GraphicsContext::SwapChain->GetNative() };
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapChains;
+
+		presentInfo.pImageIndices = &imageIndex;
+
+		app->presentTimer.Start();
+		GraphicsContext::TransportQueueLock.lock();
+		vkQueueWaitIdle(GraphicsContext::PresentQueue);
+		//Present (wait until drawing is done)
+		result = vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
+		GraphicsContext::TransportQueueLock.unlock();
+		if (result != VK_SUCCESS)
+		{
+			std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+		}
+		app->presentTimer.Stop();
+	}
+	GraphicsDevice::Instance().Unlock();
+
+	//Sleep(16);
+	app->timer.Stop();
+	app->accumelatedTime += app->timer.GetTimeInSeconds();
+
+	{
+		if (app->accumelatedTime > 2.0f)
+		{
+			std::cout << "a: " << app->acquireTimer.GetTimeInSeconds() << " d: " << app->drawCallTimer.GetTimeInSeconds() << " q: " << app->renderQueuTimer.GetTimeInSeconds() << " p: " << app->presentTimer.GetTimeInSeconds() << std::endl;
+			app->accumelatedTime -= 2.0f;
+		}
+		//std::cout << "End of frame " << app->renderFrameIndex - 1 << " render " << std::endl;
+	}
+}
+
+void RavenApp::Run()
+{
+
+	run = true;
+
+#if MULTITHREADED_RENDERING
+	std::thread renderThread(RavenApp::RenderThread, this);
+#endif
+
+	while (!glfwWindowShouldClose(window))
+	{
+		//update
+		glfwPollEvents();
+
+		auto previousTime = std::chrono::high_resolution_clock::now();
+
+		float statsTimer = 0.0f;
+
+		bool runUpdate = false;
+
+		{
+			std::unique_lock<std::mutex> lock(queue_mutex);
+
+			//The condition will take the lock and will wait for to be notified and will continue
+			//only if were stopping (stop == true) or if there are tasks to do, else it will keep waiting.
+			//RavenApp::updateThreadWait.wait(lock, [=] { return updateFrameIndex == renderFrameIndex; });
+			runUpdate = updateFrameIndex == renderFrameIndex;
+		}
+
 		float delta = std::chrono::duration<float, std::chrono::seconds::period>(std::chrono::high_resolution_clock::now() - previousTime).count();
 		previousTime = std::chrono::high_resolution_clock::now();
 
-		if (app->renderobject->standardMaterial != nullptr)
+		if (runUpdate)
 		{
-			static auto startTime = std::chrono::high_resolution_clock::now();
+			//std::cout << "Start of frame " << app->updateFrameIndex << " update " << std::endl;
 
-			app->objectMutex.lock();
+			objectMutex.lock();
 
-				CameraUBO* ubo = app->renderobject->standardMaterial->GetUniformBuffers()[0]->Get<CameraUBO>();
+			if (renderobject->standardMaterial != nullptr)
+			{
+				static auto startTime = std::chrono::high_resolution_clock::now();
+
+
+				CameraUBO* ubo = renderobject->standardMaterial->GetUniformBuffers()[0]->Get<CameraUBO>();
 
 				auto currentTime = std::chrono::high_resolution_clock::now();
 				float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
@@ -163,216 +381,43 @@ void RavenApp::UpdateThread(RavenApp* app)
 				ubo->proj[1][1] *= -1;
 
 
-				app->imguiVulkan.NewFrame(delta);
-
-			app->objectMutex.unlock();
-		}
-
-		statsTimer += delta;
-
-		if (statsTimer > 30.0f)
-		{
-			GraphicsContext::GlobalAllocator.PrintStats();
-			statsTimer = 0;
-		}
-
-
-		Sleep(16);
-	}
-	
-}
-
-void RavenApp::RenderThread(RavenApp* app)
-{
-	VulkanSemaphore renderSemaphore;
-
-	GraphicsContext::GlobalAllocator.PrintStats();
-
-	Mesh quad;
-	Mesh chalet("models/chalet.obj");
-	app->renderobject->Load(chalet);
-
-
-	GraphicsContext::GlobalAllocator.PrintStats();
-
-	VkFence renderFence;
-	VkFenceCreateInfo fenceInfo = {};
-	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	fenceInfo.pNext = VK_NULL_HANDLE;
-	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-	RenderObject clear;
-
-
-	vkCreateFence(GraphicsContext::LogicalDevice, &fenceInfo, GraphicsContext::GlobalAllocator.Get(), &renderFence);
-
-	Timer timer;
-	Timer acquireTimer;
-	Timer drawCallTimer;
-	Timer renderQueuTimer;
-	Timer presentTimer;
-
-	float accumelatedTime = 0; 
-	
-	VkResult result;
-
-	while (app->run)
-	{
-		timer.Start();
-
-		GraphicsDevice::Instance().Lock();
-
-		
-
-		//draw
-		{
-			acquireTimer.Start();
-			//Prepare
-			uint32_t imageIndex = GraphicsContext::SwapChain->PrepareBackBuffer();
-			const InstanceWrapper<VkSemaphore>& backBufferSemaphore = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).GetLock();
-
-			VkSemaphore signalSemaphores[] = { renderSemaphore.GetNative() }; //This semaphore will be signaled when done with rendering the queue
-
-			//Sleep(4);
-			acquireTimer.Stop();			
-			drawCallTimer.Start();
-
-			std::vector<VkCommandBuffer> commandBuffersToDraw;
-			{
-				commandBuffersToDraw.push_back(clear.ClearBackbuffer(imageIndex)->GetNative());
-
-				app->objectMutex.lock();
-				//TODO: Make the prepare threadsafe by doing a copy?
-				//TODO: dont pass the mesh, it should be owned / held by the renderObject
-				//TODO: find something more elegant then checking nullptr
-				std::shared_ptr<CommandBuffer> commandBuffer = app->renderobject->PrepareDraw(imageIndex, chalet);
-
-				if (commandBuffer != nullptr)
-				{
-					commandBuffersToDraw.push_back(commandBuffer->GetNative());
-				}
-
-				commandBuffer = app->imguiVulkan.Render(imageIndex);
-
-				if (commandBuffer != nullptr)
-				{
-					commandBuffersToDraw.push_back(commandBuffer->GetNative());
-				}
-				
-				app->objectMutex.unlock();
-				//ro.PrepareDraw(imageIndex);
 			}
-			drawCallTimer.Stop();
+			imguiVulkan->NewFrame(delta);
 
-			renderQueuTimer.Start();
+			objectMutex.unlock();
 
-			VkSubmitInfo submitInfo = {};
-			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			statsTimer += delta;
 
-			VkSemaphore waitSemaphores[] = { backBufferSemaphore }; //Wait until this semaphore is signaled to continue with executing the command buffers
-			VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-			submitInfo.waitSemaphoreCount = 1;
-			submitInfo.pWaitSemaphores = waitSemaphores;
-			submitInfo.pWaitDstStageMask = waitStages;
-
-			submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffersToDraw.size());
-			submitInfo.pCommandBuffers = commandBuffersToDraw.data(); 
-
-			submitInfo.signalSemaphoreCount = 1;
-			submitInfo.pSignalSemaphores = signalSemaphores;
-			vkResetFences(GraphicsContext::LogicalDevice, 1, &renderFence);
-			GraphicsContext::TransportQueueLock.lock();
-			//Draw (wait untill surface is available)
-			result = vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, renderFence);
-			if (result != VK_SUCCESS)
+			if (statsTimer > 30.0f)
 			{
-				std::cout << "vkQueueSubmit error: " << Vulkan::GetVkResultAsString(result) << std::endl;
-				//throw std::runtime_error("failed to submit draw command buffer!");
-			}
-			GraphicsContext::TransportQueueLock.unlock();
-
-			result = vkWaitForFences(GraphicsContext::LogicalDevice, 1, &renderFence, true, 5000000000);
-			if (result != VK_SUCCESS)
-			{
-				std::cout << "vkWaitForFences error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+				GraphicsContext::GlobalAllocator.PrintStats();
+				statsTimer = 0;
 			}
 
-			//Sleep(4);
-			renderQueuTimer.Stop();
+			//std::cout << "End of frame " << app->updateFrameIndex << " update " << std::endl;
 
-			VkPresentInfoKHR presentInfo = {};
-			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-			presentInfo.waitSemaphoreCount = 1;
-			presentInfo.pWaitSemaphores = signalSemaphores;
-
-
-			VkSwapchainKHR swapChains[] = { GraphicsContext::SwapChain->GetNative() };
-			presentInfo.swapchainCount = 1;
-			presentInfo.pSwapchains = swapChains;
-
-			presentInfo.pImageIndices = &imageIndex;
-
-			presentTimer.Start();
-			vkQueueWaitIdle(GraphicsContext::PresentQueue);
-			//Present (wait until drawing is done)
-			result = vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
-			if (result != VK_SUCCESS)
-			{
-				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
-			}
-			presentTimer.Stop();
-		}
-		GraphicsDevice::Instance().Unlock();
-
-		Sleep(16);
-		timer.Stop();
-		accumelatedTime += timer.GetTimeInSeconds();
-
-		if (accumelatedTime > 2.0f)
-		{
-			std::cout << "a: " << acquireTimer.GetTimeInSeconds() << " d: " << drawCallTimer.GetTimeInSeconds() << " q: " << renderQueuTimer.GetTimeInSeconds() << " p: " << presentTimer.GetTimeInSeconds() << std::endl;
-			accumelatedTime -= 2.0f;
+			updateFrameIndex++;
+			RavenApp::renderThreadWait.notify_one();
 		}
 
-	}
 
-	vkDestroyFence(GraphicsContext::LogicalDevice, renderFence, GraphicsContext::GlobalAllocator.Get());
-
-}
-
-void RavenApp::Run()
-{
-
-	run = true;
-
-	std::thread updateThread(RavenApp::UpdateThread, this);
-	std::thread renderThread(RavenApp::RenderThread, this);
-
-
-	Timer timer;
-	while (!glfwWindowShouldClose(window))
-	{
-		timer.Start();
-
-		//update
-		{
-			glfwPollEvents();
-		}
+#if !MULTITHREADED_RENDERING
+		Render(this);
+#endif
 
 		Sleep(1);
-
-		timer.Stop();
-
-		std::string windowTitle = std::string("delta time: ") + Helpers::ValueToString(timer.GetTimeInSeconds()*1000.0f);
+		
+		std::string windowTitle = std::string("delta time: ") + Helpers::ValueToString(delta*1000.0f);
 
 		glfwSetWindowTitle(window, windowTitle.c_str());
 	}
 
 	run = false;
 
-	updateThread.join();                // pauses until first finishes
+	//updateThread.join();                // pauses until first finishes
+#if MULTITHREADED_RENDERING
 	renderThread.join();               // pauses until second finishes
+#endif
 
 	vkDeviceWaitIdle(GraphicsContext::LogicalDevice);
 }	

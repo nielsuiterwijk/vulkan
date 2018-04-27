@@ -55,7 +55,14 @@ std::vector<char> FileSystem::ReadFile(const std::string& filename)
 void FileSystem::LoadFileAsync(const std::string& fileName, std::function<void(std::vector<char>)> callback)
 {
 	assert(threadStarted);
+	assert(fileName.length() != 0);
+
+	std::cout << "[FileSystem] Queuing loading " << fileName.c_str() << std::endl;
+
+	queue_mutex.lock();
 	tasks.push(AsyncFileLoad(fileName, callback));
+	queue_mutex.unlock();
+
 	condition.notify_one();
 }
 

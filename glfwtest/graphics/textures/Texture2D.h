@@ -19,10 +19,11 @@ public:
 
 	void Transition(VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
-	
-	VkImageView GetImageView() const { return imageView; }
+
 	VkFormat GetFormat() const { return format; }
 	VkImage GetImage() const { return image; }
+	VkImageView GetImageView() const { return imageView; }
+	VkDeviceMemory GetMemory() const { return imageDeviceMemory; }
 
 	bool IsLoaded() const;
 	

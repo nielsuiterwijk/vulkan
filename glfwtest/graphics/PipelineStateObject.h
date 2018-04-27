@@ -14,7 +14,7 @@ public:
 	~PipelineStateObject();
 
 	//Invalidates the previous objects
-	void Create(std::shared_ptr<Material> material);
+	void Create(std::shared_ptr<Material> material, const std::vector<VkDynamicState>& dynamicStates, bool enableDepthTest);
 	void Reload();
 
 	void SetVertexLayout(const VkVertexInputBindingDescription& input, const std::vector<VkVertexInputAttributeDescription>& descriptions);
@@ -47,5 +47,8 @@ private:
 	VkPipelineViewportStateCreateInfo viewportState;
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly;
 	VkPipelineDepthStencilStateCreateInfo depthStencil;
+	VkPipelineDynamicStateCreateInfo dynamicState;
+
+	std::vector<VkDynamicState> activeDynamicStates;
 
 };

@@ -26,6 +26,7 @@ public:
 		material2D = GraphicsDevice::Instance().CreateMaterial("basic2d");
 		material3D = GraphicsDevice::Instance().CreateMaterial("basic3d");*/
 		standardMaterial = GraphicsDevice::Instance().CreateMaterial("standard");
+		standardMaterial->AddUniformBuffer(new UniformBuffer((void*)(new CameraUBO()), sizeof(CameraUBO)));
 
 		/*psoFixed.Create(fixedMaterial);
 		psoFixed.Build();
@@ -83,7 +84,7 @@ public:
 
 		if (psoBasic3D.IsDirty())
 		{
-			psoBasic3D.Create(standardMaterial);
+			psoBasic3D.Create(standardMaterial, std::vector<VkDynamicState>(), true);
 			psoBasic3D.SetVertexLayout(mesh.GetBindingDescription(), mesh.GetAttributeDescriptions());
 			psoBasic3D.Build();
 		}

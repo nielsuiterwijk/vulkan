@@ -34,7 +34,7 @@ public:
 	void CopyStagingToImage(VkImage image, uint32_t width, uint32_t height);
 
 
-	void Map(void* bufferData, uint32_t sizeToMap = -1);
+	void Map(void* bufferData, uint32_t sizeToMap = -1) const;
 
 private:
 	void SetupStagingBuffer(void* bufferData);

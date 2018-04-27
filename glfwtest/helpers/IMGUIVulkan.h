@@ -9,11 +9,20 @@
 class CommandBuffer;
 class TextureSampler;
 class VulkanBuffer;
+class VertexShader;
+class FragmentShader;
 
 
 //Adopted from: https://github.com/ocornut/imgui/tree/master/examples/vulkan_example
 class IMGUIVulkan
 {
+private:
+	struct ScaleTranslateUBO
+	{
+		glm::vec2 scale;
+		glm::vec2 translate;
+	};
+
 public:
 	IMGUIVulkan();
 	~IMGUIVulkan();
@@ -42,14 +51,22 @@ private:
 private:
 	TextureSampler* sampler;
 	Texture2D* imguiFont;
-	std::shared_ptr<Material> material2d;
+	UniformBuffer* vulkanUbo;
+	ScaleTranslateUBO* ubo; //todo: the ownership is unclear, this needs to be a shared_ptr as its ownership is essentially given to the UniformBuffer object
+
+	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+	std::shared_ptr<VertexShader> vertex;
+	std::shared_ptr<FragmentShader> fragment;
+
 	PipelineStateObject psoBasic2D;
 
 	VulkanBuffer* indexBuffer;
-	VulkanBuffer* vertexBuffer; 
+	VulkanBuffer* vertexBuffer;
 	
 	ImDrawVert* cpuVertex;// = new ImDrawVert[draw_data->TotalVtxCount];
+	size_t sizeOfVertexBuffer;
 	ImDrawIdx* cpuIndex;// = new ImDrawIdx[draw_data->TotalIdxCount];
+	size_t sizeOfIndexBuffer;
 
 	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
 
@@ -57,8 +74,13 @@ private:
 	std::vector<GLFWcursor*> mouseCursors;
 
 	bool show_demo_window;
-	
 
+	bool didRender;
+	
 	GLFWwindow* window;
+
+
+	VkVertexInputBindingDescription binding_desc = {};
+	std::vector<VkVertexInputAttributeDescription> attribute_desc;
 
 };

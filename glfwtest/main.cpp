@@ -26,6 +26,10 @@ void AsyncCallback(std::vector<char> fileData)
 
 int main()
 {
+#if DEBUG
+	_CrtSetDbgFlag(_CRTDBG_CHECK_ALWAYS_DF);
+#endif
+
 	Integer::RunSanityCheck();
 
 	FileSystem::Start();

@@ -4,6 +4,9 @@
 #include "graphics/buffers/CommandBuffer.h"
 #include "graphics/textures/TextureSampler.h"
 #include "graphics/buffers/VulkanBuffer.h"
+#include "graphics/shaders/ShaderCache.h"
+#include "graphics/shaders/FragmentShader.h"
+#include "graphics/shaders/VertexShader.h"
 
 
 #ifdef _WIN32
@@ -14,25 +17,34 @@
 #endif
 
 
-
 IMGUIVulkan::IMGUIVulkan() :
-	material2d(nullptr),
 	psoBasic2D(),
 	commandBuffers(),
 	mousePressed(),
 	mouseCursors(),
-	indexBuffer(nullptr),
-	vertexBuffer(nullptr),
 	cpuVertex(nullptr),
 	cpuIndex(nullptr),
-	show_demo_window(true)
+	show_demo_window(true),
+	didRender(true),
+	fragment(nullptr),
+	vertex(nullptr),
+	sampler(nullptr),
+	imguiFont(nullptr),
+	vulkanUbo(nullptr),
+	ubo(nullptr),
+	window(nullptr),
+	sizeOfVertexBuffer(0),
+	sizeOfIndexBuffer(0),
+	indexBuffer(nullptr),
+	vertexBuffer(nullptr)
+
 {
 
 }
 
 IMGUIVulkan::~IMGUIVulkan()
 {
-	
+	Shutdown();
 }
 
 bool IMGUIVulkan::Init(GLFWwindow* window, bool installCallbacks)
@@ -94,14 +106,20 @@ bool IMGUIVulkan::Init(GLFWwindow* window, bool installCallbacks)
 		RavenApp::OnChar.push_back(std::bind(&IMGUIVulkan::CharCallback, this, _1));
 	}
 
-	material2d = std::make_shared<Material>("imgui");
-	psoBasic2D.Create(material2d);
+	ubo = new ScaleTranslateUBO();
 
-	VkVertexInputBindingDescription binding_desc = {};
+
+	vertex = ShaderCache::GetVertexShader("imgui");
+	fragment = ShaderCache::GetFragmentShader("imgui");
+	vulkanUbo = new UniformBuffer((void*)(ubo), sizeof(ScaleTranslateUBO));
+
+	std::vector<VkDynamicState> states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+	psoBasic2D.Create(nullptr, states, false);
+
+	binding_desc = {};
 	binding_desc.stride = sizeof(ImDrawVert);
 	binding_desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	std::vector<VkVertexInputAttributeDescription> attribute_desc;
 	attribute_desc.resize(3);
 	attribute_desc[0].location = 0;
 	attribute_desc[0].binding = binding_desc.binding;
@@ -118,13 +136,13 @@ bool IMGUIVulkan::Init(GLFWwindow* window, bool installCallbacks)
 	attribute_desc[2].format = VK_FORMAT_R8G8B8A8_UNORM;
 	attribute_desc[2].offset = (size_t)(&((ImDrawVert*)0)->col);
 
-	psoBasic2D.SetVertexLayout(binding_desc, attribute_desc);
 	
 	unsigned char* pixels;
 	int width, height;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 	size_t upload_size = width*height * 4 * sizeof(char);
 
+	//VulkanBuffer buffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, BufferType::Staging, pixels, imageSize);
 	VulkanBuffer buffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, BufferType::Staging, pixels, upload_size);
 
 	imguiFont = new Texture2D();
@@ -139,7 +157,7 @@ bool IMGUIVulkan::Init(GLFWwindow* window, bool installCallbacks)
 	sampler = new TextureSampler(VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
 	
 	GraphicsContext::CommandBufferPool->Create(commandBuffers, 3);
-
+	
 	return true;
 }
 
@@ -151,6 +169,24 @@ void IMGUIVulkan::Shutdown()
 
 void IMGUIVulkan::NewFrame(float deltaTime)
 {
+	if (!didRender)
+		return;
+
+	if (vertex->IsLoaded() && fragment->IsLoaded() && psoBasic2D.IsDirty())
+	{
+		assert(shaderStages.size() == 0);
+		shaderStages.push_back(vertex->GetShaderStageCreateInfo());
+		shaderStages.push_back(fragment->GetShaderStageCreateInfo());
+
+		psoBasic2D.SetShader(shaderStages);
+		psoBasic2D.SetVertexLayout(binding_desc, attribute_desc);
+		psoBasic2D.Build();
+	}
+	else if (psoBasic2D.IsDirty())
+	{
+		return;
+	}
+
 //	ImGui::EndFrame();
 	ImGuiIO& io = ImGui::GetIO();
 
@@ -178,7 +214,7 @@ void IMGUIVulkan::NewFrame(float deltaTime)
 		io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
 	}
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < mousePressed.size(); i++)
 	{
 		io.MouseDown[i] = mousePressed[i] || glfwGetMouseButton(window, i) != 0;    // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
 		mousePressed[i] = false;
@@ -199,28 +235,35 @@ void IMGUIVulkan::NewFrame(float deltaTime)
 		}
 	}
 
+	ImGui::NewFrame();
+
 	// Start the frame. This call will update the io.WantCaptureMouse, io.WantCaptureKeyboard flag that you can use to dispatch inputs (or not) to your application.
 	if (show_demo_window)
 	{
 		ImGui::ShowDemoWindow(&show_demo_window);
 	}
 
-	ImGui::NewFrame();
+	didRender = false;
+
 }
 
 std::shared_ptr<CommandBuffer> IMGUIVulkan::Render(uint32_t frameIndex)
 {
+	if (didRender)
+		return nullptr;
+
 	ImGui::Render();
+	didRender = true;
+
 
 	ImDrawData* draw_data = ImGui::GetDrawData();
 
 	std::shared_ptr<CommandBuffer> commandBuffer = commandBuffers[frameIndex];
-	
-	VkResult err;
+
 	ImGuiIO& io = ImGui::GetIO();
 	if (draw_data->TotalVtxCount == 0)
 		return nullptr;
-
+		
 	// Create the Vertex Buffer:
 	size_t vertex_size = draw_data->TotalVtxCount * sizeof(ImDrawVert);
 	if (vertexBuffer == nullptr || vertexBuffer->GetSize() < vertex_size)
@@ -230,11 +273,21 @@ std::shared_ptr<CommandBuffer> IMGUIVulkan::Render(uint32_t frameIndex)
 		constexpr int memoryAlignment = 256;
 		VkDeviceSize vertex_buffer_size = ((vertex_size - 1) / memoryAlignment + 1) * memoryAlignment;
 
-		vertexBuffer = new VulkanBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, BufferType::Dynamic, nullptr, vertex_buffer_size);
+		size_t dif = vertex_buffer_size - vertex_size;
 
-		delete cpuVertex;
-		cpuVertex = new ImDrawVert[draw_data->TotalVtxCount];
+		vertexBuffer = new VulkanBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, BufferType::Dynamic, nullptr, vertex_buffer_size);
+		assert(vertexBuffer != nullptr);
+
 	}
+
+	if (sizeOfVertexBuffer < draw_data->TotalVtxCount)
+	{
+		delete cpuVertex;
+		sizeOfVertexBuffer = draw_data->TotalVtxCount;
+		cpuVertex = new ImDrawVert[sizeOfVertexBuffer];
+		assert(cpuVertex != nullptr);
+	}
+
 
 	// Create the Index Buffer:
 	size_t index_size = draw_data->TotalIdxCount * sizeof(ImDrawIdx);
@@ -245,17 +298,26 @@ std::shared_ptr<CommandBuffer> IMGUIVulkan::Render(uint32_t frameIndex)
 		constexpr int memoryAlignment = 256;
 		VkDeviceSize index_buffer_size = ((index_size - 1) / memoryAlignment + 1) * memoryAlignment;
 		
-		indexBuffer = new VulkanBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, BufferType::Dynamic, nullptr, index_buffer_size);
+		size_t dif = index_buffer_size - index_size;
 
-		delete cpuIndex;
-		cpuIndex = new ImDrawIdx[draw_data->TotalIdxCount];
+		indexBuffer = new VulkanBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, BufferType::Dynamic, nullptr, index_buffer_size);
+		assert(indexBuffer != nullptr);
+
 	}
 
+	if (sizeOfIndexBuffer < draw_data->TotalIdxCount)
+	{
+		delete cpuIndex;
+		sizeOfIndexBuffer = draw_data->TotalIdxCount;
+		cpuIndex = new ImDrawIdx[sizeOfIndexBuffer];
+		assert(cpuIndex != nullptr);
+	}
+	
 	// Upload Vertex and index Data:
 	{
 		ImDrawVert* vtx_dst = cpuVertex;
 		ImDrawIdx* idx_dst = cpuIndex;
-		
+				
 		for (int n = 0; n < draw_data->CmdListsCount; n++)
 		{
 			const ImDrawList* cmd_list = draw_data->CmdLists[n];
@@ -263,8 +325,6 @@ std::shared_ptr<CommandBuffer> IMGUIVulkan::Render(uint32_t frameIndex)
 			memcpy(idx_dst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
 			vtx_dst += cmd_list->VtxBuffer.Size;
 			idx_dst += cmd_list->IdxBuffer.Size;
-			assert((intptr_t)vtx_dst < ((intptr_t)cpuVertex + vertex_size));
-			assert((intptr_t)idx_dst < ((intptr_t)cpuIndex + index_size));
 		}
 
 		vertexBuffer->Map((void*)cpuVertex, vertex_size);
@@ -279,21 +339,27 @@ std::shared_ptr<CommandBuffer> IMGUIVulkan::Render(uint32_t frameIndex)
 	renderPassInfo.framebuffer = GraphicsContext::SwapChain->GetFrameBuffer(frameIndex).GetNative();
 	renderPassInfo.renderArea.offset = { 0, 0 };
 	renderPassInfo.renderArea.extent = GraphicsContext::SwapChain->GetExtent();	
-	renderPassInfo.clearValueCount = 0;
-	renderPassInfo.pClearValues = nullptr;
+	
+	std::array<VkClearValue, 2> clearValues = {};
+	clearValues[0].color = { 200.0f / 255.0f, 49.0f / 255.0f, 37.0f / 255.0f, 1.0f }; // = cornflower blue :)
+	clearValues[1].depthStencil = { 1.0f, 0 }; //1.0 means pixel is furthest away, so stuff can be rendered on top of it.
+
+	renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+	renderPassInfo.pClearValues = clearValues.data();
 
 	vkCmdBeginRenderPass(commandBuffer->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 	// Bind pipeline and descriptor sets:
 	{
 		vkCmdBindPipeline(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, psoBasic2D.GetPipeLine());
-		VkDescriptorSet set = GraphicsContext::DescriptorPool->GetDescriptorSet(material2d->GetUniformBuffers()[0], imguiFont, sampler);
+		VkDescriptorSet set = GraphicsContext::DescriptorPool->GetDescriptorSet(vulkanUbo, imguiFont, sampler);
 		vkCmdBindDescriptorSets(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsContext::PipelineLayout, 0, 1, &set, 0, NULL);
 	}
 
 	// Bind Vertex And Index Buffer:
 	{
-		vkCmdBindVertexBuffers(commandBuffer->GetNative(), 0, 1, &vertexBuffer->GetNative(), 0);
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(commandBuffer->GetNative(), 0, 1, &vertexBuffer->GetNative(), offsets);
 		vkCmdBindIndexBuffer(commandBuffer->GetNative(), indexBuffer->GetNative(), 0, VK_INDEX_TYPE_UINT16);
 	}
 
@@ -310,16 +376,15 @@ std::shared_ptr<CommandBuffer> IMGUIVulkan::Render(uint32_t frameIndex)
 	}
 
 	// Setup scale and translation:
-	//
-	//	float scale[2];
-	//	scale[0] = 2.0f / io.DisplaySize.x;
-	//	scale[1] = 2.0f / io.DisplaySize.y;
-	//	float translate[2];
-	//	translate[0] = -1.0f;
-	//	translate[1] = -1.0f;
-	//	vkCmdPushConstants(commandBuffer->GetNative(), g_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 0, sizeof(float) * 2, scale);
-	//	vkCmdPushConstants(commandBuffer->GetNative(), g_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 2, sizeof(float) * 2, translate);
-	//
+	{
+		ubo->scale.x = 2.0f / io.DisplaySize.x;
+		ubo->scale.y = 2.0f / io.DisplaySize.y;
+		ubo->translate.x = -1.0f;
+		ubo->translate.y = -1.0f;
+
+		vulkanUbo->Upload();
+	}
+
 
 	// Render the command lists:
 	int vtx_offset = 0;

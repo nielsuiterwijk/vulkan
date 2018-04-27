@@ -5,8 +5,10 @@
 #include "graphics/RenderObject.h"
 
 #include "helpers/IMGUIVulkan.h"
+#include "helpers/Timer.h"
 
 struct GLFWwindow;
+class Mesh;
 
 class RavenApp
 {
@@ -31,7 +33,6 @@ public:
 	static std::vector<std::function<void(unsigned int)>> OnChar;
 
 private:
-	static void UpdateThread(RavenApp* app);
 	static void RenderThread(RavenApp* app); 
 	
 	static void OnWindowResized(GLFWwindow* window, int width, int height);
@@ -41,13 +42,43 @@ private:
 	static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	static void CharCallback(GLFWwindow* window, unsigned int c);
 
+	static void Render(RavenApp* app);
+
+	static void check_vk_result(VkResult err)
+	{
+		if (err == 0) return;
+		printf("VkResult %d/n", err);
+		if (err < 0)
+			abort();
+	}
+
 private:
 	GLFWwindow* window;
 	bool run;
 
+	uint64_t updateFrameIndex;
+	uint64_t renderFrameIndex;
+
 	//objects..
+	Mesh* chalet;
+	RenderObject* clear;
 	RenderObject* renderobject;
 	std::mutex objectMutex;
 
-	IMGUIVulkan imguiVulkan;
+	IMGUIVulkan* imguiVulkan;
+
+	VkFence renderFence;
+	VulkanSemaphore* renderSemaphore;
+
+	static std::mutex queue_mutex;
+	static std::condition_variable renderThreadWait;
+	static std::condition_variable updateThreadWait;
+	
+	float accumelatedTime;
+	Timer timer;
+	Timer acquireTimer;
+	Timer drawCallTimer;
+	Timer renderQueuTimer;
+	Timer presentTimer;
+
 };

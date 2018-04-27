@@ -22,9 +22,6 @@ Material::Material(const std::string& fileName)
 	fragment = ShaderCache::GetFragmentShader(fileName);
 	
 
-	UniformBuffer* ub = new UniformBuffer((void*)(new CameraUBO()), sizeof(CameraUBO));
-	uniformBuffers.push_back(ub);
-
 	//VkFilter min, VkFilter mag, VkSamplerMipmapMode mipmapMode, VkSamplerAddressMode addressMode
 	sampler = std::make_shared<TextureSampler>(VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
 	texture = TextureLoader::Get("chalet.jpg");
@@ -42,6 +39,11 @@ Material::~Material()
 	uniformBuffers.clear();
 
 	std::cout << "Destroyed material" << std::endl;
+}
+
+void Material::AddUniformBuffer(UniformBuffer* uniformBuffer)
+{
+	uniformBuffers.push_back(uniformBuffer);
 }
 
 const std::vector<VkPipelineShaderStageCreateInfo>& Material::GetShaderStages()
