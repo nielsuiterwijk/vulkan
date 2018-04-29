@@ -19,7 +19,6 @@
 
 IMGUIVulkan::IMGUIVulkan() :
 	psoBasic2D(),
-	commandBuffers(),
 	mousePressed(),
 	mouseCursors(),
 	cpuVertex(nullptr),
@@ -155,9 +154,7 @@ bool IMGUIVulkan::Init(GLFWwindow* window, bool installCallbacks)
 	io.Fonts->TexID = (void *)(intptr_t)imguiFont->GetImage();
 
 	sampler = new TextureSampler(VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-	
-	GraphicsContext::CommandBufferPool->Create(commandBuffers, 3);
-	
+		
 	return true;
 }
 
@@ -247,22 +244,20 @@ void IMGUIVulkan::NewFrame(float deltaTime)
 
 }
 
-std::shared_ptr<CommandBuffer> IMGUIVulkan::Render(uint32_t frameIndex)
+void IMGUIVulkan::Render(std::shared_ptr<CommandBuffer> commandBuffer)
 {
 	if (didRender)
-		return nullptr;
+		return;
 
 	ImGui::Render();
 	didRender = true;
 
 
 	ImDrawData* draw_data = ImGui::GetDrawData();
-
-	std::shared_ptr<CommandBuffer> commandBuffer = commandBuffers[frameIndex];
-
+	
 	ImGuiIO& io = ImGui::GetIO();
 	if (draw_data->TotalVtxCount == 0)
-		return nullptr;
+		return;
 		
 	// Create the Vertex Buffer:
 	size_t vertex_size = draw_data->TotalVtxCount * sizeof(ImDrawVert);
@@ -330,25 +325,7 @@ std::shared_ptr<CommandBuffer> IMGUIVulkan::Render(uint32_t frameIndex)
 		vertexBuffer->Map((void*)cpuVertex, vertex_size);
 		indexBuffer->Map((void*)cpuIndex, index_size);
 	}	
-	
-	commandBuffer->StartRecording(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
-
-	VkRenderPassBeginInfo renderPassInfo = {};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
-	renderPassInfo.framebuffer = GraphicsContext::SwapChain->GetFrameBuffer(frameIndex).GetNative();
-	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = GraphicsContext::SwapChain->GetExtent();	
-	
-	std::array<VkClearValue, 2> clearValues = {};
-	clearValues[0].color = { 200.0f / 255.0f, 49.0f / 255.0f, 37.0f / 255.0f, 1.0f }; // = cornflower blue :)
-	clearValues[1].depthStencil = { 1.0f, 0 }; //1.0 means pixel is furthest away, so stuff can be rendered on top of it.
-
-	renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-	renderPassInfo.pClearValues = clearValues.data();
-
-	vkCmdBeginRenderPass(commandBuffer->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
+		
 	// Bind pipeline and descriptor sets:
 	{
 		vkCmdBindPipeline(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, psoBasic2D.GetPipeLine());
@@ -414,10 +391,6 @@ std::shared_ptr<CommandBuffer> IMGUIVulkan::Render(uint32_t frameIndex)
 		vtx_offset += cmd_list->VtxBuffer.Size;
 	}
 
-	vkCmdEndRenderPass(commandBuffer->GetNative());
-	commandBuffer->StopRecording();
-
-	return commandBuffer;
 }
 
 void IMGUIVulkan::MouseButtonCallback(int button, int action, int mods)

@@ -64,7 +64,7 @@ void FrameBuffer::InitializeFrameBuffer(uint32_t width, uint32_t height, DepthBu
 	
 	VkFramebufferCreateInfo framebufferInfo = {};
 	framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-	framebufferInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
+	framebufferInfo.renderPass = GraphicsContext::RenderPass->GetNative();
 	framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 	framebufferInfo.pAttachments = attachments.data();
 	framebufferInfo.width = width;

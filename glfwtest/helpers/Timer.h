@@ -17,4 +17,6 @@ private:
 	LARGE_INTEGER	m_ticksPerSecond;
 	LARGE_INTEGER	m_currentTicks;
 	LARGE_INTEGER	m_frameDelay;
+
+	float timeInSeconds;
 };

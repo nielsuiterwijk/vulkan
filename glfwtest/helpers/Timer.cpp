@@ -20,6 +20,7 @@ void Timer::Start()
 void Timer::Stop()
 {
 	QueryPerformanceCounter(&m_frameDelay);
+	timeInSeconds = GetTimeInSeconds();
 }
 
 float Timer::GetTimeInSeconds()

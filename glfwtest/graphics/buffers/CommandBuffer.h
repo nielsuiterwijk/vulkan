@@ -20,7 +20,7 @@ public:
 	void StartRecording(VkCommandBufferUsageFlagBits flag);
 	void StopRecording();
 
-	const VkCommandBuffer& GetNative() const;
+	const VkCommandBuffer&  GetNative() const;
 
 private:
 	VkCommandBuffer commandBuffer;

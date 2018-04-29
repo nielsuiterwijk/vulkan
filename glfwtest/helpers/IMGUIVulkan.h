@@ -30,7 +30,9 @@ public:
 	bool Init(GLFWwindow* window, bool installCallbacks);
 	void Shutdown();
 	void NewFrame(float deltaTime);
-	std::shared_ptr<CommandBuffer> Render(uint32_t frameIndex);
+	void Render(std::shared_ptr<CommandBuffer> commandBuffer);
+
+	bool IsReady() const { return !psoBasic2D.IsDirty(); }
 
 private:
 	void MouseButtonCallback(int button, int action, int mods);
@@ -67,9 +69,7 @@ private:
 	size_t sizeOfVertexBuffer;
 	ImDrawIdx* cpuIndex;// = new ImDrawIdx[draw_data->TotalIdxCount];
 	size_t sizeOfIndexBuffer;
-
-	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
-
+	
 	std::vector<bool> mousePressed;
 	std::vector<GLFWcursor*> mouseCursors;
 

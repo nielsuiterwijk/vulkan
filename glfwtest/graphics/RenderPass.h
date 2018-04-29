@@ -12,7 +12,7 @@ public:
 	RenderPass(VkFormat frameBufferFormat, VkFormat depthFormat);
 	~RenderPass();
 
-	const InstanceWrapper<VkRenderPass>& GetRenderPass() const;
+	const InstanceWrapper<VkRenderPass>& GetNative() const;
 
 private:
 	VkAttachmentDescription colorAttachment;

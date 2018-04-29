@@ -43,15 +43,7 @@ private:
 	static void CharCallback(GLFWwindow* window, unsigned int c);
 
 	static void Render(RavenApp* app);
-
-	static void check_vk_result(VkResult err)
-	{
-		if (err == 0) return;
-		printf("VkResult %d/n", err);
-		if (err < 0)
-			abort();
-	}
-
+	
 private:
 	GLFWwindow* window;
 	bool run;
@@ -59,11 +51,12 @@ private:
 	uint64_t updateFrameIndex;
 	uint64_t renderFrameIndex;
 
+	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
+
 	//objects..
 	Mesh* chalet;
 	RenderObject* clear;
 	RenderObject* renderobject;
-	std::mutex objectMutex;
 
 	IMGUIVulkan* imguiVulkan;
 

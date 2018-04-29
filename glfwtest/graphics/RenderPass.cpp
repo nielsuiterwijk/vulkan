@@ -75,7 +75,7 @@ RenderPass::~RenderPass()
 	std::cout << "Destroyed renderpass" << std::endl;
 }
 
-const InstanceWrapper<VkRenderPass>& RenderPass::GetRenderPass() const
+const InstanceWrapper<VkRenderPass>& RenderPass::GetNative() const
 {
 	return renderPass;
 }

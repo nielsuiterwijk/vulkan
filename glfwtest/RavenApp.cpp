@@ -134,6 +134,8 @@ bool RavenApp::Initialize()
 	GraphicsDevice::Instance().Initialize(glm::u32vec2(1280, 720), vulkanSwapChain);
 
 	GraphicsContext::GlobalAllocator.PrintStats();
+	
+	GraphicsContext::CommandBufferPool->Create(commandBuffers, GraphicsContext::SwapChain->GetAmountOfFrameBuffers());
 
 	imguiVulkan = new IMGUIVulkan();
 	IMGUI_CHECKVERSION();
@@ -148,8 +150,8 @@ bool RavenApp::Initialize()
 
 	renderobject = new RenderObject();
 
-	//chalet = new Mesh("models/chalet.obj");
-	//renderobject->Load(*chalet);
+	chalet = new Mesh("models/chalet.obj");
+	renderobject->Load(*chalet);
 
 	clear = new RenderObject();
 	renderSemaphore = new VulkanSemaphore();
@@ -192,11 +194,7 @@ void RavenApp::Render(RavenApp* app)
 	{
 		app->acquireTimer.Start();
 
-		result = vkWaitForFences(GraphicsContext::LogicalDevice, 1, &app->renderFence, true, 5000000000);
-		if (result != VK_SUCCESS)
-		{
-			std::cout << "vkWaitForFences error: " << Vulkan::GetVkResultAsString(result) << std::endl;
-		}
+		
 
 		//Prepare
 		uint32_t imageIndex = -1;
@@ -213,39 +211,49 @@ void RavenApp::Render(RavenApp* app)
 
 		} while (imageIndex == -1);
 
-		const InstanceWrapper<VkSemaphore>& backBufferSemaphore = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex).GetLock();
+		const FrameBuffer& frameBuffer = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex);
+		const InstanceWrapper<VkSemaphore>& backBufferSemaphore = frameBuffer.GetLock();
 
-		VkSemaphore signalSemaphores[] = { app->renderSemaphore->GetNative() }; //This semaphore will be signaled when done with rendering the queue
+		VkSemaphore renderSemaphore[] = { app->renderSemaphore->GetNative() }; //This semaphore will be signaled when done with rendering the queue
 
 																		  //Sleep(4);
 		app->acquireTimer.Stop();
 		app->drawCallTimer.Start();
 
-		std::vector<VkCommandBuffer> commandBuffersToDraw;
+		std::shared_ptr<CommandBuffer> commandBuffer = app->commandBuffers[imageIndex];
 		{
-			commandBuffersToDraw.push_back(app->clear->ClearBackbuffer(imageIndex)->GetNative());
+			
+			{
+				commandBuffer->StartRecording(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
-			app->objectMutex.lock();
+				VkRenderPassBeginInfo renderPassInfo = {};
+				renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+				renderPassInfo.renderPass = GraphicsContext::RenderPass->GetNative();
+				renderPassInfo.framebuffer = frameBuffer.GetNative();
+				renderPassInfo.renderArea.offset = { 0, 0 };
+				renderPassInfo.renderArea.extent = GraphicsContext::SwapChain->GetExtent();
+
+				std::array<VkClearValue, 2> clearValues = {};
+				clearValues[0].color = { 100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1.0f }; // = cornflower blue :)
+				clearValues[1].depthStencil = { 1.0f, 0 }; //1.0 means pixel is furthest away, so stuff can be rendered on top of it.
+
+				renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+				renderPassInfo.pClearValues = clearValues.data();
+
+				vkCmdBeginRenderPass(commandBuffer->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+			}
+
 			//TODO: Make the prepare threadsafe by doing a copy?
 			//TODO: dont pass the mesh, it should be owned / held by the renderObject
 			//TODO: find something more elegant then checking nullptr
-			std::shared_ptr<CommandBuffer> commandBuffer = nullptr;
-			//commandBuffer = app->renderobject->PrepareDraw(imageIndex, *(app->chalet));
+			app->renderobject->PrepareDraw(commandBuffer, *(app->chalet));
+			app->imguiVulkan->Render(commandBuffer);
 
-			if (commandBuffer != nullptr)
 			{
-				commandBuffersToDraw.push_back(commandBuffer->GetNative());
+				vkCmdEndRenderPass(commandBuffer->GetNative());
+				commandBuffer->StopRecording();
 			}
 
-			commandBuffer = app->imguiVulkan->Render(imageIndex);
-
-			if (commandBuffer != nullptr)
-			{
-				commandBuffersToDraw.push_back(commandBuffer->GetNative());
-			}
-
-			app->objectMutex.unlock();
-			//ro.PrepareDraw(imageIndex);
 		}
 		app->drawCallTimer.Stop();
 
@@ -255,59 +263,68 @@ void RavenApp::Render(RavenApp* app)
 			RavenApp::updateThreadWait.notify_one();
 		}
 
+		//At this point, make sure to wait that the previous render submit was done.
+		{
+			result = vkWaitForFences(GraphicsContext::LogicalDevice, 1, &app->renderFence, true, UINT64_MAX);
+			if (result != VK_SUCCESS)
+			{
+				std::cout << "vkWaitForFences error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+			}
+
+			vkResetFences(GraphicsContext::LogicalDevice, 1, &app->renderFence);
+		}
+
 		app->renderQueuTimer.Start();
 
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-		VkSemaphore waitSemaphores[] = { backBufferSemaphore }; //Wait until this semaphore is signaled to continue with executing the command buffers
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitSemaphores = &backBufferSemaphore; //Wait until this semaphore is signaled to continue with executing the command buffers
 		submitInfo.pWaitDstStageMask = waitStages;
 
-		submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffersToDraw.size());
-		submitInfo.pCommandBuffers = commandBuffersToDraw.data();
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer->GetNative();
 
 		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
-		vkResetFences(GraphicsContext::LogicalDevice, 1, &app->renderFence);
+		submitInfo.pSignalSemaphores = renderSemaphore;
 		GraphicsContext::TransportQueueLock.lock();
-		//Draw (wait until surface is available)
-		result = vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, app->renderFence);
-		if (result != VK_SUCCESS)
 		{
-			std::cout << "vkQueueSubmit error: " << Vulkan::GetVkResultAsString(result) << std::endl;
-			//throw std::runtime_error("failed to submit draw command buffer!");
+			//Draw (wait until surface is available)
+			result = vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, app->renderFence);
+			if (result != VK_SUCCESS)
+			{
+				std::cout << "vkQueueSubmit error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+				throw std::runtime_error("failed to submit draw command buffer!");
+			}
 		}
 		GraphicsContext::TransportQueueLock.unlock();
 
 
 		//Sleep(4);
 		app->renderQueuTimer.Stop();
+		app->presentTimer.Start();
 
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
 		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = signalSemaphores;
-
-
-		VkSwapchainKHR swapChains[] = { GraphicsContext::SwapChain->GetNative() };
+		presentInfo.pWaitSemaphores = renderSemaphore;
 		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = swapChains;
-
+		presentInfo.pSwapchains = &GraphicsContext::SwapChain->GetNative();
 		presentInfo.pImageIndices = &imageIndex;
 
-		app->presentTimer.Start();
 		GraphicsContext::TransportQueueLock.lock();
-		vkQueueWaitIdle(GraphicsContext::PresentQueue);
-		//Present (wait until drawing is done)
-		result = vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
+		{
+			//Present (wait until drawing is done)
+			result = vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
+		}
+
 		GraphicsContext::TransportQueueLock.unlock();
 		if (result != VK_SUCCESS)
 		{
 			std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+			throw std::runtime_error("failed to present!");
 		}
 		app->presentTimer.Stop();
 	}
@@ -329,12 +346,13 @@ void RavenApp::Render(RavenApp* app)
 
 void RavenApp::Run()
 {
-
 	run = true;
 
 #if MULTITHREADED_RENDERING
 	std::thread renderThread(RavenApp::RenderThread, this);
 #endif
+
+	float rotation = 0;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -362,9 +380,7 @@ void RavenApp::Run()
 		if (runUpdate)
 		{
 			//std::cout << "Start of frame " << app->updateFrameIndex << " update " << std::endl;
-
-			objectMutex.lock();
-
+			
 			if (renderobject->standardMaterial != nullptr)
 			{
 				static auto startTime = std::chrono::high_resolution_clock::now();
@@ -375,17 +391,26 @@ void RavenApp::Run()
 				auto currentTime = std::chrono::high_resolution_clock::now();
 				float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-				ubo->model = glm::rotate(glm::mat4(1.0f), time * glm::radians(30.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-				ubo->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+				ubo->model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+				ubo->model = glm::rotate(ubo->model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+				ubo->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 				ubo->proj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.1f, 10.0f);
 				ubo->proj[1][1] *= -1;
 
 
 			}
+
 			imguiVulkan->NewFrame(delta);
 
-			objectMutex.unlock();
+			if (imguiVulkan->IsReady())
+			{
+				ImGui::Begin("Model");
 
+				ImGui::DragFloat("Object Rotation", &rotation, 0.1f);
+
+				ImGui::End();
+			}
+				
 			statsTimer += delta;
 
 			if (statsTimer > 30.0f)
@@ -418,6 +443,11 @@ void RavenApp::Run()
 #if MULTITHREADED_RENDERING
 	renderThread.join();               // pauses until second finishes
 #endif
+
+	for (auto& x : commandBuffers) 
+	{ 
+		x = nullptr;
+	}
 
 	vkDeviceWaitIdle(GraphicsContext::LogicalDevice);
 }	

@@ -53,6 +53,8 @@ public:
 	const VkPresentModeKHR& GetPresentMode() const;
 	VkExtent2D GetExtent() const;
 
+	uint32_t GetAmountOfFrameBuffers() const { return static_cast<uint32_t>(backBuffers.size()); }
+
 private:
 	VkSurfaceFormatKHR PickSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 	VkPresentModeKHR PickSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes, bool waitForVSync);

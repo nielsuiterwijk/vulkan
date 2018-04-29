@@ -232,7 +232,7 @@ void PipelineStateObject::Build()
 		pipelineInfo.pDynamicState = &dynamicState;
 	}
 	pipelineInfo.layout = GraphicsContext::PipelineLayout;
-	pipelineInfo.renderPass = GraphicsContext::RenderPass->GetRenderPass();
+	pipelineInfo.renderPass = GraphicsContext::RenderPass->GetNative();
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
