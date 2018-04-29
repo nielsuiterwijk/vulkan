@@ -42,6 +42,9 @@ private:
 
 	void SetupLocalDynamicBuffer(void* bufferData, VkBufferUsageFlags flags);
 
+	void FreeStagingBuffer();
+	void FreeDeviceBuffer();
+
 private:
 	VkBuffer stagingBuffer;
 	VkBuffer deviceBuffer;

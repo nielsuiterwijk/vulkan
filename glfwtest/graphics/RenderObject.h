@@ -1,9 +1,13 @@
 #pragma once
 
+#include "RavenApp.h"
+
 #include "PipelineStateObject.h"
 #include "graphics/models/Mesh.h"
 #include "graphics/VulkanSwapChain.h"
 #include "graphics/buffers/UniformBuffer.h"
+
+
 class RenderObject
 {
 public:
@@ -14,19 +18,20 @@ public:
 
 	~RenderObject()
 	{
-		//fixedMaterial = nullptr;
-		//material2D = nullptr;
-		//material3D = nullptr;
 		standardMaterial = nullptr;
+		//todo: remove
+		//RavenApp::OnWindowResized.push_back(std::bind(&RenderObject::WindowResized, this, _1, _2));
 	}
 
 	void Load(const Mesh& m)
 	{
+		camera = std::make_shared<CameraUBO>();
+
 		/*fixedMaterial = GraphicsDevice::Instance().CreateMaterial("fixed");
 		material2D = GraphicsDevice::Instance().CreateMaterial("basic2d");
 		material3D = GraphicsDevice::Instance().CreateMaterial("basic3d");*/
 		standardMaterial = GraphicsDevice::Instance().CreateMaterial("standard");
-		standardMaterial->AddUniformBuffer(new UniformBuffer((void*)(new CameraUBO()), sizeof(CameraUBO)));
+		standardMaterial->AddUniformBuffer(new UniformBuffer(camera, sizeof(CameraUBO)));
 
 		/*psoFixed.Create(fixedMaterial);
 		psoFixed.Build();
@@ -39,7 +44,20 @@ public:
 		psoBasic3D.SetVertices(m.GetBindingDescription(), m.GetAttributeDescriptions());
 		psoBasic3D.Build();*/
 
-		GraphicsContext::CommandBufferPool->Create(commandBuffers, 3);
+		using namespace std::placeholders;
+
+		//int a = RavenApp::OnWindowResized.size();
+		//RavenApp::OnWindowResized.push_back(std::bind(&RenderObject::WindowResized, this, _1, _2));
+
+	}
+
+	void WindowResized(int w, int h)
+	{
+		if (!psoBasic3D.IsDirty())
+		{
+			psoBasic3D.SetViewPort(w, h);
+			psoBasic3D.Build();
+		}
 	}
 	
 
@@ -63,14 +81,9 @@ public:
 	}
 
 public:
-	//std::shared_ptr<Material> fixedMaterial;
-	//std::shared_ptr<Material> material2D;
-	//std::shared_ptr<Material> material3D;
 	std::shared_ptr<Material> standardMaterial;
 
-	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
-
-	PipelineStateObject psoFixed;
-	PipelineStateObject psoBasic2D;
+	std::shared_ptr<CameraUBO> camera;
+	
 	PipelineStateObject psoBasic3D;
 };

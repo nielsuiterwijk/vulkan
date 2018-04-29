@@ -13,12 +13,11 @@ struct CameraUBO
 	glm::mat4 proj;
 };
 
-//TODO: make class templatized
+//A small wrapper class that owns the concrete ubo
 class UniformBuffer
 {
 public:
-	//TODO: Clarify ownership of the pointer, probably should be a weak_ptr?
-	UniformBuffer(void* data, size_t size);
+	UniformBuffer(std::shared_ptr<void> data, size_t size);
 	~UniformBuffer();
 	
 	void Upload();
@@ -35,7 +34,7 @@ public:
 	}
 
 private:
-	void* data;
+	std::shared_ptr<void> data;
 	size_t size;
 	
 	VulkanBuffer vulkanBuffer;

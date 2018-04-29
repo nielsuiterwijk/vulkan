@@ -17,6 +17,7 @@ public:
 	void Create(std::shared_ptr<Material> material, const std::vector<VkDynamicState>& dynamicStates, bool enableDepthTest);
 	void Reload();
 
+	void SetViewPort(int width, int height);
 	void SetVertexLayout(const VkVertexInputBindingDescription& input, const std::vector<VkVertexInputAttributeDescription>& descriptions);
 	void SetShader(const std::vector<VkPipelineShaderStageCreateInfo>& shaders);
 

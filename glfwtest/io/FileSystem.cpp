@@ -6,7 +6,7 @@ bool FileSystem::threadStarted = false;
 std::thread FileSystem::fileLoadingThread;
 std::queue<FileSystem::AsyncFileLoad> FileSystem::tasks;
 
-std::mutex FileSystem::queue_mutex; //TODO: At some point a lockless queue would be a nice addition
+std::mutex FileSystem::queue_mutex; 
 std::condition_variable FileSystem::condition;
 
 
@@ -22,6 +22,11 @@ void FileSystem::Exit()
 {
 	std::cout << "[FileSystem] stopping thread.." << std::endl;
 	stop = true;
+
+	queue_mutex.lock();
+	condition.notify_one();
+	queue_mutex.unlock();
+
 	fileLoadingThread.join();
 }
 
@@ -73,7 +78,7 @@ void FileSystem::LoadAsync()
 
 	std::cout << "[FileSystem] thread started" << std::endl;
 
-	for (;;)
+	while (!stop)
 	{
 		AsyncFileLoad loadTask;
 

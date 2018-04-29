@@ -24,6 +24,7 @@ std::vector<std::function<void(int, int, int)>> RavenApp::OnMouseButton = {};
 std::vector<std::function<void(double, double)>> RavenApp::OnMouseScroll = {};
 std::vector<std::function<void(int, int, int, int)>> RavenApp::OnKey = {};
 std::vector<std::function<void(unsigned int)>> RavenApp::OnChar = {};
+std::vector<std::function<void(int, int)>> RavenApp::OnWindowResized = {};
 
 
 std::mutex RavenApp::queue_mutex;
@@ -43,7 +44,6 @@ RavenApp::RavenApp() :
 RavenApp::~RavenApp()
 {
 	delete renderobject;
-	delete clear;
 	delete renderSemaphore;
 	delete imguiVulkan;
 
@@ -110,7 +110,7 @@ bool RavenApp::Initialize()
 
 	glfwSetWindowUserPointer(window, this);
 
-	glfwSetWindowSizeCallback(window, RavenApp::OnWindowResized);
+	glfwSetWindowSizeCallback(window, RavenApp::WindowResizedCallback);
 	glfwSetMouseButtonCallback(window, RavenApp::MouseButtonCallback);
 	glfwSetScrollCallback(window, RavenApp::ScrollCallback);
 	glfwSetKeyCallback(window, RavenApp::KeyCallback);
@@ -153,7 +153,6 @@ bool RavenApp::Initialize()
 	chalet = new Mesh("models/chalet.obj");
 	renderobject->Load(*chalet);
 
-	clear = new RenderObject();
 	renderSemaphore = new VulkanSemaphore();
 	
 	return true;
@@ -176,7 +175,7 @@ void RavenApp::Render(RavenApp* app)
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex);
 		// Wait until update thread is done with the next frame
-		RavenApp::renderThreadWait.wait(lock, [=] { return app->updateFrameIndex > app->renderFrameIndex; });
+		RavenApp::renderThreadWait.wait(lock, [=] { return app->updateFrameIndex > app->renderFrameIndex || !app->run; });
 	}
 
 	if (!app->run)
@@ -245,7 +244,6 @@ void RavenApp::Render(RavenApp* app)
 
 			//TODO: Make the prepare threadsafe by doing a copy?
 			//TODO: dont pass the mesh, it should be owned / held by the renderObject
-			//TODO: find something more elegant then checking nullptr
 			app->renderobject->PrepareDraw(commandBuffer, *(app->chalet));
 			app->imguiVulkan->Render(commandBuffer);
 
@@ -289,7 +287,7 @@ void RavenApp::Render(RavenApp* app)
 
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = renderSemaphore;
-		GraphicsContext::TransportQueueLock.lock();
+		GraphicsContext::QueueLock.lock();
 		{
 			//Draw (wait until surface is available)
 			result = vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, app->renderFence);
@@ -299,7 +297,7 @@ void RavenApp::Render(RavenApp* app)
 				throw std::runtime_error("failed to submit draw command buffer!");
 			}
 		}
-		GraphicsContext::TransportQueueLock.unlock();
+		GraphicsContext::QueueLock.unlock();
 
 
 		//Sleep(4);
@@ -314,13 +312,13 @@ void RavenApp::Render(RavenApp* app)
 		presentInfo.pSwapchains = &GraphicsContext::SwapChain->GetNative();
 		presentInfo.pImageIndices = &imageIndex;
 
-		GraphicsContext::TransportQueueLock.lock();
+		GraphicsContext::QueueLock.lock();
 		{
 			//Present (wait until drawing is done)
 			result = vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
 		}
 
-		GraphicsContext::TransportQueueLock.unlock();
+		GraphicsContext::QueueLock.unlock();
 		if (result != VK_SUCCESS)
 		{
 			std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
@@ -385,17 +383,15 @@ void RavenApp::Run()
 			{
 				static auto startTime = std::chrono::high_resolution_clock::now();
 
-
-				CameraUBO* ubo = renderobject->standardMaterial->GetUniformBuffers()[0]->Get<CameraUBO>();
-
+				
 				auto currentTime = std::chrono::high_resolution_clock::now();
 				float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-				ubo->model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-				ubo->model = glm::rotate(ubo->model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-				ubo->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-				ubo->proj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.1f, 10.0f);
-				ubo->proj[1][1] *= -1;
+				renderobject->camera->model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+				renderobject->camera->model = glm::rotate(renderobject->camera->model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+				renderobject->camera->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				renderobject->camera->proj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.1f, 10.0f);
+				renderobject->camera->proj[1][1] *= -1;
 
 
 			}
@@ -441,6 +437,7 @@ void RavenApp::Run()
 
 	//updateThread.join();                // pauses until first finishes
 #if MULTITHREADED_RENDERING
+	RavenApp::renderThreadWait.notify_one();
 	renderThread.join();               // pauses until second finishes
 #endif
 
@@ -452,7 +449,7 @@ void RavenApp::Run()
 	vkDeviceWaitIdle(GraphicsContext::LogicalDevice);
 }	
 
-void RavenApp::OnWindowResized(GLFWwindow* window, int width, int height)
+void RavenApp::WindowResizedCallback(GLFWwindow* window, int width, int height)
 {
 	if (width == 0 || height == 0)
 		return;
@@ -461,7 +458,14 @@ void RavenApp::OnWindowResized(GLFWwindow* window, int width, int height)
 
 	GraphicsDevice::Instance().SwapchainInvalidated();
 
+	for (size_t i = 0; i < OnWindowResized.size(); i++)
+	{
+		OnWindowResized[i](width, height);
+	}
+
 	RavenApp* app = reinterpret_cast<RavenApp*>(glfwGetWindowUserPointer(window));
+
+	app->renderobject->WindowResized(width, height);
 }
 
 void RavenApp::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)

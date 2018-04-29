@@ -154,12 +154,12 @@ void Texture2D::Transition(VkFormat format, VkImageLayout oldLayout, VkImageLayo
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer->GetNative();
 
-	GraphicsContext::TransportQueueLock.lock();
+	GraphicsContext::QueueLock.lock();
 	VkResult result = vkQueueSubmit(GraphicsContext::TransportQueue, 1, &submitInfo, VK_NULL_HANDLE);
 	assert(result == VK_SUCCESS);
 	result = vkQueueWaitIdle(GraphicsContext::TransportQueue);
 	assert(result == VK_SUCCESS);
-	GraphicsContext::TransportQueueLock.unlock();
+	GraphicsContext::QueueLock.unlock();
 
 
 	GraphicsContext::CommandBufferPoolTransient->Free(commandBuffer);

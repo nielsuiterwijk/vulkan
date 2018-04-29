@@ -54,7 +54,7 @@ private:
 	TextureSampler* sampler;
 	Texture2D* imguiFont;
 	UniformBuffer* vulkanUbo;
-	ScaleTranslateUBO* ubo; //todo: the ownership is unclear, this needs to be a shared_ptr as its ownership is essentially given to the UniformBuffer object
+	std::shared_ptr<ScaleTranslateUBO> ubo;
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	std::shared_ptr<VertexShader> vertex;

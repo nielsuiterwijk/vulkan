@@ -32,10 +32,12 @@ public:
 	static std::vector<std::function<void(int, int, int, int)>> OnKey;
 	static std::vector<std::function<void(unsigned int)>> OnChar;
 
+	static std::vector<std::function<void(int, int)>> OnWindowResized;
+
 private:
 	static void RenderThread(RavenApp* app); 
 	
-	static void OnWindowResized(GLFWwindow* window, int width, int height);
+	static void WindowResizedCallback(GLFWwindow* window, int width, int height);
 
 	static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 	static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
@@ -55,7 +57,6 @@ private:
 
 	//objects..
 	Mesh* chalet;
-	RenderObject* clear;
 	RenderObject* renderobject;
 
 	IMGUIVulkan* imguiVulkan;

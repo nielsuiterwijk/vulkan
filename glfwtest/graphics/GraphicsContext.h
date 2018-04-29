@@ -33,7 +33,7 @@ public:
 
 	static VkEvent TransportEvent;
 	static VulkanSemaphore* TransportSemaphore;
-	static std::mutex TransportQueueLock;
+	static std::mutex QueueLock;
 
 	static VkQueue TransportQueue;
 	static VkQueue GraphicsQueue;

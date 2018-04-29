@@ -184,6 +184,31 @@ void PipelineStateObject::Create(std::shared_ptr<Material> material, const std::
 	isDirty = true;
 }
 
+void PipelineStateObject::SetViewPort(int width, int height)
+{
+	viewport = {};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = static_cast<float>(width);
+	viewport.height = static_cast<float>(height);
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+
+	scissor = {};
+	scissor.offset = { 0, 0 };
+	scissor.extent.width = viewport.width;
+	scissor.extent.height = viewport.height;
+
+	viewportState = {};
+	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	viewportState.viewportCount = 1;
+	viewportState.pViewports = &viewport;
+	viewportState.scissorCount = 1;
+	viewportState.pScissors = &scissor;
+
+	isDirty = true;
+}
+
 void PipelineStateObject::SetVertexLayout(const VkVertexInputBindingDescription& bindingDescription, const std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
 {
 	vertexInputInfo.flags = 0;	//reserved for future use.

@@ -1,9 +1,9 @@
 #include "UniformBuffer.h"
 
-UniformBuffer::UniformBuffer(void* data, size_t size) : 
+UniformBuffer::UniformBuffer(std::shared_ptr<void> data, size_t size) :
 	data(data),
 	size(size),
-	vulkanBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, BufferType::Dynamic, data, size),
+	vulkanBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, BufferType::Dynamic, data.get(), size),
 	bufferInfo()
 {
 	bufferInfo.buffer = vulkanBuffer.GetNative();
@@ -14,11 +14,11 @@ UniformBuffer::UniformBuffer(void* data, size_t size) :
 
 UniformBuffer::~UniformBuffer()
 {
-	delete[] data;
 	data = nullptr;
+	size = 0;
 }
 
 void UniformBuffer::Upload()
 {
-	vulkanBuffer.Map(data);
+	vulkanBuffer.Map(data.get());
 }

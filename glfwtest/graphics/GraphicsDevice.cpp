@@ -15,34 +15,6 @@
 #include <iostream>
 #include <set>
 
-//TODO: Seperate file?
-VkPhysicalDevice GraphicsContext::PhysicalDevice = VK_NULL_HANDLE;
-
-Allocator GraphicsContext::GlobalAllocator;
-GPUAllocator* GraphicsContext::DeviceAllocator = nullptr;
-
-std::shared_ptr<CommandBufferPool> GraphicsContext::CommandBufferPoolTransient = nullptr;
-std::shared_ptr<CommandBufferPool> GraphicsContext::CommandBufferPool = nullptr;
-std::shared_ptr<RenderPass> GraphicsContext::RenderPass = nullptr;
-std::shared_ptr<VulkanSwapChain> GraphicsContext::SwapChain = nullptr;
-std::shared_ptr<VulkanInstance> GraphicsContext::VulkanInstance = nullptr;
-std::shared_ptr<VulkanDescriptorPool> GraphicsContext::DescriptorPool = nullptr;
-
-InstanceWrapper<VkPipelineLayout> GraphicsContext::PipelineLayout = { GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::GlobalAllocator.Get() };
-InstanceWrapper<VkDevice> GraphicsContext::LogicalDevice = { vkDestroyDevice, GraphicsContext::GlobalAllocator.Get() };
-
-QueueFamilyIndices GraphicsContext::FamilyIndices = {};
-
-VkEvent GraphicsContext::TransportEvent = {};
-VulkanSemaphore* GraphicsContext::TransportSemaphore = nullptr;
-std::mutex GraphicsContext::TransportQueueLock = {};
-
-VkQueue GraphicsContext::TransportQueue = {};
-VkQueue GraphicsContext::GraphicsQueue = {};
-VkQueue GraphicsContext::PresentQueue = {};
-
-glm::u32vec2 GraphicsContext::WindowSize = glm::uvec2(0, 0);
-
 
 GraphicsDevice::GraphicsDevice()
 {
@@ -111,6 +83,16 @@ void GraphicsDevice::Initialize(const glm::u32vec2& windowSize, std::shared_ptr<
 	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.transportFamily, 0, &GraphicsContext::TransportQueue);
 	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.graphicsFamily, 0, &GraphicsContext::GraphicsQueue);
 	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.presentFamily, 0, &GraphicsContext::PresentQueue);
+
+	if (GraphicsContext::TransportQueue == GraphicsContext::GraphicsQueue && GraphicsContext::GraphicsQueue == GraphicsContext::PresentQueue)
+	{
+		std::cout << "Single queue platform" << std::endl;
+	}
+	else
+	{
+		std::cout << "Multiple queue platform" << std::endl;
+	}
+
 
 	GraphicsContext::CommandBufferPool = std::make_shared<CommandBufferPool>(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 	GraphicsContext::CommandBufferPoolTransient = std::make_shared<CommandBufferPool>(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);

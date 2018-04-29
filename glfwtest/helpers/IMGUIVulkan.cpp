@@ -105,12 +105,12 @@ bool IMGUIVulkan::Init(GLFWwindow* window, bool installCallbacks)
 		RavenApp::OnChar.push_back(std::bind(&IMGUIVulkan::CharCallback, this, _1));
 	}
 
-	ubo = new ScaleTranslateUBO();
+	ubo = std::make_shared<ScaleTranslateUBO>();
 
 
 	vertex = ShaderCache::GetVertexShader("imgui");
 	fragment = ShaderCache::GetFragmentShader("imgui");
-	vulkanUbo = new UniformBuffer((void*)(ubo), sizeof(ScaleTranslateUBO));
+	vulkanUbo = new UniformBuffer(ubo, sizeof(ScaleTranslateUBO));
 
 	std::vector<VkDynamicState> states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 	psoBasic2D.Create(nullptr, states, false);
@@ -162,6 +162,22 @@ void IMGUIVulkan::Shutdown()
 {
 	delete imguiFont;
 	imguiFont = nullptr;
+
+	delete sampler;
+	sampler = nullptr;
+
+	ubo = nullptr;
+
+	delete vulkanUbo;
+	vulkanUbo = nullptr;
+
+	vertex = nullptr;
+	fragment = nullptr;
+
+	delete indexBuffer;
+	delete vertexBuffer;
+	delete[] cpuVertex;
+	delete[] cpuIndex;
 }
 
 void IMGUIVulkan::NewFrame(float deltaTime)

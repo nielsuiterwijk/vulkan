@@ -56,7 +56,7 @@ private:
 	static std::thread fileLoadingThread;
 	static std::queue<AsyncFileLoad> tasks;
 
-	static std::mutex queue_mutex; //TODO: At some point a lockless queue would be a nice addition
+	static std::mutex queue_mutex; 
 	static std::condition_variable condition;
 
 	static bool threadStarted;

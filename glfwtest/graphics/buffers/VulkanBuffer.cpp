@@ -19,16 +19,20 @@ VulkanBuffer::VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType
 	case BufferType::Static:
 		SetupStagingBuffer(bufferData);
 
+		Map(bufferData);
+
 		SetupLocalStaticBuffer(flags);
 
 		CopyStagingToDevice();
 		break;
 	case BufferType::Dynamic:
 		SetupLocalDynamicBuffer(bufferData, flags);
+		Map(bufferData);
 		break;
 
 	case BufferType::Staging:
 		SetupStagingBuffer(bufferData);
+		Map(bufferData);
 		break;
 	default:
 		assert(false && "Not implemented.");
@@ -40,21 +44,33 @@ VulkanBuffer::VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType
 
 VulkanBuffer::~VulkanBuffer()
 {
+	GraphicsContext::QueueLock.lock();
+	vkQueueWaitIdle(GraphicsContext::GraphicsQueue);
+	GraphicsContext::QueueLock.unlock();
+	FreeStagingBuffer();
+	FreeDeviceBuffer();
+}
+
+
+void VulkanBuffer::FreeStagingBuffer()
+{
 	if (stagingMemory != nullptr)
 	{
-		std::cout << "freeing staging buffer of " << size << " bytes" << std::endl;
+		std::cout << "freeing staging buffer of " << Helpers::MemorySizeToString(size) << " bytes" << std::endl;
 
 		vkDestroyBuffer(GraphicsContext::LogicalDevice, stagingBuffer, GraphicsContext::GlobalAllocator.Get());
 		vkFreeMemory(GraphicsContext::LogicalDevice, stagingMemory, GraphicsContext::GlobalAllocator.Get());
 	}
+}
 
+void VulkanBuffer::FreeDeviceBuffer()
+{
 	if (deviceBuffer != nullptr)
 	{
-		std::cout << "freeing device buffer of " << size << " bytes" << std::endl;
+		std::cout << "freeing device buffer of " << Helpers::MemorySizeToString(size) << " bytes" << std::endl;
 
 		vkDestroyBuffer(GraphicsContext::LogicalDevice, deviceBuffer, GraphicsContext::GlobalAllocator.Get());
 		vkFreeMemory(GraphicsContext::LogicalDevice, nativeMemory, GraphicsContext::GlobalAllocator.Get());
-
 	}
 }
 
@@ -75,42 +91,6 @@ void VulkanBuffer::SetupLocalDynamicBuffer(void* bufferData, VkBufferUsageFlags 
 	GraphicsContext::DeviceAllocator->Allocate(deviceBuffer, &nativeMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 	vkBindBufferMemory(GraphicsContext::LogicalDevice, deviceBuffer, nativeMemory, 0);
-
-	Map(bufferData);
-}
-
-void VulkanBuffer::Map(void* bufferData, uint32_t sizeToMap) const
-{
-	if (bufferData == nullptr)
-		return;
-
-	if (sizeToMap == -1)
-		sizeToMap = size;
-
-	assert(sizeToMap <= size);
-
-	VkResult result = VK_SUCCESS;
-	void* vulkanVirtualMappedMemoryAddress;
-
-	switch (bufferType)
-	{
-	case BufferType::Static:
-	case BufferType::Staging:
-		result = vkMapMemory(GraphicsContext::LogicalDevice, stagingMemory, 0, sizeToMap, 0, &vulkanVirtualMappedMemoryAddress);
-		assert(result == VK_SUCCESS);
-		memcpy(vulkanVirtualMappedMemoryAddress, bufferData, sizeToMap);
-		vkUnmapMemory(GraphicsContext::LogicalDevice, stagingMemory);
-		break;
-	case BufferType::Dynamic:
-		result = vkMapMemory(GraphicsContext::LogicalDevice, nativeMemory, 0, sizeToMap, 0, &vulkanVirtualMappedMemoryAddress);
-		assert(result == VK_SUCCESS);
-		memcpy(vulkanVirtualMappedMemoryAddress, bufferData, sizeToMap);
-		vkUnmapMemory(GraphicsContext::LogicalDevice, nativeMemory);
-		break;
-	default:
-		assert(false && "Not implemented.");
-		break;
-	}
 }
 
 void VulkanBuffer::SetupLocalStaticBuffer(VkBufferUsageFlags flags)
@@ -148,7 +128,6 @@ void VulkanBuffer::SetupStagingBuffer(void* bufferData)
 
 	vkBindBufferMemory(GraphicsContext::LogicalDevice, stagingBuffer, stagingMemory, 0);
 
-	Map(bufferData);
 }
 
 void VulkanBuffer::CopyStagingToDevice()
@@ -171,11 +150,11 @@ void VulkanBuffer::CopyStagingToDevice()
 	submitInfo.pCommandBuffers = &commandBuffer->GetNative();
 	
 
-	GraphicsContext::TransportQueueLock.lock();
+	GraphicsContext::QueueLock.lock();
 	//TODO: This causes waits, needs to be async
 	vkQueueSubmit(GraphicsContext::TransportQueue, 1, &submitInfo, VK_NULL_HANDLE);
 	vkQueueWaitIdle(GraphicsContext::TransportQueue);
-	GraphicsContext::TransportQueueLock.unlock();
+	GraphicsContext::QueueLock.unlock();
 
 	GraphicsContext::CommandBufferPoolTransient->Free(commandBuffer);
 }
@@ -208,12 +187,46 @@ void VulkanBuffer::CopyStagingToImage(VkImage image, uint32_t width, uint32_t he
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer->GetNative();
 
-	GraphicsContext::TransportQueueLock.lock();
+	GraphicsContext::QueueLock.lock();
 	//TODO: This causes waits, needs to be async
 	vkQueueSubmit(GraphicsContext::TransportQueue, 1, &submitInfo, VK_NULL_HANDLE);
 	vkQueueWaitIdle(GraphicsContext::TransportQueue);
 
-	GraphicsContext::TransportQueueLock.unlock();
+	GraphicsContext::QueueLock.unlock();
 
 	GraphicsContext::CommandBufferPoolTransient->Free(commandBuffer);
+}
+
+void VulkanBuffer::Map(void* bufferData, uint32_t sizeToMap) const
+{
+	if (bufferData == nullptr)
+		return;
+
+	if (sizeToMap == -1)
+		sizeToMap = size;
+
+	assert(sizeToMap <= size);
+
+	VkResult result = VK_SUCCESS;
+	void* vulkanVirtualMappedMemoryAddress;
+
+	switch (bufferType)
+	{
+	case BufferType::Static:
+	case BufferType::Staging:
+		result = vkMapMemory(GraphicsContext::LogicalDevice, stagingMemory, 0, sizeToMap, 0, &vulkanVirtualMappedMemoryAddress);
+		assert(result == VK_SUCCESS);
+		memcpy(vulkanVirtualMappedMemoryAddress, bufferData, sizeToMap);
+		vkUnmapMemory(GraphicsContext::LogicalDevice, stagingMemory);
+		break;
+	case BufferType::Dynamic:
+		result = vkMapMemory(GraphicsContext::LogicalDevice, nativeMemory, 0, sizeToMap, 0, &vulkanVirtualMappedMemoryAddress);
+		assert(result == VK_SUCCESS);
+		memcpy(vulkanVirtualMappedMemoryAddress, bufferData, sizeToMap);
+		vkUnmapMemory(GraphicsContext::LogicalDevice, nativeMemory);
+		break;
+	default:
+		assert(false && "Not implemented.");
+		break;
+	}
 }
