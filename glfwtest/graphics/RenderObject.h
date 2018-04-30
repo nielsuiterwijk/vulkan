@@ -32,11 +32,11 @@ public:
 		//standardMaterial = GraphicsDevice::Instance().CreateMaterial("chalet.mat");
 		//mesh = MeshFileLoader::Get("chalet.obj");
 
-		//standardMaterial = GraphicsDevice::Instance().CreateMaterial("cube.mat");
-		//mesh = MeshFileLoader::Get("cube.obj");
+		standardMaterial = GraphicsDevice::Instance().CreateMaterial("toon.mat");
+		mesh = MeshFileLoader::Get("cube.obj");
 
-		standardMaterial = GraphicsDevice::Instance().CreateMaterial("cube.mat");
-		mesh = MeshFileLoader::Get("Ral Zarek.stl");
+		//standardMaterial = GraphicsDevice::Instance().CreateMaterial("cube.mat");
+		//mesh = MeshFileLoader::Get("Ral Zarek.stl");
 
 
 		standardMaterial->AddUniformBuffer(new UniformBuffer(camera, sizeof(CameraUBO)));

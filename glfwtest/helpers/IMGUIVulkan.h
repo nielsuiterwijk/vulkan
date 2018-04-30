@@ -73,7 +73,7 @@ private:
 	std::vector<bool> mousePressed;
 	std::vector<GLFWcursor*> mouseCursors;
 
-	bool show_demo_window;
+	bool showDemoWindow;
 
 	bool didRender;
 	

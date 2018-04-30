@@ -23,7 +23,7 @@ IMGUIVulkan::IMGUIVulkan() :
 	mouseCursors(),
 	cpuVertex(nullptr),
 	cpuIndex(nullptr),
-	show_demo_window(true),
+	showDemoWindow(true),
 	didRender(true),
 	fragment(nullptr),
 	vertex(nullptr),
@@ -251,9 +251,9 @@ void IMGUIVulkan::NewFrame(float deltaTime)
 	ImGui::NewFrame();
 
 	// Start the frame. This call will update the io.WantCaptureMouse, io.WantCaptureKeyboard flag that you can use to dispatch inputs (or not) to your application.
-	if (show_demo_window)
+	if (showDemoWindow)
 	{
-		ImGui::ShowDemoWindow(&show_demo_window);
+		ImGui::ShowDemoWindow(&showDemoWindow);
 	}
 
 	didRender = false;

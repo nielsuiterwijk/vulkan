@@ -60,6 +60,7 @@ void VulkanBuffer::FreeStagingBuffer()
 
 		vkDestroyBuffer(GraphicsContext::LogicalDevice, stagingBuffer, GraphicsContext::GlobalAllocator.Get());
 		vkFreeMemory(GraphicsContext::LogicalDevice, stagingMemory, GraphicsContext::GlobalAllocator.Get());
+		stagingMemory = nullptr;
 	}
 }
 
@@ -71,6 +72,7 @@ void VulkanBuffer::FreeDeviceBuffer()
 
 		vkDestroyBuffer(GraphicsContext::LogicalDevice, deviceBuffer, GraphicsContext::GlobalAllocator.Get());
 		vkFreeMemory(GraphicsContext::LogicalDevice, nativeMemory, GraphicsContext::GlobalAllocator.Get());
+		deviceBuffer = nullptr;
 	}
 }
 
@@ -157,6 +159,8 @@ void VulkanBuffer::CopyStagingToDevice()
 	GraphicsContext::QueueLock.unlock();
 
 	GraphicsContext::CommandBufferPoolTransient->Free(commandBuffer);
+
+	FreeStagingBuffer();
 }
 
 void VulkanBuffer::CopyStagingToImage(VkImage image, uint32_t width, uint32_t height)
@@ -195,6 +199,8 @@ void VulkanBuffer::CopyStagingToImage(VkImage image, uint32_t width, uint32_t he
 	GraphicsContext::QueueLock.unlock();
 
 	GraphicsContext::CommandBufferPoolTransient->Free(commandBuffer);
+
+	FreeStagingBuffer();
 }
 
 void VulkanBuffer::Map(void* bufferData, uint32_t sizeToMap) const
