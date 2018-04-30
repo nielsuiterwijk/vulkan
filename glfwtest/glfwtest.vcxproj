@@ -260,7 +260,9 @@
     <ClCompile Include="graphics\helpers\VulkanSemaphore.cpp" />
     <ClCompile Include="graphics\memory\Allocator.cpp" />
     <ClCompile Include="graphics\memory\GPUAllocator.cpp" />
+    <ClCompile Include="graphics\models\importers\stl_loader.cpp" />
     <ClCompile Include="graphics\models\Mesh.cpp" />
+    <ClCompile Include="graphics\models\MeshFileLoader.cpp" />
     <ClCompile Include="graphics\PipelineStateObject.cpp" />
     <ClCompile Include="graphics\RenderPass.cpp" />
     <ClCompile Include="graphics\shaders\FragmentShader.cpp" />
@@ -277,6 +279,7 @@
     <ClCompile Include="includes\imgui\imgui.cpp" />
     <ClCompile Include="includes\imgui\imgui_demo.cpp" />
     <ClCompile Include="includes\imgui\imgui_draw.cpp" />
+    <ClCompile Include="includes\jsonxx\jsonxx.cc" />
     <ClCompile Include="includes\stb\stb_image.cpp" />
     <ClCompile Include="includes\tinyobj\tiny_obj_loader.cpp" />
     <ClCompile Include="io\FileSystem.cpp" />
@@ -298,7 +301,9 @@
     <ClInclude Include="graphics\memory\Allocator.h" />
     <ClInclude Include="graphics\helpers\VulkanSemaphore.h" />
     <ClInclude Include="graphics\memory\GPUAllocator.h" />
+    <ClInclude Include="graphics\models\importers\stl_loader.h" />
     <ClInclude Include="graphics\models\Mesh.h" />
+    <ClInclude Include="graphics\models\MeshFileLoader.h" />
     <ClInclude Include="graphics\PipelineStateObject.h" />
     <ClInclude Include="graphics\RenderObject.h" />
     <ClInclude Include="graphics\RenderPass.h" />
@@ -468,6 +473,7 @@
     <ClInclude Include="includes\imgui\imconfig.h" />
     <ClInclude Include="includes\imgui\imgui.h" />
     <ClInclude Include="includes\imgui\imgui_internal.h" />
+    <ClInclude Include="includes\jsonxx\jsonxx.h" />
     <ClInclude Include="includes\standard.h" />
     <ClInclude Include="graphics\helpers\InstanceWrapper.h" />
     <ClInclude Include="helpers\Integer.h" />

@@ -17,11 +17,11 @@
 #include <vulkan\vulkan.h>
 #include <GLFW/glfw3.h>
 
-
+#include <array>
 #include <chrono>
+#include <functional>
 #include <future>
 #include <iostream>
 #include <memory>
 #include <thread>
 #include <vector>
-#include <functional>

@@ -8,23 +8,20 @@
 #include "graphics/textures/TextureSampler.h"
 #include "graphics/textures/TextureLoader.h"
 
+#include "jsonxx/jsonxx.h"
+
 #include <thread>
 #include <iostream>
 #include <windows.h>
 
-Material::Material(const std::string& fileName)
+Material::Material(const std::string& fileName) :
+	vertex(nullptr),
+	fragment(nullptr),
+	texture(nullptr),
+	sampler(nullptr)
 {
-	std::cout << "Creating material: " << fileName << std::endl;
-	//TODO: read the meta data and load in.
-	//std::vector<char> data = FileSystem::ReadFile(fileName);
-
-	vertex = ShaderCache::GetVertexShader(fileName);
-	fragment = ShaderCache::GetFragmentShader(fileName);
-	
-
-	//VkFilter min, VkFilter mag, VkSamplerMipmapMode mipmapMode, VkSamplerAddressMode addressMode
-	sampler = std::make_shared<TextureSampler>(VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-	texture = TextureLoader::Get("chalet.jpg");
+	std::cout << "Creating material: " << fileName << std::endl;	
+	FileSystem::LoadFileAsync("materials/" + fileName, std::bind(&Material::FileLoaded, this, std::placeholders::_1));
 }
 
 Material::~Material()
@@ -38,7 +35,25 @@ Material::~Material()
 	}
 	uniformBuffers.clear();
 
+	texture = nullptr;
+	sampler = nullptr;
+
 	std::cout << "Destroyed material" << std::endl;
+}
+
+void Material::FileLoaded(std::vector<char> fileData)
+{
+	std::string fileContents(fileData.data(), fileData.size());
+	jsonxx::Object jsonObject;
+	bool result = jsonObject.parse(fileContents);
+	assert(result);
+
+	vertex = ShaderCache::GetVertexShader(jsonObject.get<std::string>("shader"));
+	fragment = ShaderCache::GetFragmentShader(jsonObject.get<std::string>("shader"));
+
+	//VkFilter min, VkFilter mag, VkSamplerMipmapMode mipmapMode, VkSamplerAddressMode addressMode
+	sampler = std::make_shared<TextureSampler>(VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+	texture = TextureLoader::Get(jsonObject.get<std::string>("texture"));
 }
 
 void Material::AddUniformBuffer(UniformBuffer* uniformBuffer)
@@ -66,5 +81,10 @@ const std::vector<UniformBuffer*>& Material::GetUniformBuffers() const
 
 bool Material::IsLoaded() const 
 { 
+	if (vertex == nullptr || fragment == nullptr || texture == nullptr || sampler == nullptr)
+	{
+		return false;
+	}
+
 	return vertex->IsLoaded() && fragment->IsLoaded() && texture->IsLoaded();
 }

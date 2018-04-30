@@ -5,6 +5,18 @@
 #include <fstream>
 #include <queue>
 
+template<typename CharT, typename TraitsT = std::char_traits<CharT> >
+class VectorBuffer : public std::basic_streambuf<CharT, TraitsT> 
+{
+public:
+	explicit VectorBuffer() {}
+
+	VectorBuffer(std::vector<CharT>& vec) 
+	{
+		this->setg(vec.data(), vec.data(), vec.data() + vec.size());
+	}
+};
+
 
 class FileSystem
 {

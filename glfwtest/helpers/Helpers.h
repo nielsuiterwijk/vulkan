@@ -63,4 +63,15 @@ namespace Helpers
 			text.insert(0, num - text.size(), paddingChar);
 	}
 
+	static std::string GetFileExtension(const std::string& fileName)
+	{
+		//source: https://stackoverflow.com/questions/51949/how-to-get-file-extension-from-string-in-c
+		if (fileName.find_last_of(".") != std::string::npos)
+		{
+			return fileName.substr(fileName.find_last_of(".") + 1);
+		}
+
+		return "";
+	}
+
 }

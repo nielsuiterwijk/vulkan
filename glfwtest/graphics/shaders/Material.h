@@ -32,6 +32,9 @@ public:
 	bool IsLoaded() const;
 
 private:
+	void FileLoaded(std::vector<char> fileData);
+
+private:
 	std::shared_ptr<VertexShader> vertex;
 	std::shared_ptr<FragmentShader> fragment;
 

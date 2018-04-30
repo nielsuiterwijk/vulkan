@@ -56,7 +56,6 @@ private:
 	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
 
 	//objects..
-	Mesh* chalet;
 	RenderObject* renderobject;
 
 	IMGUIVulkan* imguiVulkan;

@@ -72,6 +72,8 @@ struct Vertex3D
 class Mesh
 {
 public:
+	friend class MeshFileLoader;
+
 	struct MeshVertexFormatFlags
 	{
 		enum Enum
@@ -86,15 +88,18 @@ public:
 		};
 	};
 
-	Mesh();
-	Mesh(const std::string& fileName);
+
+
+	explicit Mesh();
 	~Mesh();
 
-	bool Initialize(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize);
+	bool AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize);
 	void SetupCommandBuffer(std::shared_ptr<CommandBuffer> buffer, const PipelineStateObject& pso, std::shared_ptr<Material> material) const;
 
 	const VkVertexInputBindingDescription& GetBindingDescription() const { return bindingDescription; }
 	const std::vector<VkVertexInputAttributeDescription>& GetAttributeDescriptions() const { return attributeDescriptions; }
+
+	bool IsLoaded() const { return vertexBuffer != nullptr && indexBuffer != nullptr; }
 
 private:
 	uint32_t triangleCount;
@@ -105,4 +110,7 @@ private:
 
 	VulkanBuffer* indexBuffer;
 	VulkanBuffer* vertexBuffer;
+
+	glm::vec3 aabbMin;
+	glm::vec3 aabbMax;
 };

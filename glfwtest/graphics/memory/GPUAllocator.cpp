@@ -50,7 +50,7 @@ void GPUAllocator::Allocate(const VkBuffer& buffer, VkDeviceMemory* memory, VkMe
 		throw std::runtime_error("failed to allocate vertex buffer memory!");
 	}
 
-	std::cout << "Allocated " << Helpers::MemorySizeToString(memoryRequirements.size) << std::endl;
+	std::cout << "Allocated " << Helpers::MemorySizeToString(memoryRequirements.size) << " for general usage" << std::endl;
 }
 
 
@@ -89,7 +89,7 @@ void GPUAllocator::AllocateImage(uint32_t width, uint32_t height, VkFormat forma
 		throw std::runtime_error("failed to allocate image memory!");
 	}
 
-	std::cout << "Allocated " << Helpers::MemorySizeToString(memoryRequirements.size) << " for Image" << std::endl;
+	std::cout << "Allocated " << Helpers::MemorySizeToString(memoryRequirements.size) << " for image" << std::endl;
 
 	vkBindImageMemory(GraphicsContext::LogicalDevice, outImage, outImageMemory, 0);
 }
