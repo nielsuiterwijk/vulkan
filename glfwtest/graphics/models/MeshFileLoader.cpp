@@ -62,7 +62,7 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 	VectorBuffer<char> dataBuffer(fileData);
 	std::istream is(&dataBuffer);
 
-	std::vector<Vertex3D> vertices;
+	std::vector<VertexPTCN> vertices;
 	std::vector<uint32_t> indices;
 
 	tinyobj::attrib_t attrib;
@@ -79,7 +79,7 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 	{
 		for (const auto& index : shape.mesh.indices)
 		{
-			Vertex3D vertex = {};
+			VertexPTCN vertex = {};
 
 			vertex.pos =
 			{
@@ -106,26 +106,26 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 
 	meshDestination->triangleCount = static_cast<uint32_t>(indices.size()) / 3;
 
-	/*for (size_t i = 0; i < triangleCount; i++)
+	for (size_t i = 0; i < meshDestination->triangleCount; i++)
 	{
-	Vertex3D v1 = vertices[3 * i + 0];
-	Vertex3D v2 = vertices[3 * i + 1];
-	Vertex3D v3 = vertices[3 * i + 2];
+		VertexPTCN v1 = vertices[3 * i + 0];
+		VertexPTCN v2 = vertices[3 * i + 1];
+		VertexPTCN v3 = vertices[3 * i + 2];
 
-	glm::vec3 edge1 = v1.pos - v2.pos;
-	glm::vec3 edge2 = v1.pos - v3.pos;
-	glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
+		glm::vec3 edge1 = v1.pos - v2.pos;
+		glm::vec3 edge2 = v1.pos - v3.pos;
+		glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
 
-	//Normal to color
-	vertices[3 * i + 0].color = glm::vec3(0.5f, 0.5f, 0.5f) + (normal * 0.5f);
-	vertices[3 * i + 1].color = glm::vec3(0.5f, 0.5f, 0.5f) + (normal * 0.5f);
-	vertices[3 * i + 2].color = glm::vec3(0.5f, 0.5f, 0.5f) + (normal * 0.5f);
-	}*/
+		//Normal to color
+		vertices[3 * i + 0].normal = normal;
+		vertices[3 * i + 1].normal = normal;
+		vertices[3 * i + 2].normal = normal;
+	}
 
-	Vertex3D::GetBindingDescription(meshDestination->bindingDescription);
-	Vertex3D::GetAttributeDescriptions(meshDestination->attributeDescriptions);
+	VertexPTCN::GetBindingDescription(meshDestination->bindingDescription);
+	VertexPTCN::GetAttributeDescriptions(meshDestination->attributeDescriptions);
 
-	uint32_t memorySize = sizeof(Vertex3D) * vertices.size();
+	uint32_t memorySize = sizeof(VertexPTCN) * vertices.size();
 	uint8_t* vertexData = new uint8_t[memorySize];
 	memcpy(vertexData, vertices.data(), memorySize);
 

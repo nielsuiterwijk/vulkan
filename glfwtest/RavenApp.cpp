@@ -386,10 +386,11 @@ void RavenApp::Run()
 				auto currentTime = std::chrono::high_resolution_clock::now();
 				float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-				//renderobject->camera->model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-				//renderobject->camera->model = glm::rotate(renderobject->camera->model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-				renderobject->camera->model = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-				renderobject->camera->view = glm::lookAt(glm::vec3(40.0f, 40.0f, 40.0f), glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				renderobject->camera->model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+				renderobject->camera->model = glm::rotate(renderobject->camera->model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+				//renderobject->camera->model = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+				//renderobject->camera->view = glm::lookAt(glm::vec3(40.0f, 40.0f, 40.0f), glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				renderobject->camera->view = glm::lookAt(glm::vec3(2, 2, 2), glm::vec3(0.0f, 0, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 				renderobject->camera->proj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.01f, 100.0f);
 				renderobject->camera->proj[1][1] *= -1;
 
