@@ -26,10 +26,11 @@ out gl_PerVertex
 void main() {
     gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
 	
-	vec4 vertPos4 = ubo.view * ubo.model * vec4(inPosition, 1.0);
-	
-    vertexPosition = vec3(vertPos4) / vertPos4.w;
-	vertexNormal = inNormal;	
+	vec4 a = ubo.view * ubo.model * vec4(inPosition, 1.0);
+	vec4 b = ubo.view * ubo.model * vec4(inNormal, 0.0);
+		
+    vertexPosition = a.xyz;
+	vertexNormal = b.xyz;
     fragColor = inColor;
 	fragTexCoord = inTexCoord;
 }

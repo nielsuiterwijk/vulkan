@@ -51,7 +51,7 @@ std::vector<char> FileSystem::ReadFile(const std::string& filename)
 	std::cout << "[FileSystem] Loaded " << filename.c_str()  << " size: " << fileSize << std::endl;
 
 #if DEBUG
-	::_sleep(1000);
+	//::_sleep(1000);
 #endif
 
 	return buffer;

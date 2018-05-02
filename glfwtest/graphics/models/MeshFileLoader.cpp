@@ -99,6 +99,15 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 				1.0f, 1.0f, 1.0f
 			};
 
+			vertex.normal = 
+			{
+				attrib.normals[3 * index.normal_index + 0],
+				attrib.normals[3 * index.normal_index + 1],
+				attrib.normals[3 * index.normal_index + 2]
+			};
+
+			vertex.normal = glm::normalize(vertex.normal);
+
 			vertices.push_back(vertex);
 			indices.push_back(static_cast<uint32_t>(indices.size()));
 		}
@@ -106,7 +115,7 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 
 	meshDestination->triangleCount = static_cast<uint32_t>(indices.size()) / 3;
 
-	for (size_t i = 0; i < meshDestination->triangleCount; i++)
+	/*for (size_t i = 0; i < meshDestination->triangleCount; i++)
 	{
 		VertexPTCN v1 = vertices[3 * i + 0];
 		VertexPTCN v2 = vertices[3 * i + 1];
@@ -120,7 +129,7 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 		vertices[3 * i + 0].normal = normal;
 		vertices[3 * i + 1].normal = normal;
 		vertices[3 * i + 2].normal = normal;
-	}
+	}*/
 
 	VertexPTCN::GetBindingDescription(meshDestination->bindingDescription);
 	VertexPTCN::GetAttributeDescriptions(meshDestination->attributeDescriptions);

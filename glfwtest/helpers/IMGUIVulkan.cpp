@@ -253,7 +253,7 @@ void IMGUIVulkan::NewFrame(float deltaTime)
 	// Start the frame. This call will update the io.WantCaptureMouse, io.WantCaptureKeyboard flag that you can use to dispatch inputs (or not) to your application.
 	if (showDemoWindow)
 	{
-		ImGui::ShowDemoWindow(&showDemoWindow);
+		//ImGui::ShowDemoWindow(&showDemoWindow); 
 	}
 
 	didRender = false;

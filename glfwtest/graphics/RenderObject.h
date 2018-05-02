@@ -33,7 +33,7 @@ public:
 		//mesh = MeshFileLoader::Get("chalet.obj");
 
 		standardMaterial = GraphicsDevice::Instance().CreateMaterial("toon.mat");
-		mesh = MeshFileLoader::Get("cube.obj");
+		mesh = MeshFileLoader::Get("boy.obj");
 
 		//standardMaterial = GraphicsDevice::Instance().CreateMaterial("cube.mat");
 		//mesh = MeshFileLoader::Get("Ral Zarek.stl");
