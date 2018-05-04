@@ -6,6 +6,7 @@
 
 class VulkanBuffer;
 class Material;
+class SubMesh;
 
 struct Vertex 
 {
@@ -133,13 +134,13 @@ public:
 	explicit Mesh();
 	~Mesh();
 
-	bool AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize);
+	bool AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t triangles);
 	void SetupCommandBuffer(std::shared_ptr<CommandBuffer> buffer, const PipelineStateObject& pso, std::shared_ptr<Material> material) const;
 
 	const VkVertexInputBindingDescription& GetBindingDescription() const { return bindingDescription; }
 	const std::vector<VkVertexInputAttributeDescription>& GetAttributeDescriptions() const { return attributeDescriptions; }
 
-	bool IsLoaded() const { return vertexBuffer != nullptr && indexBuffer != nullptr; }
+	bool IsLoaded() const;
 
 private:
 	uint32_t triangleCount;
@@ -148,8 +149,7 @@ private:
 	VkVertexInputBindingDescription bindingDescription;
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
-	VulkanBuffer* indexBuffer;
-	VulkanBuffer* vertexBuffer;
+	std::vector<SubMesh*> subMeshes;
 
 	glm::vec3 aabbMin;
 	glm::vec3 aabbMax;

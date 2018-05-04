@@ -18,6 +18,7 @@
 #include <GLFW/glfw3.h>
 
 #include <array>
+#include <assert.h>
 #include <chrono>
 #include <functional>
 #include <future>

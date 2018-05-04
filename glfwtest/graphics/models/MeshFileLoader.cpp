@@ -112,9 +112,7 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 			indices.push_back(static_cast<uint32_t>(indices.size()));
 		}
 	}
-
-	meshDestination->triangleCount = static_cast<uint32_t>(indices.size()) / 3;
-
+	
 	/*for (size_t i = 0; i < meshDestination->triangleCount; i++)
 	{
 		VertexPTCN v1 = vertices[3 * i + 0];
@@ -142,7 +140,8 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 	uint8_t* indexData = new uint8_t[memorySizeIndices];
 	memcpy(indexData, indices.data(), memorySizeIndices);
 
-	meshDestination->AllocateBuffers(vertexData, memorySize, indexData, memorySizeIndices);
+	uint32_t triangleCount = static_cast<uint32_t>(indices.size()) / 3;
+	meshDestination->AllocateBuffers(vertexData, memorySize, indexData, memorySizeIndices, triangleCount);
 
 	delete vertexData;
 	delete indexData;
@@ -185,7 +184,6 @@ void MeshFileLoader::LoadSTL(const std::vector<char>& fileData, std::shared_ptr<
 		indices.push_back(static_cast<uint32_t>(indices.size()));
 	}
 
-	meshDestination->triangleCount = static_cast<uint32_t>(indices.size()) / 3;
 
 	Vertex3D::GetBindingDescription(meshDestination->bindingDescription);
 	Vertex3D::GetAttributeDescriptions(meshDestination->attributeDescriptions);
@@ -198,7 +196,8 @@ void MeshFileLoader::LoadSTL(const std::vector<char>& fileData, std::shared_ptr<
 	uint8_t* indexData = new uint8_t[memorySizeIndices];
 	memcpy(indexData, indices.data(), memorySizeIndices);
 
-	meshDestination->AllocateBuffers(vertexData, memorySize, indexData, memorySizeIndices);
+	uint32_t triangleCount = static_cast<uint32_t>(indices.size()) / 3;
+	meshDestination->AllocateBuffers(vertexData, memorySize, indexData, memorySizeIndices, triangleCount);
 
 	delete vertexData;
 	delete indexData;

@@ -46,6 +46,7 @@
     <ClCompile Include="graphics\models\MeshFileLoader.cpp" />
     <ClCompile Include="includes\jsonxx\jsonxx.cc" />
     <ClCompile Include="graphics\models\importers\stl_loader.cpp" />
+    <ClCompile Include="graphics\models\SubMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -597,6 +598,7 @@
     <ClInclude Include="graphics\models\MeshFileLoader.h" />
     <ClInclude Include="includes\jsonxx\jsonxx.h" />
     <ClInclude Include="graphics\models\importers\stl_loader.h" />
+    <ClInclude Include="graphics\models\SubMesh.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">

@@ -3,32 +3,37 @@
 #include "graphics/buffers/VulkanBuffer.h"
 #include "graphics/shaders/Material.h"
 #include "graphics/buffers/UniformBuffer.h"
+#include "graphics/models/SubMesh.h"
 
 #include "helpers/Timer.h"
 #include "tinyobj/tiny_obj_loader.h"
 
+
 Mesh::Mesh() :
 	triangleCount(0),
-	vertexFormatFlags(0),
-	indexBuffer(nullptr),
-	vertexBuffer(nullptr)
+	vertexFormatFlags(0)
 {		
 
 }
 
 Mesh::~Mesh()
 {
-	delete vertexBuffer;
-	delete indexBuffer;
+	for (int i = 0; i < subMeshes.size(); i++)
+	{
+		delete subMeshes[i];
+	}
+
+	subMeshes.clear();
 }
 
-bool Mesh::AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize)
+bool Mesh::AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t triangles)
 {
-	assert(vertexBuffer == nullptr);
-	vertexBuffer = new VulkanBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, BufferType::Static, vertexData, vertexDataSize);
+	SubMesh* subMesh = new SubMesh(triangles);
 
-	assert(indexBuffer == nullptr);
-	indexBuffer = new VulkanBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, BufferType::Static, indexData, indexDataSize);
+	subMesh->AllocateBuffers(vertexData, vertexDataSize, indexData, indexDataSize);
+
+	subMeshes.emplace_back(subMesh);
+
 
 	return true;
 }
@@ -37,17 +42,27 @@ void Mesh::SetupCommandBuffer(std::shared_ptr<CommandBuffer> commandBuffer, cons
 {	
 	vkCmdBindPipeline(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine());
 
-	VkBuffer vertexBuffers[] = { vertexBuffer->GetNative() };
-	VkDeviceSize offsets[] = { 0 };
-	vkCmdBindVertexBuffers(commandBuffer->GetNative(), 0, 1, vertexBuffers, offsets);
-
-	vkCmdBindIndexBuffer(commandBuffer->GetNative(), indexBuffer->GetNative(), 0, VK_INDEX_TYPE_UINT32);
-	
-	VkDescriptorSet set = GraphicsContext::DescriptorPool->GetDescriptorSet(material->GetUniformBuffers()[0], material->GetTexture().get(), material->GetSampler().get());
-
 	//https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdBindDescriptorSets.html
+
+	VkDescriptorSet set = GraphicsContext::DescriptorPool->GetDescriptorSet(material->GetUniformBuffers()[0], material->GetTexture().get(), material->GetSampler().get());
 	vkCmdBindDescriptorSets(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsContext::PipelineLayout, 0, 1, &set, 0, nullptr);
 
-	vkCmdDrawIndexed(commandBuffer->GetNative(), triangleCount * 3, 1, 0, 0, 0);
+	for (int i = 0; i < subMeshes.size(); i++)
+	{
+		subMeshes[i]->Draw(commandBuffer);
+	}
 
+
+}
+
+
+bool Mesh::IsLoaded() const
+{
+	for (int i = 0; i < subMeshes.size(); i++)
+	{
+		if (!subMeshes[i]->IsLoaded())
+			return false;
+	}	
+
+	return true;
 }

@@ -351,6 +351,7 @@ void RavenApp::Run()
 
 	float rotation = 0;
 	float translationY = -2;
+	float scale = 0.02f;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -392,7 +393,7 @@ void RavenApp::Run()
 
 				renderobject->camera->model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, translationY, 0.0f));
 				renderobject->camera->model = glm::rotate(renderobject->camera->model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-				renderobject->camera->model = glm::scale(renderobject->camera->model, glm::vec3(0.02f, 0.02f, 0.02f));
+				renderobject->camera->model = glm::scale(renderobject->camera->model, glm::vec3(scale, scale, scale));
 
 				renderobject->camera->view = glm::lookAt(glm::vec3(2, 1, 2), glm::vec3(0.0f, 0, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 				//renderobject->camera->view = glm::lookAt(glm::vec3(40.0f, 40.0f, 40.0f), glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -411,6 +412,7 @@ void RavenApp::Run()
 
 				ImGui::DragFloat("Object Rotation", &rotation, 0.1f);
 				ImGui::DragFloat("Object Translation Y", &translationY, 0.01f);
+				ImGui::DragFloat("Scale", &scale, 0.0001f);
 
 				ImGui::End();
 			}
