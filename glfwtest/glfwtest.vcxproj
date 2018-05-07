@@ -257,6 +257,7 @@
     <ClCompile Include="graphics\DepthBuffer.cpp" />
     <ClCompile Include="graphics\FrameBuffer.cpp" />
     <ClCompile Include="graphics\GraphicsContext.cpp" />
+    <ClCompile Include="graphics\helpers\Color.cpp" />
     <ClCompile Include="graphics\helpers\VulkanSemaphore.cpp" />
     <ClCompile Include="graphics\memory\Allocator.cpp" />
     <ClCompile Include="graphics\memory\GPUAllocator.cpp" />
@@ -299,6 +300,7 @@
     <ClInclude Include="graphics\DepthBuffer.h" />
     <ClInclude Include="graphics\FrameBuffer.h" />
     <ClInclude Include="graphics\GraphicsContext.h" />
+    <ClInclude Include="graphics\helpers\color.h" />
     <ClInclude Include="graphics\memory\Allocator.h" />
     <ClInclude Include="graphics\helpers\VulkanSemaphore.h" />
     <ClInclude Include="graphics\memory\GPUAllocator.h" />

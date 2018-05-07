@@ -110,7 +110,7 @@ void GraphicsDevice::Initialize(const glm::u32vec2& windowSize, std::shared_ptr<
 
 void GraphicsDevice::CreateDescriptorPool()
 {
-	GraphicsContext::DescriptorPool = std::make_shared<VulkanDescriptorPool>(10);
+	GraphicsContext::DescriptorPool = std::make_shared<VulkanDescriptorPool>(70);
 }
 
 

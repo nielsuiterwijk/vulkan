@@ -2,9 +2,26 @@
 
 #include "io/FileSystem.h"
 #include "graphics/models/Mesh.h"
+#include "graphics/helpers/color.h"
 
 #include "tinyobj/tiny_obj_loader.h"
 #include "graphics/models/importers/stl_loader.h"
+
+#include <unordered_map>
+
+namespace std 
+{
+	template<> struct hash<VertexPTCN> 
+	{
+		size_t operator()(VertexPTCN const& vertex) const 
+		{
+			return ((hash<glm::vec3>()(vertex.pos) ^
+					(hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+					(hash<glm::vec2>()(vertex.texCoords) << 1) ^
+					(hash<glm::vec3>()(vertex.normal) << 1);
+		}
+	};
+}
 
 MeshFileLoader::MeshFileLoader()
 {
@@ -17,7 +34,6 @@ MeshFileLoader::~MeshFileLoader()
 }
 
 //TODO: implement glTF? https://godotengine.org/article/we-should-all-use-gltf-20-export-3d-assets-game-engines
-//TODO: Implement "MeshFileLoader" so it can load glTF & STL files
 std::shared_ptr<Mesh> MeshFileLoader::Get(const std::string& fileName)
 {
 	std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
@@ -62,8 +78,6 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 	VectorBuffer<char> dataBuffer(fileData);
 	std::istream is(&dataBuffer);
 
-	std::vector<VertexPTCN> vertices;
-	std::vector<uint32_t> indices;
 
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
@@ -75,8 +89,18 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 		throw std::runtime_error(err);
 	}
 
+	int colorIndex = 0;
+	//std::array<Color, 20> colors = { Color::Red, Color::Green, Color::Yellow, Color::Blue, Color::Orange, Color::Purple, Color::Cyan, Color::Magenta, Color::Lime, Color::Pink, Color::Teal, Color::Lavender, Color::Brown, Color::Beige, Color::Maroon, Color::Mint, Color::Olive, Color::Coral, Color::Navy, Color::Grey };
+	std::array<Color, 1> colors = { Color::White };
+
 	for (const auto& shape : shapes)
 	{
+		std::vector<VertexPTCN> vertices;
+		std::vector<uint32_t> indices;
+
+		std::unordered_map<VertexPTCN, uint32_t> uniqueVertices = {};
+		uint32_t skippedVertices = 0;
+
 		for (const auto& index : shape.mesh.indices)
 		{
 			VertexPTCN vertex = {};
@@ -94,10 +118,7 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
 			};
 
-			vertex.color =
-			{
-				1.0f, 1.0f, 1.0f
-			};
+			vertex.color = colors[colorIndex];
 
 			vertex.normal = 
 			{
@@ -108,9 +129,35 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 
 			vertex.normal = glm::normalize(vertex.normal);
 
-			vertices.push_back(vertex);
-			indices.push_back(static_cast<uint32_t>(indices.size()));
+			if (uniqueVertices.count(vertex) == 0) 
+			{
+				uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+				vertices.push_back(vertex);
+			}
+			else
+			{
+				skippedVertices++;
+			}
+
+			indices.push_back(uniqueVertices[vertex]);
 		}
+
+		colorIndex = (colorIndex + 1) % colors.size();
+		std::cout << "Skipped " << skippedVertices << " vertices." << std::endl;
+
+		uint32_t memorySize = sizeof(VertexPTCN) * vertices.size();
+		uint8_t* vertexData = new uint8_t[memorySize];
+		memcpy(vertexData, vertices.data(), memorySize);
+
+		uint32_t memorySizeIndices = sizeof(uint32_t) * indices.size();
+		uint8_t* indexData = new uint8_t[memorySizeIndices];
+		memcpy(indexData, indices.data(), memorySizeIndices);
+
+		uint32_t triangleCount = static_cast<uint32_t>(indices.size()) / 3;
+		meshDestination->AllocateBuffers(vertexData, memorySize, indexData, memorySizeIndices, triangleCount);
+
+		delete vertexData;
+		delete indexData;
 	}
 	
 	/*for (size_t i = 0; i < meshDestination->triangleCount; i++)
@@ -132,19 +179,6 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 	VertexPTCN::GetBindingDescription(meshDestination->bindingDescription);
 	VertexPTCN::GetAttributeDescriptions(meshDestination->attributeDescriptions);
 
-	uint32_t memorySize = sizeof(VertexPTCN) * vertices.size();
-	uint8_t* vertexData = new uint8_t[memorySize];
-	memcpy(vertexData, vertices.data(), memorySize);
-
-	uint32_t memorySizeIndices = sizeof(uint32_t) * indices.size();
-	uint8_t* indexData = new uint8_t[memorySizeIndices];
-	memcpy(indexData, indices.data(), memorySizeIndices);
-
-	uint32_t triangleCount = static_cast<uint32_t>(indices.size()) / 3;
-	meshDestination->AllocateBuffers(vertexData, memorySize, indexData, memorySizeIndices, triangleCount);
-
-	delete vertexData;
-	delete indexData;
 }
 
 void MeshFileLoader::LoadSTL(const std::vector<char>& fileData, std::shared_ptr<Mesh> meshDestination)

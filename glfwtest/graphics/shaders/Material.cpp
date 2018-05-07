@@ -21,7 +21,7 @@ Material::Material(const std::string& fileName) :
 	sampler(nullptr)
 {
 	std::cout << "Creating material: " << fileName << std::endl;	
-	FileSystem::LoadFileAsync("materials/" + fileName, std::bind(&Material::FileLoaded, this, std::placeholders::_1));
+	FileSystem::LoadFileAsync("materials/" + fileName + ".mat", std::bind(&Material::FileLoaded, this, std::placeholders::_1));
 }
 
 Material::~Material()
@@ -51,9 +51,13 @@ void Material::FileLoaded(std::vector<char> fileData)
 	vertex = ShaderCache::GetVertexShader(jsonObject.get<std::string>("shader"));
 	fragment = ShaderCache::GetFragmentShader(jsonObject.get<std::string>("shader"));
 
-	//VkFilter min, VkFilter mag, VkSamplerMipmapMode mipmapMode, VkSamplerAddressMode addressMode
+	//										   VkFilter min,	VkFilter mag,	VkSamplerMipmapMode mipmapMode, VkSamplerAddressMode addressMode
 	sampler = std::make_shared<TextureSampler>(VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-	texture = TextureLoader::Get(jsonObject.get<std::string>("texture"));
+
+	if (jsonObject.has<std::string>("texture"))
+	{
+		texture = TextureLoader::Get(jsonObject.get<std::string>("texture"));
+	}
 }
 
 void Material::AddUniformBuffer(UniformBuffer* uniformBuffer)
@@ -81,10 +85,10 @@ const std::vector<UniformBuffer*>& Material::GetUniformBuffers() const
 
 bool Material::IsLoaded() const 
 { 
-	if (vertex == nullptr || fragment == nullptr || texture == nullptr || sampler == nullptr)
+	if (vertex == nullptr || fragment == nullptr)
 	{
 		return false;
 	}
 
-	return vertex->IsLoaded() && fragment->IsLoaded() && texture->IsLoaded();
+	return vertex->IsLoaded() && fragment->IsLoaded() && (texture == nullptr || texture->IsLoaded());
 }

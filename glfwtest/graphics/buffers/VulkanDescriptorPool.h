@@ -17,6 +17,8 @@ public:
 
 	VkDescriptorSet GetDescriptorSet(UniformBuffer* uniformBuffer, Texture2D* texture, TextureSampler* sampler);
 
+	uint32_t GetCurrentIndex() const { return currentIndex; }
+
 private:
 	void CreateLayouts();
 	void CreatePoolAndSets(uint32_t count);

@@ -15,10 +15,14 @@ layout(location = 0) out vec4 outColor;
 
 
 const vec3 lightPos = vec3(3.0, 3.0, 3.0);
-const vec3 specColor = vec3(1.0, 1.0, 1.0);
+const vec4 ambientColor = vec4(0.1, 0.1, 0.1, 1.0);
+
+const vec4 specColor = vec4(0.6, 0.26, 0.2, 1.0);
+const float shininess = 8.0;
 
 const vec4 rimColor = vec4(0.97, 0.88, 1, 0.75);
 const float rimPower = 2.5;
+
 
 void main() 
 {
@@ -30,20 +34,23 @@ void main()
     // Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
     // pointing in the same direction then it will get max illumination.
     float lambert = max(dot(normal, lightDir), 0.1);
-	float diffuse = lambert * (1.0 / (1.0 + (0.25 * distance * distance)));
-	float specular = 0.0;
+	float specularHighlight = 0.0;
  
 	if(lambert > 0.0) 
 	{
-		vec3 reflectDir = reflect(-lightDir, normal);
 		vec3 viewDir = normalize(-vertexPosition);
-
-		float specAngle = max(dot(reflectDir, viewDir), 0.0);
-		specular = pow(specAngle, 40.0); //The higher pow number, the shinier the object becomes
-		specular *= lambert;
+		
+		vec3 halfDir = normalize(lightDir + viewDir);
+		float specAngle = max(dot(halfDir, normal), 0.0);
+		specularHighlight = pow(specAngle, shininess);
 	}
+	
+	vec4 albedoTex = texture(_albedo, fragTexCoord);
+	vec4 albedo = albedoTex * vec4(fragColor, 1.0);
+	
+	vec4 specular = specularHighlight * specColor;
 
-	//outColor = vec4(lambertian * diffuseColor + specular * specColor, 1.0);
-	outColor = vec4(fragColor * lambert + specular * specColor, 1.0);
+	outColor = ambientColor + (lambert * albedo) + specular;
+	outColor.a = 1;
 
 }

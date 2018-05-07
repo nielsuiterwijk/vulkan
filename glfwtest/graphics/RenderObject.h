@@ -32,7 +32,7 @@ public:
 		//standardMaterial = GraphicsDevice::Instance().CreateMaterial("chalet.mat");
 		//mesh = MeshFileLoader::Get("chalet.obj");
 
-		standardMaterial = GraphicsDevice::Instance().CreateMaterial("toon.mat");
+		standardMaterial = GraphicsDevice::Instance().CreateMaterial("toon");
 		mesh = MeshFileLoader::Get("boy.obj");
 
 		//standardMaterial = GraphicsDevice::Instance().CreateMaterial("cube.mat");
@@ -67,7 +67,7 @@ public:
 
 		standardMaterial->GetUniformBuffers()[0]->Upload();
 
-		mesh->SetupCommandBuffer(commandBuffer, psoBasic3D, standardMaterial);
+		mesh->Draw(commandBuffer, psoBasic3D, standardMaterial);
 	}
 
 public:

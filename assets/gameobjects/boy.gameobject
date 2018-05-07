@@ -1,0 +1,30 @@
+{
+	"mesh" : "boy.obj",
+	"material" : "boy",
+	"textures" : [
+      "boy/Boy_yifu_color.jpg",
+      "boy/Boy_yifu_color.jpg",
+      "boy/Boy_kuzi_color.jpg",
+      "boy/Boy_kuzi_color.jpg",
+      "boy/Boy_hair_color.jpg",
+      "boy/Boy_kuzi_color.jpg",
+      "boy/Boy_body_mid.jpg", //arm left
+      "boy/Boy_body_mid.jpg",
+      "boy/Boy_body_mid.jpg",
+      "boy/Boy_body_mid.jpg",
+      "boy/Boy_yifu_color.jpg", //belt buckle
+      "boy/Boy_face_mid.jpg",
+      "boy/Boy_hair_color.jpg", //eyebrow right
+      "boy/Boy_hair_color.jpg", //eyebrow left
+      "boy/Boy_eye_color.jpg", //eye left
+      "boy/Boy_eye_color.jpg",
+      "boy/Boy_eye_color.jpg", //eye right
+      "boy/Boy_eye_color.jpg",
+      "boy/Boy_eye_color.jpg",
+      "boy/Boy_eye_color.jpg",
+      "boy/Boy_eye_color.jpg",
+      "boy/Boy_eye_color.jpg",
+      "boy/Boy_eye_color.jpg" 
+	  ]
+  
+}

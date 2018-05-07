@@ -19,6 +19,8 @@
 
 #include "imgui/imgui.h"
 
+#include "raven/model.h"
+
 
 std::vector<std::function<void(int, int, int)>> RavenApp::OnMouseButton = {};
 std::vector<std::function<void(double, double)>> RavenApp::OnMouseScroll = {};
@@ -148,11 +150,14 @@ bool RavenApp::Initialize()
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 	vkCreateFence(GraphicsContext::LogicalDevice, &fenceInfo, GraphicsContext::GlobalAllocator.Get(), &renderFence);
 
+	boy = new Model("boy");
+
 	renderobject = new RenderObject();
 
 	renderobject->Load();
 
 	renderSemaphore = new VulkanSemaphore();
+
 	
 	return true;
 }
@@ -221,6 +226,8 @@ void RavenApp::Render(RavenApp* app)
 		std::shared_ptr<CommandBuffer> commandBuffer = app->commandBuffers[imageIndex];
 		{
 			
+			std::cout << "current index: " << GraphicsContext::DescriptorPool->GetCurrentIndex() << std::endl;
+
 			{
 				commandBuffer->StartRecording(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
@@ -243,7 +250,9 @@ void RavenApp::Render(RavenApp* app)
 
 			//TODO: Make the prepare threadsafe by doing a copy?
 			//TODO: dont pass the mesh, it should be owned / held by the renderObject
-			app->renderobject->PrepareDraw(commandBuffer);
+			//app->renderobject->PrepareDraw(commandBuffer);
+			app->boy->Draw(commandBuffer);
+
 			app->imguiVulkan->Render(commandBuffer);
 
 			{
@@ -349,8 +358,8 @@ void RavenApp::Run()
 	std::thread renderThread(RavenApp::RenderThread, this);
 #endif
 
-	float rotation = 0;
-	float translationY = -2;
+	float rotation = 86;
+	float translationY = -1.4;
 	float scale = 0.02f;
 
 	while (!glfwWindowShouldClose(window))
@@ -384,6 +393,7 @@ void RavenApp::Run()
 			{
 				static auto startTime = std::chrono::high_resolution_clock::now();
 
+				std::shared_ptr<CameraUBO> camera = boy->GetUBO();
 				
 				auto currentTime = std::chrono::high_resolution_clock::now();
 				float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
@@ -391,15 +401,15 @@ void RavenApp::Run()
 				//renderobject->camera->model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 				//renderobject->camera->model = glm::rotate(renderobject->camera->model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));		
 
-				renderobject->camera->model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, translationY, 0.0f));
-				renderobject->camera->model = glm::rotate(renderobject->camera->model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-				renderobject->camera->model = glm::scale(renderobject->camera->model, glm::vec3(scale, scale, scale));
+				camera->model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, translationY, 0.0f));
+				camera->model = glm::rotate(camera->model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+				camera->model = glm::scale(camera->model, glm::vec3(scale, scale, scale));
 
-				renderobject->camera->view = glm::lookAt(glm::vec3(2, 1, 2), glm::vec3(0.0f, 0, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				camera->view = glm::lookAt(glm::vec3(2, 1, 2), glm::vec3(0.0f, 0, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 				//renderobject->camera->view = glm::lookAt(glm::vec3(40.0f, 40.0f, 40.0f), glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 				
-				renderobject->camera->proj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.01f, 100.0f);
-				renderobject->camera->proj[1][1] *= -1;
+				camera->proj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.01f, 100.0f);
+				camera->proj[1][1] *= -1;
 
 
 			}
@@ -476,6 +486,7 @@ void RavenApp::WindowResizedCallback(GLFWwindow* window, int width, int height)
 	RavenApp* app = reinterpret_cast<RavenApp*>(glfwGetWindowUserPointer(window));
 
 	app->renderobject->WindowResized(width, height);
+	app->boy->WindowResized(width, height);
 }
 
 void RavenApp::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)

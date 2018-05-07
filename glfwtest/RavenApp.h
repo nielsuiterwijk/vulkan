@@ -9,6 +9,7 @@
 
 struct GLFWwindow;
 class Mesh;
+class Model;
 
 class RavenApp
 {
@@ -57,6 +58,7 @@ private:
 
 	//objects..
 	RenderObject* renderobject;
+	Model* boy;
 
 	IMGUIVulkan* imguiVulkan;
 

@@ -9,6 +9,7 @@
 #include "tinyobj/tiny_obj_loader.h"
 
 
+
 Mesh::Mesh() :
 	triangleCount(0),
 	vertexFormatFlags(0)
@@ -34,11 +35,10 @@ bool Mesh::AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void*
 
 	subMeshes.emplace_back(subMesh);
 
-
 	return true;
 }
 
-void Mesh::SetupCommandBuffer(std::shared_ptr<CommandBuffer> commandBuffer, const PipelineStateObject& pso, std::shared_ptr<Material> material) const
+void Mesh::Draw(std::shared_ptr<CommandBuffer> commandBuffer, const PipelineStateObject& pso, std::shared_ptr<Material> material) const
 {	
 	vkCmdBindPipeline(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine());
 
@@ -51,8 +51,6 @@ void Mesh::SetupCommandBuffer(std::shared_ptr<CommandBuffer> commandBuffer, cons
 	{
 		subMeshes[i]->Draw(commandBuffer);
 	}
-
-
 }
 
 

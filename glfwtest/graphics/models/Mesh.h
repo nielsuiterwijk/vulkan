@@ -108,6 +108,10 @@ struct VertexPTCN
 		attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attributeDescriptions[3].offset = offsetof(VertexPTCN, normal);
 	}
+
+	bool operator==(const VertexPTCN& other) const {
+		return pos == other.pos && color == other.color && texCoords == other.texCoords && normal == other.normal;
+	}
 };
 
 class Mesh
@@ -135,7 +139,9 @@ public:
 	~Mesh();
 
 	bool AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t triangles);
-	void SetupCommandBuffer(std::shared_ptr<CommandBuffer> buffer, const PipelineStateObject& pso, std::shared_ptr<Material> material) const;
+	void Draw(std::shared_ptr<CommandBuffer> buffer, const PipelineStateObject& pso, std::shared_ptr<Material> material) const;
+
+	const std::vector<SubMesh*>& GetSubMeshes() const { return subMeshes; }
 
 	const VkVertexInputBindingDescription& GetBindingDescription() const { return bindingDescription; }
 	const std::vector<VkVertexInputAttributeDescription>& GetAttributeDescriptions() const { return attributeDescriptions; }
