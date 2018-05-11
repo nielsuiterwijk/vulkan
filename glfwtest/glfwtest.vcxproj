@@ -486,6 +486,7 @@
     <ClInclude Include="includes\stb\stb_textedit.h" />
     <ClInclude Include="includes\stb\stb_truetype.h" />
     <ClInclude Include="io\FileSystem.h" />
+    <ClInclude Include="physics\aabb.h" />
     <ClInclude Include="RavenApp.h" />
     <ClInclude Include="raven\model.h" />
     <ClInclude Include="threading\Task.h" />

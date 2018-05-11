@@ -17,6 +17,12 @@ public:
 
 	void Draw(std::shared_ptr<CommandBuffer> commandBuffer);
 
+	void SetAABB(glm::vec3 min, glm::vec3 max)
+	{
+		aabbMin = std::move(min);
+		aabbMax = std::move(max);
+	}
+
 private:
 	uint32_t triangleCount;
 	VulkanBuffer* indexBuffer;

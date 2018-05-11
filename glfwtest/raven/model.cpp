@@ -14,7 +14,10 @@
 #include "graphics/models/SubMesh.h"
 
 
-Model::Model(const std::string& objectFile)
+Model::Model(const std::string& objectFile) : 
+	material(nullptr),
+	camera(nullptr),
+	mesh(nullptr)
 {
 	FileSystem::LoadFileAsync("gameobjects/" + objectFile + ".gameobject", std::bind(&Model::FileLoaded, this, std::placeholders::_1));
 
@@ -94,6 +97,9 @@ bool Model::TexturesLoaded() const
 
 void Model::Draw(std::shared_ptr<CommandBuffer> commandBuffer)
 {
+	if (material == nullptr)
+		return;
+
 	if (!material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded())
 		return;
 

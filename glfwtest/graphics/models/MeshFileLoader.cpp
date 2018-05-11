@@ -7,6 +7,8 @@
 #include "tinyobj/tiny_obj_loader.h"
 #include "graphics/models/importers/stl_loader.h"
 
+#include "physics/aabb.h"
+
 #include <unordered_map>
 
 namespace std 
@@ -101,6 +103,8 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 		std::unordered_map<VertexPTCN, uint32_t> uniqueVertices = {};
 		uint32_t skippedVertices = 0;
 
+		AABB aabb;
+
 		for (const auto& index : shape.mesh.indices)
 		{
 			VertexPTCN vertex = {};
@@ -111,6 +115,8 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 				attrib.vertices[3 * index.vertex_index + 1],
 				attrib.vertices[3 * index.vertex_index + 2]
 			};
+
+			aabb.Grow(vertex.pos);
 
 			vertex.texCoords =
 			{

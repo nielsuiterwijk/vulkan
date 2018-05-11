@@ -601,6 +601,7 @@
     <ClInclude Include="graphics\models\importers\stl_loader.h" />
     <ClInclude Include="graphics\models\SubMesh.h" />
     <ClInclude Include="graphics\helpers\color.h" />
+    <ClInclude Include="physics\aabb.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="includes\glm\detail\func_common.inl">
