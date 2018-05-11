@@ -9,6 +9,7 @@
 #include "graphics/buffers/UniformBuffer.h"
 #include "graphics/shaders/Material.h"
 #include "graphics/textures/Texture2D.h"
+#include "graphics/textures/TextureSampler.h"
 #include "graphics/models/Mesh.h"
 #include "graphics/models/SubMesh.h"
 
@@ -98,6 +99,7 @@ void Model::Draw(std::shared_ptr<CommandBuffer> commandBuffer)
 
 	if (pso.IsDirty())
 	{
+		material->GetSampler()->Initialize(VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, textures[0]->GetMipLevels());
 		pso.Create(material, std::vector<VkDynamicState>(), true);
 		pso.SetVertexLayout(mesh->GetBindingDescription(), mesh->GetAttributeDescriptions());
 		pso.Build();

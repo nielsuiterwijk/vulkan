@@ -38,19 +38,24 @@ void TextureLoader::FileLoaded(std::vector<char> fileData, std::shared_ptr<Textu
 	stbi_uc* pixels = stbi_load_from_memory(pFileData, (int32_t)fileData.size(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	VkDeviceSize imageSize = texWidth * texHeight * 4;
 
+	uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+
 	if (!pixels)
 	{
 		throw std::runtime_error("failed to load texture image!");
 	}
+
+	uint32_t imageSizeWithMipMaps = imageSize * 1.33f;
 
 	//VkBufferUsageFlags flags, BufferType::Enum bufferType, void* data, size_t size);
 	VulkanBuffer buffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, BufferType::Staging, pixels, imageSize);
 
 	stbi_image_free(pixels);
 
-	texture2d->AllocateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, (VkImageUsageFlagBits)(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	texture2d->AllocateImage(texWidth, texHeight, mipLevels, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, (VkImageUsageFlagBits)(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	texture2d->Transition(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL); //Setup image data so it can be transfered to.
 	buffer.CopyStagingToImage(texture2d->GetImage(), texWidth, texHeight);
-	texture2d->Transition(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL); //transform from writeable to read only for shader
+	texture2d->GenerateMipMaps();
+	//texture2d->Transition(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL); //transform from writeable to read only for shader
 	texture2d->SetupView(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 }

@@ -145,7 +145,7 @@ bool IMGUIVulkan::Init(GLFWwindow* window, bool installCallbacks)
 	VulkanBuffer buffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, BufferType::Staging, pixels, upload_size);
 
 	imguiFont = new Texture2D();
-	imguiFont->AllocateImage(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, (VkImageUsageFlagBits)(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	imguiFont->AllocateImage(width, height, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, (VkImageUsageFlagBits)(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	imguiFont->Transition(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL); //Setup image data so it can be transfered to.
 	buffer.CopyStagingToImage(imguiFont->GetImage(), width, height);
 	imguiFont->Transition(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL); //move data to shader readable
@@ -153,7 +153,8 @@ bool IMGUIVulkan::Init(GLFWwindow* window, bool installCallbacks)
 
 	io.Fonts->TexID = (void *)(intptr_t)imguiFont->GetImage();
 
-	sampler = new TextureSampler(VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+	sampler = new TextureSampler();
+	sampler->Initialize(VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, 0);
 		
 	return true;
 }

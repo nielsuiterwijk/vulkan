@@ -7,9 +7,10 @@
 class TextureSampler
 {
 public:
-	TextureSampler(VkFilter min, VkFilter mag, VkSamplerMipmapMode mipmapMode, VkSamplerAddressMode addressMode);
+	explicit TextureSampler();
 	~TextureSampler();
 
+	void Initialize(VkFilter min, VkFilter mag, VkSamplerMipmapMode mipmapMode, VkSamplerAddressMode addressMode, uint32_t mipLevels);
 
 	VkSampler GetNative() const { return sampler; }
 

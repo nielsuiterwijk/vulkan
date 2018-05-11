@@ -51,13 +51,15 @@ void Material::FileLoaded(std::vector<char> fileData)
 	vertex = ShaderCache::GetVertexShader(jsonObject.get<std::string>("shader"));
 	fragment = ShaderCache::GetFragmentShader(jsonObject.get<std::string>("shader"));
 
-	//										   VkFilter min,	VkFilter mag,	VkSamplerMipmapMode mipmapMode, VkSamplerAddressMode addressMode
-	sampler = std::make_shared<TextureSampler>(VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
 
 	if (jsonObject.has<std::string>("texture"))
 	{
 		texture = TextureLoader::Get(jsonObject.get<std::string>("texture"));
 	}
+
+	sampler = std::make_shared<TextureSampler>();
+	sampler->Initialize(VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, 0);
+
 }
 
 void Material::AddUniformBuffer(UniformBuffer* uniformBuffer)
