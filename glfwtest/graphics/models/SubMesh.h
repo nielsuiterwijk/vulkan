@@ -1,6 +1,7 @@
 #pragma once
 
 #include "standard.h"
+#include "physics/aabb.h"
 
 class VulkanBuffer;
 class CommandBuffer;
@@ -17,10 +18,11 @@ public:
 
 	void Draw(std::shared_ptr<CommandBuffer> commandBuffer);
 
-	void SetAABB(glm::vec3 min, glm::vec3 max)
+
+	
+	void SetAABB(AABB aabb)
 	{
-		aabbMin = std::move(min);
-		aabbMax = std::move(max);
+		this->aabb = std::move(aabb);
 	}
 
 private:
@@ -28,6 +30,5 @@ private:
 	VulkanBuffer* indexBuffer;
 	VulkanBuffer* vertexBuffer;
 
-	glm::vec3 aabbMin;
-	glm::vec3 aabbMax;
+	AABB aabb;
 };

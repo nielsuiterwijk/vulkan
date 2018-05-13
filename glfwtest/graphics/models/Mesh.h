@@ -138,7 +138,7 @@ public:
 	explicit Mesh();
 	~Mesh();
 
-	bool AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t triangles);
+	SubMesh* AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t triangles);
 	void Draw(std::shared_ptr<CommandBuffer> buffer, const PipelineStateObject& pso, std::shared_ptr<Material> material) const;
 
 	const std::vector<SubMesh*>& GetSubMeshes() const { return subMeshes; }

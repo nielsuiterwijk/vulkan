@@ -27,7 +27,7 @@ Mesh::~Mesh()
 	subMeshes.clear();
 }
 
-bool Mesh::AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t triangles)
+SubMesh* Mesh::AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t triangles)
 {
 	SubMesh* subMesh = new SubMesh(triangles);
 
@@ -35,7 +35,7 @@ bool Mesh::AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void*
 
 	subMeshes.emplace_back(subMesh);
 
-	return true;
+	return subMesh;
 }
 
 void Mesh::Draw(std::shared_ptr<CommandBuffer> commandBuffer, const PipelineStateObject& pso, std::shared_ptr<Material> material) const

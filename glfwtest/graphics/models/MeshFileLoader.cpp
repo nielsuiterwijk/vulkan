@@ -2,6 +2,7 @@
 
 #include "io/FileSystem.h"
 #include "graphics/models/Mesh.h"
+#include "graphics/models/SubMesh.h"
 #include "graphics/helpers/color.h"
 
 #include "tinyobj/tiny_obj_loader.h"
@@ -160,7 +161,8 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 		memcpy(indexData, indices.data(), memorySizeIndices);
 
 		uint32_t triangleCount = static_cast<uint32_t>(indices.size()) / 3;
-		meshDestination->AllocateBuffers(vertexData, memorySize, indexData, memorySizeIndices, triangleCount);
+		SubMesh* subMesh = meshDestination->AllocateBuffers(vertexData, memorySize, indexData, memorySizeIndices, triangleCount);
+		subMesh->SetAABB(aabb);
 
 		delete vertexData;
 		delete indexData;
