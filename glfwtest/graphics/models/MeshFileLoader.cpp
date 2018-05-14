@@ -5,6 +5,7 @@
 #include "graphics/models/SubMesh.h"
 #include "graphics/helpers/color.h"
 
+#include "tinygltf/tiny_gltf.h"
 #include "tinyobj/tiny_obj_loader.h"
 #include "graphics/models/importers/stl_loader.h"
 

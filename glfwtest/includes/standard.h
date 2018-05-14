@@ -19,6 +19,9 @@
 #include <vulkan\vulkan.h>
 #include <GLFW/glfw3.h>
 
+#include <json/json.hpp>
+using json = nlohmann::json;
+
 #include <array>
 #include <assert.h>
 #include <chrono>

@@ -44,7 +44,6 @@
     <ClCompile Include="helpers\IMGUIVulkan.cpp" />
     <ClCompile Include="graphics\GraphicsContext.cpp" />
     <ClCompile Include="graphics\models\MeshFileLoader.cpp" />
-    <ClCompile Include="includes\jsonxx\jsonxx.cc" />
     <ClCompile Include="graphics\models\importers\stl_loader.cpp" />
     <ClCompile Include="graphics\models\SubMesh.cpp" />
     <ClCompile Include="graphics\helpers\Color.cpp" />
@@ -597,7 +596,6 @@
     <ClInclude Include="graphics\textures\TextureSampler.h" />
     <ClInclude Include="helpers\IMGUIVulkan.h" />
     <ClInclude Include="graphics\models\MeshFileLoader.h" />
-    <ClInclude Include="includes\jsonxx\jsonxx.h" />
     <ClInclude Include="graphics\models\importers\stl_loader.h" />
     <ClInclude Include="graphics\models\SubMesh.h" />
     <ClInclude Include="graphics\helpers\color.h" />

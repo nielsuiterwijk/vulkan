@@ -1,14 +1,12 @@
-#include "helpers/Integer.h"
-
 #include "RavenApp.h"
+
 #include "threading/Task.h"
 #include "threading/ThreadPool.h"
 #include "io/FileSystem.h"
 
-#include <windows.h>
-#include <iostream>
-#include <stdexcept>
+#include "standard.h"
 
+#undef min
 
 
 int ThreadedCall(int a, int b)
@@ -29,9 +27,7 @@ int main()
 #if DEBUG
 	_CrtSetDbgFlag(_CRTDBG_CHECK_ALWAYS_DF);
 #endif
-
-	Integer::RunSanityCheck();
-
+	
 	FileSystem::Start();
 
 	std::cout << "size of size_t: " << sizeof(size_t) << std::endl;

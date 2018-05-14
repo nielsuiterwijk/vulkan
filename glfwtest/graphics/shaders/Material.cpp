@@ -8,8 +8,6 @@
 #include "graphics/textures/TextureSampler.h"
 #include "graphics/textures/TextureLoader.h"
 
-#include "jsonxx/jsonxx.h"
-
 #include <thread>
 #include <iostream>
 #include <windows.h>
@@ -44,17 +42,15 @@ Material::~Material()
 void Material::FileLoaded(std::vector<char> fileData)
 {
 	std::string fileContents(fileData.data(), fileData.size());
-	jsonxx::Object jsonObject;
-	bool result = jsonObject.parse(fileContents);
-	assert(result);
+	auto jsonObject = json::parse(fileContents);
 
-	vertex = ShaderCache::GetVertexShader(jsonObject.get<std::string>("shader"));
-	fragment = ShaderCache::GetFragmentShader(jsonObject.get<std::string>("shader"));
+	vertex = ShaderCache::GetVertexShader(jsonObject["shader"]);
+	fragment = ShaderCache::GetFragmentShader(jsonObject["shader"]);
 
 
-	if (jsonObject.has<std::string>("texture"))
+	if (jsonObject.find("texture") != jsonObject.end())
 	{
-		texture = TextureLoader::Get(jsonObject.get<std::string>("texture"));
+		texture = TextureLoader::Get(jsonObject["texture"]);
 	}
 
 	sampler = std::make_shared<TextureSampler>();

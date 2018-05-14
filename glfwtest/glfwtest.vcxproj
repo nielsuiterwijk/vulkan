@@ -281,7 +281,6 @@
     <ClCompile Include="includes\imgui\imgui.cpp" />
     <ClCompile Include="includes\imgui\imgui_demo.cpp" />
     <ClCompile Include="includes\imgui\imgui_draw.cpp" />
-    <ClCompile Include="includes\jsonxx\jsonxx.cc" />
     <ClCompile Include="includes\stb\stb_image.cpp" />
     <ClCompile Include="includes\tinyobj\tiny_obj_loader.cpp" />
     <ClCompile Include="io\FileSystem.cpp" />
@@ -477,7 +476,6 @@
     <ClInclude Include="includes\imgui\imconfig.h" />
     <ClInclude Include="includes\imgui\imgui.h" />
     <ClInclude Include="includes\imgui\imgui_internal.h" />
-    <ClInclude Include="includes\jsonxx\jsonxx.h" />
     <ClInclude Include="includes\standard.h" />
     <ClInclude Include="graphics\helpers\InstanceWrapper.h" />
     <ClInclude Include="helpers\Integer.h" />

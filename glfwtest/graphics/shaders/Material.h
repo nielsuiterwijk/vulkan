@@ -3,9 +3,7 @@
 #include "graphics\helpers\InstanceWrapper.h"
 #include "graphics\buffers\VulkanDescriptorPool.h"
 
-#include <string>
-#include <vector>
-#include <memory>
+#include "standard.h"
 
 class UniformBuffer;
 class VertexShader;

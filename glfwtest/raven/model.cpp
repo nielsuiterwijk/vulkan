@@ -1,7 +1,6 @@
 #include "model.h"
 
 #include "io/FileSystem.h"
-#include "jsonxx/jsonxx.h"
 
 #include "graphics/models/MeshFileLoader.h"
 #include "graphics/textures/TextureLoader.h"
@@ -32,24 +31,23 @@ Model::~Model()
 void Model::FileLoaded(std::vector<char> fileData)
 {
 	std::string fileContents(fileData.data(), fileData.size());
-	jsonxx::Object jsonObject;
-	bool result = jsonObject.parse(fileContents);
-	assert(result);
 
-	std::string meshFileName = jsonObject.get<std::string>("mesh");
-	std::string materialFileName = jsonObject.get<std::string>("material");
+	auto jsonObject = json::parse(fileContents);
+	
+	std::string meshFileName = jsonObject["mesh"];
+	std::string materialFileName = jsonObject["material"];
 
 	mesh = MeshFileLoader::Get(meshFileName);
 	material = std::make_shared<Material>(materialFileName);
 	material->AddUniformBuffer(new UniformBuffer(camera, sizeof(CameraUBO)));
 	
-	jsonxx::Array texturesJson = jsonObject.get<jsonxx::Array>("textures");
+	std::vector<std::string> texturesJson = jsonObject["textures"];
 
 	std::vector<std::string> textureFileNames;
 
 	for (int i = 0; i < texturesJson.size(); i++)
 	{
-		std::string textureFileName = texturesJson.get<std::string>(i);
+		std::string textureFileName = texturesJson[i];
 
 		bool alreadyAdded = false;
 
