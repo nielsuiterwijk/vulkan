@@ -5,6 +5,10 @@
 #include "graphics/models/SubMesh.h"
 #include "graphics/helpers/color.h"
 
+#define TINYGLTF_IMPLEMENTATION
+//#define TINYGLTF_NO_STB_IMAGE
+#define TINYGLTF_NO_STB_IMAGE_WRITE
+
 #include "tinygltf/tiny_gltf.h"
 #include "tinyobj/tiny_obj_loader.h"
 #include "graphics/models/importers/stl_loader.h"
@@ -50,6 +54,8 @@ std::shared_ptr<Mesh> MeshFileLoader::Get(const std::string& fileName)
 		fileType = MeshFileType::OBJ;
 	else if (extension == "stl")
 		fileType = MeshFileType::STL;
+	else if (extension == "gltf" || extension == "glb")
+		fileType = MeshFileType::GLTF;
 	else
 	{
 		std::cout << "Unhandled file extension: " << extension << std::endl;
@@ -65,14 +71,140 @@ void MeshFileLoader::FileLoaded(std::vector<char> fileData, std::shared_ptr<Mesh
 {
 	switch (fileType)
 	{
-	case MeshFileLoader::MeshFileType::OBJ:
+	case MeshFileType::OBJ:
 		LoadOBJ(fileData, meshDestination);
 		break;
-	case MeshFileLoader::MeshFileType::STL:
+	case MeshFileType::STL:
 		LoadSTL(fileData, meshDestination);
+		break;
+	case MeshFileType::GLTF:
+		LoadGLTF(fileData, meshDestination);
 		break;
 	default:
 		break;
+	}
+}
+
+void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh> meshDestination)
+{
+	tinygltf::Model model;
+	tinygltf::TinyGLTF loader;
+	std::string err;
+
+	bool ret = loader.LoadBinaryFromMemory(&model, &err, reinterpret_cast<unsigned char*>(&fileData[0]), fileData.size());
+	//bool ret = loader.LoadBinaryFromFile(&model, &err, argv[1]); // for binary glTF(.glb) 
+	if (!err.empty()) 
+	{
+		printf("Err: %s\n", err.c_str());
+	}
+
+	if (!ret) 
+	{
+		printf("Failed to parse glTF\n");
+	}
+
+	for (const tinygltf::BufferView& bufferView : model.bufferViews)
+	{
+		if (bufferView.target == 0)
+		{
+			std::cout << "WARN: bufferView.target == 0" << std::endl;
+			continue;
+		}
+
+		const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+		std::cout << "buffer.size= " << buffer.data.size() << ", byteOffset = " << bufferView.byteOffset << std::endl;
+	}
+
+	auto meshes = model.meshes;
+	for (tinygltf::Mesh& mesh : meshes)
+	{
+		std::vector<VertexPTCN> vertices;
+		std::vector<uint32_t> indices;
+
+		for (const auto& primitive : mesh.primitives)
+		{
+			if (primitive.indices < 0)
+			{
+				std::cout << "WARN: primitive.indices < 0" << std::endl;
+				continue;
+			}
+
+			for (const auto& attribute : primitive.attributes)
+			{
+				const tinygltf::Accessor& accessor = model.accessors[attribute.second];
+
+				int size = 1;
+				if (accessor.type == TINYGLTF_TYPE_SCALAR) 
+				{
+					size = 1;
+				}
+				else if (accessor.type == TINYGLTF_TYPE_VEC2) 
+				{
+					size = 2;
+				}
+				else if (accessor.type == TINYGLTF_TYPE_VEC3) 
+				{
+					size = 3;
+				}
+				else if (accessor.type == TINYGLTF_TYPE_VEC4) 
+				{
+					size = 4;
+				}
+				else 
+				{
+					assert(false && "not supported");
+				}
+
+				if ((attribute.first.compare("POSITION") == 0) ||
+					(attribute.first.compare("NORMAL") == 0) ||
+					(attribute.first.compare("TEXCOORD_0") == 0)) 
+				{
+					int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+
+					int asd = 0;
+				}
+			}
+
+			/*VertexPTCN vertex = {};
+
+			vertex.pos =
+			{
+				attrib.vertices[3 * index.vertex_index + 0],
+				attrib.vertices[3 * index.vertex_index + 1],
+				attrib.vertices[3 * index.vertex_index + 2]
+			};
+
+			aabb.Grow(vertex.pos);
+
+			vertex.texCoords =
+			{
+				attrib.texcoords[2 * index.texcoord_index + 0],
+				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+			};
+
+			vertex.color = colors[colorIndex];
+
+			vertex.normal =
+			{
+				attrib.normals[3 * index.normal_index + 0],
+				attrib.normals[3 * index.normal_index + 1],
+				attrib.normals[3 * index.normal_index + 2]
+			};
+
+			vertex.normal = glm::normalize(vertex.normal);
+
+			if (uniqueVertices.count(vertex) == 0)
+			{
+				uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+				vertices.push_back(vertex);
+			}
+			else
+			{
+				skippedVertices++;
+			}
+
+			indices.push_back(uniqueVertices[vertex]);*/
+		}
 	}
 }
 

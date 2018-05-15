@@ -13,7 +13,8 @@ public:
 		enum Enum
 		{
 			OBJ,
-			STL
+			STL,
+			GLTF
 		};
 	};
 
@@ -25,6 +26,7 @@ public:
 private:
 	static void FileLoaded(std::vector<char> fileData, std::shared_ptr<Mesh> mesh, MeshFileType::Enum fileType);
 
+	static void LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh> meshDestination);
 	static void LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> mesh);
 	static void LoadSTL(const std::vector<char>& fileData, std::shared_ptr<Mesh> mesh);
 

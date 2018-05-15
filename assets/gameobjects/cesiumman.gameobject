@@ -1,0 +1,8 @@
+{
+	"mesh" : "CesiumMan.glb",
+	"material" : "boy",
+	"textures" : [
+      "cesiumman.jpg"
+	  ]
+  
+}

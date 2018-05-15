@@ -150,7 +150,7 @@ bool RavenApp::Initialize()
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 	vkCreateFence(GraphicsContext::LogicalDevice, &fenceInfo, GraphicsContext::GlobalAllocator.Get(), &renderFence);
 
-	boy = new Model("boy");
+	boy = new Model("cesiumman");
 
 	renderobject = new RenderObject();
 
