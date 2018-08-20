@@ -2,6 +2,9 @@
 
 #include "standard.h"
 
+#undef min
+#undef max
+
 class AABB
 {
 public:

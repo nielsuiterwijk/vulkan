@@ -118,35 +118,22 @@ class Mesh
 {
 public:
 	friend class MeshFileLoader;
-
-	struct MeshVertexFormatFlags
-	{
-		enum Enum
-		{
-			POSITION = 1 << 0,
-			NORMAL = 1 << 1,
-			UV = 1 << 2,
-			WEIGHTS = 1 << 3,
-			TANGENT = 1 << 4,
-			BITANGENT = 1 << 5,
-			INDEXED = 1 << 6
-		};
-	};
-
-
-
+	
 	explicit Mesh();
 	~Mesh();
 
-	SubMesh* AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t triangles);
 	void Draw(std::shared_ptr<CommandBuffer> buffer, const PipelineStateObject& pso, std::shared_ptr<Material> material) const;
 
+	//TODO: Remove this as it makes ownership unclear
 	const std::vector<SubMesh*>& GetSubMeshes() const { return subMeshes; }
 
 	const VkVertexInputBindingDescription& GetBindingDescription() const { return bindingDescription; }
 	const std::vector<VkVertexInputAttributeDescription>& GetAttributeDescriptions() const { return attributeDescriptions; }
 
 	bool IsLoaded() const;
+
+private:
+	SubMesh* AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t triangles);
 
 private:
 	uint32_t triangleCount;

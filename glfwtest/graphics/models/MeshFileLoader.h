@@ -3,6 +3,7 @@
 #include "standard.h"
 #include "graphics/helpers/InstanceWrapper.h"
 
+
 class Mesh;
 
 class MeshFileLoader
@@ -27,6 +28,9 @@ private:
 	static void FileLoaded(std::vector<char> fileData, std::shared_ptr<Mesh> mesh, MeshFileType::Enum fileType);
 
 	static void LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh> meshDestination);
+
+	//static int GetAccessorNumberOfComponents(const tinygltf::Accessor* accessor);
+
 	static void LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> mesh);
 	static void LoadSTL(const std::vector<char>& fileData, std::shared_ptr<Mesh> mesh);
 

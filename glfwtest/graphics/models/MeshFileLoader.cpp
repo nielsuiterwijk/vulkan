@@ -90,8 +90,9 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 	tinygltf::Model model;
 	tinygltf::TinyGLTF loader;
 	std::string err;
+	std::string warning;
 
-	bool ret = loader.LoadBinaryFromMemory(&model, &err, reinterpret_cast<unsigned char*>(&fileData[0]), fileData.size());
+	bool ret = loader.LoadBinaryFromMemory(&model, &err, &warning, reinterpret_cast<unsigned char*>(&fileData[0]), fileData.size());
 	//bool ret = loader.LoadBinaryFromFile(&model, &err, argv[1]); // for binary glTF(.glb) 
 	if (!err.empty()) 
 	{
@@ -102,7 +103,7 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 	{
 		printf("Failed to parse glTF\n");
 	}
-
+	
 	for (const tinygltf::BufferView& bufferView : model.bufferViews)
 	{
 		if (bufferView.target == 0)
@@ -112,7 +113,7 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 		}
 
 		const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-		std::cout << "buffer.size= " << buffer.data.size() << ", byteOffset = " << bufferView.byteOffset << std::endl;
+		std::cout << "buffer.size= " << buffer.data.size() << ", byteOffset= " << bufferView.byteOffset << std::endl;
 	}
 
 	auto meshes = model.meshes;
@@ -120,6 +121,25 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 	{
 		std::vector<VertexPTCN> vertices;
 		std::vector<uint32_t> indices;
+
+		std::unordered_map<VertexPTCN, uint32_t> uniqueVertices = {};
+		uint32_t skippedVertices = 0;
+
+		uint8_t* position = nullptr;
+		uint32_t positionStride = 0;
+		uint32_t positionLength = 0;
+
+		uint8_t* normal = nullptr;
+		uint32_t normalStride = 0;
+		uint32_t normalLength = 0;
+
+		uint8_t* texCoords = nullptr;
+		uint32_t texCoordsStride = 0;
+		uint32_t texCoordsLength = 0;
+
+		uint8_t* colors = nullptr;
+		uint32_t colorsStride = 0;
+		uint32_t colorsLength = 0;
 
 		for (const auto& primitive : mesh.primitives)
 		{
@@ -132,79 +152,130 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 			for (const auto& attribute : primitive.attributes)
 			{
 				const tinygltf::Accessor& accessor = model.accessors[attribute.second];
+				const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+				tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
 
-				int size = 1;
-				if (accessor.type == TINYGLTF_TYPE_SCALAR) 
+				int numComponents = 0;
+
+				if (accessor.type == TINYGLTF_TYPE_SCALAR)
 				{
-					size = 1;
+					numComponents= 1;
 				}
-				else if (accessor.type == TINYGLTF_TYPE_VEC2) 
+				else if (accessor.type == TINYGLTF_TYPE_VEC2)
 				{
-					size = 2;
+					numComponents = 2;
 				}
-				else if (accessor.type == TINYGLTF_TYPE_VEC3) 
+				else if (accessor.type == TINYGLTF_TYPE_VEC3)
 				{
-					size = 3;
+					numComponents = 3;
 				}
-				else if (accessor.type == TINYGLTF_TYPE_VEC4) 
+				else if (accessor.type == TINYGLTF_TYPE_VEC4)
 				{
-					size = 4;
+					numComponents = 4;
 				}
-				else 
+				else
 				{
 					assert(false && "not supported");
 				}
 
-				if ((attribute.first.compare("POSITION") == 0) ||
-					(attribute.first.compare("NORMAL") == 0) ||
-					(attribute.first.compare("TEXCOORD_0") == 0)) 
-				{
-					int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
 
-					int asd = 0;
+				int byteStride = accessor.ByteStride(bufferView);
+
+				bool isPosition = attribute.first.compare("POSITION") == 0;
+				bool isNormal = attribute.first.compare("NORMAL") == 0;
+				bool isUV = attribute.first.compare("TEXCOORD_0") == 0;
+				bool isColor = attribute.first.compare("COLOR_0") == 0; 
+
+				if (isPosition)
+				{
+					position = &buffer.data.at(0);
+					position += bufferView.byteOffset + accessor.byteOffset;
+					positionLength = bufferView.byteLength;
+					positionStride = byteStride;
+				}
+				if (isNormal)
+				{
+					normal = &buffer.data.at(0);
+					normal += bufferView.byteOffset + accessor.byteOffset;
+					normalLength = bufferView.byteLength;
+					normalStride = byteStride;
+				}
+				if (isUV)
+				{
+					texCoords = &buffer.data.at(0);
+					texCoords += bufferView.byteOffset + accessor.byteOffset;
+					texCoordsLength = bufferView.byteLength;
+					texCoordsStride = byteStride;
+				}
+				if (isColor)
+				{
+					colors = &buffer.data.at(0);
+					colors += bufferView.byteOffset + accessor.byteOffset;
+					colorsLength = bufferView.byteLength;
+					colorsStride = byteStride;
 				}
 			}
 
-			/*VertexPTCN vertex = {};
+			AABB aabb;
+			uint32_t index = 0;
 
-			vertex.pos =
+			while (true)
 			{
-				attrib.vertices[3 * index.vertex_index + 0],
-				attrib.vertices[3 * index.vertex_index + 1],
-				attrib.vertices[3 * index.vertex_index + 2]
-			};
+				VertexPTCN vertex = {};
 
-			aabb.Grow(vertex.pos);
+				if (position && sizeof(vertex.pos) == positionStride)
+					memcpy(&vertex.pos, position + (index * positionStride), positionStride);
 
-			vertex.texCoords =
-			{
-				attrib.texcoords[2 * index.texcoord_index + 0],
-				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-			};
+				if (normal && sizeof(vertex.normal) == normalStride)
+					memcpy(&vertex.normal, normal + (index * normalStride), normalStride);
 
-			vertex.color = colors[colorIndex];
+				if (colors && sizeof(vertex.color) == colorsStride)
+					memcpy(&vertex.color, colors + (index * colorsStride), colorsStride);
 
-			vertex.normal =
-			{
-				attrib.normals[3 * index.normal_index + 0],
-				attrib.normals[3 * index.normal_index + 1],
-				attrib.normals[3 * index.normal_index + 2]
-			};
+				if (texCoords && sizeof(vertex.texCoords) == texCoordsStride)
+					memcpy(&vertex.texCoords, texCoords + (index * texCoordsStride), texCoordsStride);
 
-			vertex.normal = glm::normalize(vertex.normal);
+				aabb.Grow(vertex.pos);
 
-			if (uniqueVertices.count(vertex) == 0)
-			{
-				uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-				vertices.push_back(vertex);
+				vertex.normal = glm::normalize(vertex.normal);
+
+				if (uniqueVertices.count(vertex) == 0)
+				{
+					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+					vertices.push_back(vertex);
+				}
+				else
+				{
+					skippedVertices++;
+				}
+
+				indices.push_back(uniqueVertices[vertex]);
+				index++;
+
+				if ((index * positionStride) >= positionLength)
+					break;
 			}
-			else
-			{
-				skippedVertices++;
-			}
 
-			indices.push_back(uniqueVertices[vertex]);*/
+			uint32_t memorySize = sizeof(VertexPTCN) * vertices.size();
+			uint8_t* vertexData = new uint8_t[memorySize];
+			memcpy(vertexData, vertices.data(), memorySize);
+
+			uint32_t memorySizeIndices = sizeof(uint32_t) * indices.size();
+			uint8_t* indexData = new uint8_t[memorySizeIndices];
+			memcpy(indexData, indices.data(), memorySizeIndices);
+
+			uint32_t triangleCount = static_cast<uint32_t>(indices.size()) / 3;
+			SubMesh* subMesh = meshDestination->AllocateBuffers(vertexData, memorySize, indexData, memorySizeIndices, triangleCount);
+			subMesh->SetAABB(aabb);
+
+			delete vertexData;
+			delete indexData;
+
 		}
+
+
+		VertexPTCN::GetBindingDescription(meshDestination->bindingDescription);
+		VertexPTCN::GetAttributeDescriptions(meshDestination->attributeDescriptions);
 	}
 }
 
