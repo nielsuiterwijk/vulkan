@@ -190,29 +190,66 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 				{
 					position = &buffer.data.at(0);
 					position += bufferView.byteOffset + accessor.byteOffset;
-					positionLength = bufferView.byteLength;
+					positionLength = accessor.count * byteStride;
 					positionStride = byteStride;
 				}
 				if (isNormal)
 				{
 					normal = &buffer.data.at(0);
 					normal += bufferView.byteOffset + accessor.byteOffset;
-					normalLength = bufferView.byteLength;
+					normalLength = accessor.count * byteStride;
 					normalStride = byteStride;
 				}
 				if (isUV)
 				{
 					texCoords = &buffer.data.at(0);
 					texCoords += bufferView.byteOffset + accessor.byteOffset;
-					texCoordsLength = bufferView.byteLength;
+					texCoordsLength = accessor.count * byteStride;
 					texCoordsStride = byteStride;
 				}
 				if (isColor)
 				{
 					colors = &buffer.data.at(0);
 					colors += bufferView.byteOffset + accessor.byteOffset;
-					colorsLength = bufferView.byteLength;
+					colorsLength = accessor.count * byteStride;
 					colorsStride = byteStride;
+				}
+			}
+
+			// Indices
+			{
+				const tinygltf::Accessor &accessor = model.accessors[primitive.indices];
+				const tinygltf::BufferView &bufferView = model.bufferViews[accessor.bufferView];
+				const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
+
+				uint32_t indexCount = static_cast<uint32_t>(accessor.count);
+
+				switch (accessor.componentType) {
+				case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT: {
+					const uint32_t* buf = reinterpret_cast<const uint32_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+					for (size_t index = 0; index < accessor.count; index++) {
+						indices.push_back(buf[index]);
+					}
+					break;
+				}
+				case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT: {
+					const uint16_t* buf = reinterpret_cast<const uint16_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+
+					for (size_t index = 0; index < accessor.count; index++) {
+						indices.push_back(buf[index]);
+					}
+					break;
+				}
+				case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE: {
+					const uint8_t* buf = reinterpret_cast<const uint8_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+					for (size_t index = 0; index < accessor.count; index++) {
+						indices.push_back(buf[index]);
+					}
+					break;
+				}
+				default:
+					std::cerr << "Index component type " << accessor.componentType << " not supported!" << std::endl;
+					return;
 				}
 			}
 
@@ -231,6 +268,8 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 				if (colors && sizeof(vertex.color) == colorsStride)
 					memcpy(&vertex.color, colors + (index * colorsStride), colorsStride);
+				else
+					vertex.color = Color::White;
 
 				if (texCoords && sizeof(vertex.texCoords) == texCoordsStride)
 					memcpy(&vertex.texCoords, texCoords + (index * texCoordsStride), texCoordsStride);
@@ -238,18 +277,20 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 				aabb.Grow(vertex.pos);
 
 				vertex.normal = glm::normalize(vertex.normal);
+				vertex.pos *= 20.0f;
 
-				if (uniqueVertices.count(vertex) == 0)
+				//if (uniqueVertices.count(vertex) == 0)
 				{
-					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+					//uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
 					vertices.push_back(vertex);
 				}
-				else
-				{
-					skippedVertices++;
-				}
+				//else
+				//{
+				//	skippedVertices++;
+				//}
 
-				indices.push_back(uniqueVertices[vertex]);
+				//indices.push_back(uniqueVertices[vertex]);
+				//indices.push_back(static_cast<uint32_t>(indices.size()));
 				index++;
 
 				if ((index * positionStride) >= positionLength)
