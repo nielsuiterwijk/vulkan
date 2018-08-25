@@ -189,6 +189,8 @@ void RavenApp::Render(RavenApp* app)
 
 	app->timer.Start();
 
+	bool recreateSwapChain = false;
+
 	GraphicsDevice::Instance().Lock();
 
 
@@ -324,17 +326,28 @@ void RavenApp::Render(RavenApp* app)
 		{
 			//Present (wait until drawing is done)
 			result = vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
-		}
 
-		GraphicsContext::QueueLock.unlock();
-		if (result != VK_SUCCESS)
-		{
-			std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
-			throw std::runtime_error("failed to present!");
+			if (result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR)
+			{
+				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+				recreateSwapChain = true;
+			}
+			else if (result != VK_SUCCESS)
+			{
+				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+				throw std::runtime_error("failed to present!");
+			}
 		}
+		GraphicsContext::QueueLock.unlock();
 		app->presentTimer.Stop();
 	}
 	GraphicsDevice::Instance().Unlock();
+
+
+	if (recreateSwapChain)
+	{
+		RavenApp::WindowResizedCallback(app->window, GraphicsContext::WindowSize.x, GraphicsContext::WindowSize.y);
+	}
 
 	//Sleep(16);
 	app->timer.Stop();
@@ -473,6 +486,8 @@ void RavenApp::WindowResizedCallback(GLFWwindow* window, int width, int height)
 {
 	if (width == 0 || height == 0)
 		return;
+
+	std::cout << "WindowResizedCallback:  " << width << "x" << height << std::endl;
 
 	GraphicsContext::WindowSize = glm::ivec2(width, height);
 
