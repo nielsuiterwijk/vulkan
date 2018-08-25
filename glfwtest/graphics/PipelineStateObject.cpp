@@ -240,6 +240,7 @@ const InstanceWrapper<VkPipeline>& PipelineStateObject::GetPipeLine() const
 
 void PipelineStateObject::Build()
 {
+	assert(isDirty);
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
 	pipelineInfo.pInputAssemblyState = &inputAssembly;

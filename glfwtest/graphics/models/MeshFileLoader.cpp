@@ -149,72 +149,67 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 				continue;
 			}
 
-			for (const auto& attribute : primitive.attributes)
+			AABB aabb;
+
+			const float* bufferPos = nullptr;
+			const float* bufferNormals = nullptr;
+			const float* bufferTexCoords = nullptr;
+			const uint16_t* bufferJoints = nullptr;
+			const float* bufferWeights = nullptr;
+
+			assert(primitive.attributes.find("POSITION") != primitive.attributes.end());
+
+			const tinygltf::Accessor &posAccessor = model.accessors[primitive.attributes.find("POSITION")->second];
+			const tinygltf::BufferView &posView = model.bufferViews[posAccessor.bufferView];
+			bufferPos = reinterpret_cast<const float *>(&(model.buffers[posView.buffer].data[posAccessor.byteOffset + posView.byteOffset]));
+
+			if (primitive.attributes.find("NORMAL") != primitive.attributes.end()) 
 			{
-				const tinygltf::Accessor& accessor = model.accessors[attribute.second];
-				const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
-				tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-
-				int numComponents = 0;
-
-				if (accessor.type == TINYGLTF_TYPE_SCALAR)
-				{
-					numComponents= 1;
-				}
-				else if (accessor.type == TINYGLTF_TYPE_VEC2)
-				{
-					numComponents = 2;
-				}
-				else if (accessor.type == TINYGLTF_TYPE_VEC3)
-				{
-					numComponents = 3;
-				}
-				else if (accessor.type == TINYGLTF_TYPE_VEC4)
-				{
-					numComponents = 4;
-				}
-				else
-				{
-					assert(false && "not supported");
-				}
-
-
-				int byteStride = accessor.ByteStride(bufferView);
-
-				bool isPosition = attribute.first.compare("POSITION") == 0;
-				bool isNormal = attribute.first.compare("NORMAL") == 0;
-				bool isUV = attribute.first.compare("TEXCOORD_0") == 0;
-				bool isColor = attribute.first.compare("COLOR_0") == 0; 
-
-				if (isPosition)
-				{
-					position = &buffer.data.at(0);
-					position += bufferView.byteOffset + accessor.byteOffset;
-					positionLength = accessor.count * byteStride;
-					positionStride = byteStride;
-				}
-				if (isNormal)
-				{
-					normal = &buffer.data.at(0);
-					normal += bufferView.byteOffset + accessor.byteOffset;
-					normalLength = accessor.count * byteStride;
-					normalStride = byteStride;
-				}
-				if (isUV)
-				{
-					texCoords = &buffer.data.at(0);
-					texCoords += bufferView.byteOffset + accessor.byteOffset;
-					texCoordsLength = accessor.count * byteStride;
-					texCoordsStride = byteStride;
-				}
-				if (isColor)
-				{
-					colors = &buffer.data.at(0);
-					colors += bufferView.byteOffset + accessor.byteOffset;
-					colorsLength = accessor.count * byteStride;
-					colorsStride = byteStride;
-				}
+				const tinygltf::Accessor &normAccessor = model.accessors[primitive.attributes.find("NORMAL")->second];
+				const tinygltf::BufferView &normView = model.bufferViews[normAccessor.bufferView];
+				bufferNormals = reinterpret_cast<const float *>(&(model.buffers[normView.buffer].data[normAccessor.byteOffset + normView.byteOffset]));
 			}
+
+			if (primitive.attributes.find("TEXCOORD_0") != primitive.attributes.end()) {
+				const tinygltf::Accessor &uvAccessor = model.accessors[primitive.attributes.find("TEXCOORD_0")->second];
+				const tinygltf::BufferView &uvView = model.bufferViews[uvAccessor.bufferView];
+				bufferTexCoords = reinterpret_cast<const float *>(&(model.buffers[uvView.buffer].data[uvAccessor.byteOffset + uvView.byteOffset]));
+			}
+
+			// Skinning
+			// Joints
+			if (primitive.attributes.find("JOINTS_0") != primitive.attributes.end()) 
+			{
+				const tinygltf::Accessor &jointAccessor = model.accessors[primitive.attributes.find("JOINTS_0")->second];
+				const tinygltf::BufferView &jointView = model.bufferViews[jointAccessor.bufferView];
+				bufferJoints = reinterpret_cast<const uint16_t *>(&(model.buffers[jointView.buffer].data[jointAccessor.byteOffset + jointView.byteOffset]));
+			}
+
+			if (primitive.attributes.find("WEIGHTS_0") != primitive.attributes.end())
+			{
+				const tinygltf::Accessor &uvAccessor = model.accessors[primitive.attributes.find("WEIGHTS_0")->second];
+				const tinygltf::BufferView &uvView = model.bufferViews[uvAccessor.bufferView];
+				bufferWeights = reinterpret_cast<const float *>(&(model.buffers[uvView.buffer].data[uvAccessor.byteOffset + uvView.byteOffset]));
+			}
+
+			bool hasSkin = (bufferJoints && bufferWeights);
+
+			for (size_t v = 0; v < posAccessor.count; v++) 
+			{
+				VertexPTCN vertex {};
+				vertex.pos = glm::make_vec3(&bufferPos[v * 3]);
+				vertex.normal = glm::normalize(glm::vec3(bufferNormals ? glm::make_vec3(&bufferNormals[v * 3]) : glm::vec3(0.0f)));
+				vertex.texCoords = bufferTexCoords ? glm::make_vec2(&bufferTexCoords[v * 2]) : glm::vec3(0.0f);
+				vertex.color = glm::vec4(1.0f);
+
+				//vert.joint0 = hasSkin ? glm::vec4(glm::make_vec4(&bufferJoints[v * 4])) : glm::vec4(0.0f);
+				//vert.weight0 = hasSkin ? glm::make_vec4(&bufferWeights[v * 4]) : glm::vec4(0.0f);
+				vertices.emplace_back(vertex);
+
+				aabb.Grow(vertex.pos);
+			}
+
+
 
 			// Indices
 			{
@@ -253,65 +248,10 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 				}
 			}
 
-			AABB aabb;
-			uint32_t index = 0;
-
-			while (true)
-			{
-				VertexPTCN vertex = {};
-
-				if (position && sizeof(vertex.pos) == positionStride)
-					memcpy(&vertex.pos, position + (index * positionStride), positionStride);
-
-				if (normal && sizeof(vertex.normal) == normalStride)
-					memcpy(&vertex.normal, normal + (index * normalStride), normalStride);
-
-				if (colors && sizeof(vertex.color) == colorsStride)
-					memcpy(&vertex.color, colors + (index * colorsStride), colorsStride);
-				else
-					vertex.color = Color::White;
-
-				if (texCoords && sizeof(vertex.texCoords) == texCoordsStride)
-					memcpy(&vertex.texCoords, texCoords + (index * texCoordsStride), texCoordsStride);
-
-				aabb.Grow(vertex.pos);
-
-				vertex.normal = glm::normalize(vertex.normal);
-				vertex.pos *= 20.0f;
-
-				//if (uniqueVertices.count(vertex) == 0)
-				{
-					//uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-					vertices.push_back(vertex);
-				}
-				//else
-				//{
-				//	skippedVertices++;
-				//}
-
-				//indices.push_back(uniqueVertices[vertex]);
-				//indices.push_back(static_cast<uint32_t>(indices.size()));
-				index++;
-
-				if ((index * positionStride) >= positionLength)
-					break;
-			}
-
-			uint32_t memorySize = sizeof(VertexPTCN) * vertices.size();
-			uint8_t* vertexData = new uint8_t[memorySize];
-			memcpy(vertexData, vertices.data(), memorySize);
-
-			uint32_t memorySizeIndices = sizeof(uint32_t) * indices.size();
-			uint8_t* indexData = new uint8_t[memorySizeIndices];
-			memcpy(indexData, indices.data(), memorySizeIndices);
-
+			
 			uint32_t triangleCount = static_cast<uint32_t>(indices.size()) / 3;
-			SubMesh* subMesh = meshDestination->AllocateBuffers(vertexData, memorySize, indexData, memorySizeIndices, triangleCount);
+			SubMesh* subMesh = meshDestination->AllocateBuffers(static_cast<void*>(&vertices[0]), sizeof(VertexPTCN) * vertices.size(), static_cast<void*>(&indices[0]), sizeof(uint32_t) * indices.size(), triangleCount);
 			subMesh->SetAABB(aabb);
-
-			delete vertexData;
-			delete indexData;
-
 		}
 
 
