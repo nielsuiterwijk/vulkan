@@ -1,7 +1,7 @@
 #pragma once
 
 #include "helpers/InstanceWrapper.h"
-#include "graphics/memory/Allocator.h"
+#include "graphics/memory/VulkanAllocator.h"
 
 #include <glm/fwd.hpp>
 

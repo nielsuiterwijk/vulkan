@@ -3,7 +3,7 @@
 #include <functional>
 
 #include <vulkan/vulkan.h>
-#include "graphics/memory/Allocator.h"
+#include "graphics/memory/VulkanAllocator.h"
 
 //The idea behind this class is that if you delete or overwrite the object, it will always call the correct vulkan clean up code
 //to prevent any memory leaks.

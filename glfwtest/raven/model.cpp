@@ -45,10 +45,8 @@ void Model::FileLoaded(std::vector<char> fileData)
 
 	std::vector<std::string> textureFileNames;
 
-	for (int i = 0; i < texturesJson.size(); i++)
+	for (std::string textureFileName : texturesJson)
 	{
-		std::string textureFileName = texturesJson[i];
-
 		bool alreadyAdded = false;
 
 		for (int j = 0; j < textureFileNames.size(); j++)
@@ -111,11 +109,11 @@ void Model::Draw(std::shared_ptr<CommandBuffer> commandBuffer)
 
 	material->GetUniformBuffers()[0]->Upload();
 	
-	const std::vector<SubMesh*>& meshes = mesh->GetSubMeshes();
 
 	vkCmdBindPipeline(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine());
 	
 
+	const std::vector<SubMesh*>& meshes = mesh->GetSubMeshes();
 	for (int i = 0; i < meshes.size(); i++)
 	{
 		VkDescriptorSet set = GraphicsContext::DescriptorPool->GetDescriptorSet(material->GetUniformBuffers()[0], textures[i].get(), material->GetSampler().get());

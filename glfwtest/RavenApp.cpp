@@ -45,7 +45,7 @@ RavenApp::RavenApp() :
 
 RavenApp::~RavenApp()
 {
-	delete renderobject;
+	delete model;
 	delete renderSemaphore;
 	delete imguiVulkan;
 
@@ -150,11 +150,7 @@ bool RavenApp::Initialize()
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 	vkCreateFence(GraphicsContext::LogicalDevice, &fenceInfo, GraphicsContext::GlobalAllocator.Get(), &renderFence);
 
-	boy = new Model("cesiumman");
-
-	renderobject = new RenderObject();
-
-	renderobject->Load();
+	model = new Model("cesiumman");
 
 	renderSemaphore = new VulkanSemaphore();
 
@@ -253,7 +249,7 @@ void RavenApp::Render(RavenApp* app)
 			//TODO: Make the prepare threadsafe by doing a copy?
 			//TODO: dont pass the mesh, it should be owned / held by the renderObject
 			//app->renderobject->PrepareDraw(commandBuffer);
-			app->boy->Draw(commandBuffer);
+			app->model->Draw(commandBuffer);
 
 			app->imguiVulkan->Render(commandBuffer);
 
@@ -402,11 +398,11 @@ void RavenApp::Run()
 		{
 			//std::cout << "Start of frame " << app->updateFrameIndex << " update " << std::endl;
 			
-			if (renderobject->standardMaterial != nullptr)
+			//if (renderobject->standardMaterial != nullptr)
 			{
 				static auto startTime = std::chrono::high_resolution_clock::now();
 
-				std::shared_ptr<CameraUBO> camera = boy->GetUBO();
+				std::shared_ptr<CameraUBO> camera = model->GetUBO();
 				
 				auto currentTime = std::chrono::high_resolution_clock::now();
 				float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
@@ -423,8 +419,6 @@ void RavenApp::Run()
 				
 				camera->proj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.01f, 100.0f);
 				camera->proj[1][1] *= -1;
-
-
 			}
 
 			imguiVulkan->NewFrame(delta);
@@ -500,8 +494,7 @@ void RavenApp::WindowResizedCallback(GLFWwindow* window, int width, int height)
 
 	RavenApp* app = reinterpret_cast<RavenApp*>(glfwGetWindowUserPointer(window));
 
-	app->renderobject->WindowResized(width, height);
-	app->boy->WindowResized(width, height);
+	app->model->WindowResized(width, height);
 }
 
 void RavenApp::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)

@@ -14,7 +14,7 @@
 class GraphicsContext
 {
 public:
-	static Allocator GlobalAllocator;
+	static VulkanAllocator GlobalAllocator;
 	static GPUAllocator* DeviceAllocator;
 
 	static std::shared_ptr<CommandBufferPool> CommandBufferPoolTransient;

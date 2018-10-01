@@ -2,7 +2,7 @@
 
 VkPhysicalDevice GraphicsContext::PhysicalDevice = VK_NULL_HANDLE;
 
-Allocator GraphicsContext::GlobalAllocator;
+VulkanAllocator GraphicsContext::GlobalAllocator;
 GPUAllocator* GraphicsContext::DeviceAllocator = nullptr;
 
 std::shared_ptr<CommandBufferPool> GraphicsContext::CommandBufferPoolTransient = nullptr;

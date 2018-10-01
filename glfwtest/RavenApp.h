@@ -57,8 +57,7 @@ private:
 	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
 
 	//objects..
-	RenderObject* renderobject;
-	Model* boy;
+	Model* model;
 
 	IMGUIVulkan* imguiVulkan;
 

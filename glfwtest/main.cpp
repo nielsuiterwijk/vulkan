@@ -3,6 +3,8 @@
 #include "threading/Task.h"
 #include "threading/ThreadPool.h"
 #include "io/FileSystem.h"
+#include "memory/PoolAllocator.h"
+#include "memory/FreeListAllocator.h"
 
 #include "standard.h"
 
@@ -22,12 +24,13 @@ void AsyncCallback(std::vector<char> fileData)
 	std::cout << "received result for AsyncCallback: " << fileData.size() << std::endl;
 }
 
+
 int main()
 {
 #if DEBUG
 	_CrtSetDbgFlag(_CRTDBG_CHECK_ALWAYS_DF);
 #endif
-	
+		
 	FileSystem::Start();
 
 	std::cout << "size of size_t: " << sizeof(size_t) << std::endl;
