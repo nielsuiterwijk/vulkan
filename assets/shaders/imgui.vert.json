@@ -1,0 +1,72 @@
+{
+    "entryPoints" : [
+        {
+            "name" : "main",
+            "mode" : "vert"
+        }
+    ],
+    "types" : {
+        "_19" : {
+            "name" : "gl_PerVertex",
+            "members" : [
+                {
+                    "name" : "gl_Position",
+                    "type" : "vec4"
+                }
+            ]
+        },
+        "_26" : {
+            "name" : "UniformBufferObject",
+            "members" : [
+                {
+                    "name" : "uScale",
+                    "type" : "vec2",
+                    "offset" : 0
+                },
+                {
+                    "name" : "uTranslate",
+                    "type" : "vec2",
+                    "offset" : 8
+                }
+            ]
+        }
+    },
+    "inputs" : [
+        {
+            "type" : "vec4",
+            "name" : "aColor",
+            "location" : 2
+        },
+        {
+            "type" : "vec2",
+            "name" : "aUV",
+            "location" : 1
+        },
+        {
+            "type" : "vec2",
+            "name" : "aPos",
+            "location" : 0
+        }
+    ],
+    "outputs" : [
+        {
+            "type" : "vec4",
+            "name" : "fragColor",
+            "location" : 0
+        },
+        {
+            "type" : "vec2",
+            "name" : "fragTexCoord",
+            "location" : 1
+        }
+    ],
+    "ubos" : [
+        {
+            "type" : "_26",
+            "name" : "UniformBufferObject",
+            "block_size" : 16,
+            "set" : 0,
+            "binding" : 0
+        }
+    ]
+}

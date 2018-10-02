@@ -1,0 +1,38 @@
+{
+    "entryPoints" : [
+        {
+            "name" : "main",
+            "mode" : "vert"
+        }
+    ],
+    "types" : {
+        "_8" : {
+            "name" : "gl_PerVertex",
+            "members" : [
+                {
+                    "name" : "gl_Position",
+                    "type" : "vec4"
+                }
+            ]
+        }
+    },
+    "inputs" : [
+        {
+            "type" : "vec2",
+            "name" : "inPosition",
+            "location" : 0
+        },
+        {
+            "type" : "vec3",
+            "name" : "inColor",
+            "location" : 1
+        }
+    ],
+    "outputs" : [
+        {
+            "type" : "vec3",
+            "name" : "fragColor",
+            "location" : 0
+        }
+    ]
+}

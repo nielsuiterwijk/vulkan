@@ -1,0 +1,45 @@
+{
+    "entryPoints" : [
+        {
+            "name" : "main",
+            "mode" : "frag"
+        }
+    ],
+    "inputs" : [
+        {
+            "type" : "vec3",
+            "name" : "vertexNormal",
+            "location" : 2
+        },
+        {
+            "type" : "vec3",
+            "name" : "vertexPosition",
+            "location" : 3
+        },
+        {
+            "type" : "vec2",
+            "name" : "fragTexCoord",
+            "location" : 1
+        },
+        {
+            "type" : "vec3",
+            "name" : "fragColor",
+            "location" : 0
+        }
+    ],
+    "outputs" : [
+        {
+            "type" : "vec4",
+            "name" : "outColor",
+            "location" : 0
+        }
+    ],
+    "textures" : [
+        {
+            "type" : "sampler2D",
+            "name" : "_albedo",
+            "set" : 0,
+            "binding" : 1
+        }
+    ]
+}
