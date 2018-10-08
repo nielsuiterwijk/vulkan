@@ -19,12 +19,12 @@
 
 namespace std 
 {
-	template<> struct hash<VertexPTCN> 
+	template<> struct hash<Vertex> 
 	{
-		size_t operator()(VertexPTCN const& vertex) const 
+		size_t operator()(Vertex const& vertex) const 
 		{
 			return ((hash<glm::vec3>()(vertex.pos) ^
-					(hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+					(hash<glm::vec4>()(vertex.color) << 1)) >> 1) ^
 					(hash<glm::vec2>()(vertex.texCoords) << 1) ^
 					(hash<glm::vec3>()(vertex.normal) << 1);
 		}
@@ -118,29 +118,7 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 	auto meshes = model.meshes;
 	for (tinygltf::Mesh& mesh : meshes)
-	{
-		std::vector<VertexPTCN> vertices;
-		std::vector<uint32_t> indices;
-
-		std::unordered_map<VertexPTCN, uint32_t> uniqueVertices = {};
-		uint32_t skippedVertices = 0;
-
-		uint8_t* position = nullptr;
-		uint32_t positionStride = 0;
-		uint32_t positionLength = 0;
-
-		uint8_t* normal = nullptr;
-		uint32_t normalStride = 0;
-		uint32_t normalLength = 0;
-
-		uint8_t* texCoords = nullptr;
-		uint32_t texCoordsStride = 0;
-		uint32_t texCoordsLength = 0;
-
-		uint8_t* colors = nullptr;
-		uint32_t colorsStride = 0;
-		uint32_t colorsLength = 0;
-
+	{		
 		for (const auto& primitive : mesh.primitives)
 		{
 			if (primitive.indices < 0)
@@ -148,6 +126,9 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 				std::cout << "WARN: primitive.indices < 0" << std::endl;
 				continue;
 			}
+
+			std::vector<Vertex> vertices;
+			std::vector<uint32_t> indices;
 
 			AABB aabb;
 
@@ -196,7 +177,7 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 			for (size_t v = 0; v < posAccessor.count; v++) 
 			{
-				VertexPTCN vertex {};
+				Vertex vertex {};
 				vertex.pos = glm::make_vec3(&bufferPos[v * 3]);
 				vertex.normal = glm::normalize(glm::vec3(bufferNormals ? glm::make_vec3(&bufferNormals[v * 3]) : glm::vec3(0.0f)));
 				vertex.texCoords = bufferTexCoords ? glm::make_vec2(&bufferTexCoords[v * 2]) : glm::vec3(0.0f);
@@ -250,13 +231,14 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 			
 			uint32_t triangleCount = static_cast<uint32_t>(indices.size()) / 3;
-			SubMesh* subMesh = meshDestination->AllocateBuffers(static_cast<void*>(&vertices[0]), sizeof(VertexPTCN) * vertices.size(), static_cast<void*>(&indices[0]), sizeof(uint32_t) * indices.size(), triangleCount);
+			SubMesh* subMesh = meshDestination->AllocateBuffers(static_cast<void*>(&vertices[0]), sizeof(Vertex) * vertices.size(),
+																static_cast<void*>(&indices[0]), sizeof(uint32_t) * indices.size(), triangleCount);
 			subMesh->SetAABB(aabb);
 		}
 
 
-		VertexPTCN::GetBindingDescription(meshDestination->bindingDescription);
-		VertexPTCN::GetAttributeDescriptions(meshDestination->attributeDescriptions);
+		//VertexPTCN::GetBindingDescription(meshDestination->bindingDescription);
+		//VertexPTCN::GetAttributeDescriptions(meshDestination->attributeDescriptions);
 	}
 }
 
@@ -283,17 +265,17 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 
 	for (const auto& shape : shapes)
 	{
-		std::vector<VertexPTCN> vertices;
+		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 
-		std::unordered_map<VertexPTCN, uint32_t> uniqueVertices = {};
+		std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
 		uint32_t skippedVertices = 0;
 
 		AABB aabb;
 
 		for (const auto& index : shape.mesh.indices)
 		{
-			VertexPTCN vertex = {};
+			Vertex vertex = {};
 
 			vertex.pos =
 			{
@@ -337,7 +319,7 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 		colorIndex = (colorIndex + 1) % colors.size();
 		std::cout << "Skipped " << skippedVertices << " vertices." << std::endl;
 
-		uint32_t memorySize = sizeof(VertexPTCN) * vertices.size();
+		uint32_t memorySize = sizeof(Vertex) * vertices.size();
 		uint8_t* vertexData = new uint8_t[memorySize];
 		memcpy(vertexData, vertices.data(), memorySize);
 
@@ -353,24 +335,8 @@ void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> 
 		delete indexData;
 	}
 	
-	/*for (size_t i = 0; i < meshDestination->triangleCount; i++)
-	{
-		VertexPTCN v1 = vertices[3 * i + 0];
-		VertexPTCN v2 = vertices[3 * i + 1];
-		VertexPTCN v3 = vertices[3 * i + 2];
-
-		glm::vec3 edge1 = v1.pos - v2.pos;
-		glm::vec3 edge2 = v1.pos - v3.pos;
-		glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
-
-		//Normal to color
-		vertices[3 * i + 0].normal = normal;
-		vertices[3 * i + 1].normal = normal;
-		vertices[3 * i + 2].normal = normal;
-	}*/
-
-	VertexPTCN::GetBindingDescription(meshDestination->bindingDescription);
-	VertexPTCN::GetAttributeDescriptions(meshDestination->attributeDescriptions);
+	//VertexPTCN::GetBindingDescription(meshDestination->bindingDescription);
+	//VertexPTCN::GetAttributeDescriptions(meshDestination->attributeDescriptions);
 
 }
 
@@ -379,16 +345,16 @@ void MeshFileLoader::LoadSTL(const std::vector<char>& fileData, std::shared_ptr<
 	STLModel modelData;
 	STL::ReadBinary(fileData, modelData);
 
-	std::vector<Vertex3D> vertices;
+	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
 
 	for (size_t i = 0; i < modelData.triangleCount; i++)
 	{
 		const STLTriangle& triangle = modelData.triangles[i];
 
-		Vertex3D vertexA = {};
-		Vertex3D vertexB = {};
-		Vertex3D vertexC = {};
+		Vertex vertexA = {};
+		Vertex vertexB = {};
+		Vertex vertexC = {};
 
 		vertexA.pos = triangle.position[0];
 		vertexB.pos = triangle.position[1];
@@ -398,9 +364,9 @@ void MeshFileLoader::LoadSTL(const std::vector<char>& fileData, std::shared_ptr<
 		vertexB.texCoords = glm::vec2(0, 0);
 		vertexC.texCoords = glm::vec2(0, 0);
 		
-		vertexA.color = glm::vec3(0.5f, 0.5f, 0.5f) + (triangle.normal * 0.5f);
-		vertexB.color = glm::vec3(0.5f, 0.5f, 0.5f) + (triangle.normal * 0.5f);
-		vertexC.color = glm::vec3(0.5f, 0.5f, 0.5f) + (triangle.normal * 0.5f);
+		vertexA.color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f) + glm::vec4(triangle.normal * 0.5f, 1.0f);
+		vertexB.color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f) + glm::vec4(triangle.normal * 0.5f, 1.0f);
+		vertexC.color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f) + glm::vec4(triangle.normal * 0.5f, 1.0f);
 
 		vertices.push_back(vertexA);
 		vertices.push_back(vertexB);
@@ -412,10 +378,10 @@ void MeshFileLoader::LoadSTL(const std::vector<char>& fileData, std::shared_ptr<
 	}
 
 
-	Vertex3D::GetBindingDescription(meshDestination->bindingDescription);
-	Vertex3D::GetAttributeDescriptions(meshDestination->attributeDescriptions);
+	//Vertex3D::GetBindingDescription(meshDestination->bindingDescription);
+	//Vertex3D::GetAttributeDescriptions(meshDestination->attributeDescriptions);
 
-	uint32_t memorySize = sizeof(Vertex3D) * vertices.size();
+	uint32_t memorySize = sizeof(Vertex) * vertices.size();
 	uint8_t* vertexData = new uint8_t[memorySize];
 	memcpy(vertexData, vertices.data(), memorySize);
 

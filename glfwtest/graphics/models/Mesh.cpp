@@ -2,6 +2,7 @@
 
 #include "graphics/buffers/VulkanBuffer.h"
 #include "graphics/shaders/Material.h"
+#include "graphics/shaders/VertexShader.h"
 #include "graphics/buffers/UniformBuffer.h"
 #include "graphics/models/SubMesh.h"
 
@@ -38,21 +39,12 @@ SubMesh* Mesh::AllocateBuffers(void* vertexData, const size_t& vertexDataSize, v
 	return subMesh;
 }
 
-void Mesh::Draw(std::shared_ptr<CommandBuffer> commandBuffer, const PipelineStateObject& pso, std::shared_ptr<Material> material) const
-{	
-	vkCmdBindPipeline(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine());
-
-	//https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkCmdBindDescriptorSets.html
-
-	VkDescriptorSet set = GraphicsContext::DescriptorPool->GetDescriptorSet(material->GetUniformBuffers()[0], material->GetTexture().get(), material->GetSampler().get());
-	vkCmdBindDescriptorSets(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsContext::PipelineLayout, 0, 1, &set, 0, nullptr);
-
-	for (int i = 0; i < subMeshes.size(); i++)
-	{
-		subMeshes[i]->Draw(commandBuffer);
-	}
+void Mesh::BuildDescriptors(std::shared_ptr<Material> material)
+{
+	std::shared_ptr<VertexShader> vertexShader = material->GetVertex();
+	vertexShader->GetAttributeDescriptions(attributeDescriptions);
+	vertexShader->GetBindingDescription(bindingDescription);
 }
-
 
 bool Mesh::IsLoaded() const
 {

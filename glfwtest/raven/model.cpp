@@ -11,6 +11,7 @@
 #include "graphics/textures/TextureSampler.h"
 #include "graphics/models/Mesh.h"
 #include "graphics/models/SubMesh.h"
+#include "graphics/shaders/VertexShader.h"
 
 
 Model::Model(const std::string& objectFile) : 
@@ -101,6 +102,8 @@ void Model::Draw(std::shared_ptr<CommandBuffer> commandBuffer)
 
 	if (pso.IsDirty())
 	{
+		mesh->BuildDescriptors(material);
+
 		material->GetSampler()->Initialize(VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, textures[0]->GetMipLevels());
 		pso.Create(material, std::vector<VkDynamicState>(), true);
 		pso.SetVertexLayout(mesh->GetBindingDescription(), mesh->GetAttributeDescriptions());

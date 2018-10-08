@@ -4,7 +4,7 @@
 #include "graphics/helpers/VulkanSemaphore.h"
 #include "graphics/DepthBuffer.h"
 
-//A specialized Texture2D class, to specialized for inheritance
+//A specialized Texture2D class, too specialized for inheritance
 class FrameBuffer
 {
 public:

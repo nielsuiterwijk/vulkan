@@ -48,7 +48,7 @@
             "location" : 3
         },
         {
-            "type" : "vec3",
+            "type" : "vec4",
             "name" : "inColor",
             "location" : 2
         },
@@ -70,7 +70,7 @@
             "location" : 2
         },
         {
-            "type" : "vec3",
+            "type" : "vec4",
             "name" : "fragColor",
             "location" : 0
         },

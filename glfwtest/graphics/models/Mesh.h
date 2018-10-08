@@ -8,108 +8,17 @@ class VulkanBuffer;
 class Material;
 class SubMesh;
 
-struct Vertex 
-{
-	glm::vec2 pos;
-	glm::vec3 color;
-
-	static void GetBindingDescription(VkVertexInputBindingDescription& bindingDescription)
-	{
-		bindingDescription.binding = 0;
-		bindingDescription.stride = sizeof(Vertex);
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-	}
-
-	static void GetAttributeDescriptions(std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
-	{
-		attributeDescriptions.resize(2);
-
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-		attributeDescriptions[1].binding = 0;
-		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[1].offset = offsetof(Vertex, color);
-	}
-};
-
-struct Vertex3D
+struct Vertex
 {
 	glm::vec3 pos;
 	glm::vec2 texCoords;
-	glm::vec3 color;
-
-	static void GetBindingDescription(VkVertexInputBindingDescription& bindingDescription)
-	{
-		bindingDescription.binding = 0;
-		bindingDescription.stride = sizeof(Vertex3D);
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-	}
-
-	static void GetAttributeDescriptions(std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
-	{
-		attributeDescriptions.resize(3);
-
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[0].offset = offsetof(Vertex3D, pos);
-
-		attributeDescriptions[1].binding = 0;
-		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[1].offset = offsetof(Vertex3D, texCoords);
-
-		attributeDescriptions[2].binding = 0;
-		attributeDescriptions[2].location = 2;
-		attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[2].offset = offsetof(Vertex3D, color);
-	}
-};
-
-struct VertexPTCN
-{
-	glm::vec3 pos;
-	glm::vec2 texCoords;
-	glm::vec3 color;
+	glm::vec4 color;
 	glm::vec3 normal;
 
-	static void GetBindingDescription(VkVertexInputBindingDescription& bindingDescription)
-	{
-		bindingDescription.binding = 0;
-		bindingDescription.stride = sizeof(VertexPTCN);
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-	}
+	glm::vec4 joint0;
+	glm::vec4 weight0;
 
-	static void GetAttributeDescriptions(std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
-	{
-		attributeDescriptions.resize(4);
-
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[0].offset = offsetof(VertexPTCN, pos);
-
-		attributeDescriptions[1].binding = 0;
-		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[1].offset = offsetof(VertexPTCN, texCoords);
-
-		attributeDescriptions[2].binding = 0;
-		attributeDescriptions[2].location = 2;
-		attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[2].offset = offsetof(VertexPTCN, color);
-
-		attributeDescriptions[3].binding = 0;
-		attributeDescriptions[3].location = 3;
-		attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[3].offset = offsetof(VertexPTCN, normal);
-	}
-
-	bool operator==(const VertexPTCN& other) const {
+	bool operator==(const Vertex& other) const {
 		return pos == other.pos && color == other.color && texCoords == other.texCoords && normal == other.normal;
 	}
 };
@@ -121,14 +30,13 @@ public:
 	
 	explicit Mesh();
 	~Mesh();
-
-	void Draw(std::shared_ptr<CommandBuffer> buffer, const PipelineStateObject& pso, std::shared_ptr<Material> material) const;
-
-	//TODO: Remove this as it makes ownership unclear
+	
 	const std::vector<SubMesh*>& GetSubMeshes() const { return subMeshes; }
 
 	const VkVertexInputBindingDescription& GetBindingDescription() const { return bindingDescription; }
 	const std::vector<VkVertexInputAttributeDescription>& GetAttributeDescriptions() const { return attributeDescriptions; }
+
+	void BuildDescriptors(std::shared_ptr<Material> material);
 
 	bool IsLoaded() const;
 

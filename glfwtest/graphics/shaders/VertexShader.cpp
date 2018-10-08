@@ -6,11 +6,11 @@
 
 
 VertexShader::VertexShader(const std::string& fileName) :
-	Shader()
+	Shader(),
+	filesLoaded(0)
 {
-	//Load meta data to create descriptors?
-	FileSystem::LoadFileAsync("shaders/" + fileName + ".vert.spv", std::bind(&VertexShader::FileLoaded, this, std::placeholders::_1));
-
+	FileSystem::LoadFileAsync("shaders/" + fileName + ".vert.spv", std::bind(&VertexShader::ShaderLoaded, this, std::placeholders::_1));
+	FileSystem::LoadFileAsync("shaders/" + fileName + ".vert.json", std::bind(&VertexShader::MetaLoaded, this, std::placeholders::_1));
 }
 
 
@@ -19,7 +19,7 @@ VertexShader::~VertexShader()
 
 }
 
-void VertexShader::FileLoaded(std::vector<char> fileData)
+void VertexShader::ShaderLoaded(std::vector<char> fileData)
 {
 	VkShaderModuleCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -36,13 +36,10 @@ void VertexShader::FileLoaded(std::vector<char> fileData)
 	shaderInfo.module = shaderModule;
 	shaderInfo.pName = "main";
 
-	isLoaded = true;
+	filesLoaded.fetch_add(1, std::memory_order_relaxed);
+}
 
-	materialQueueMutex.lock();
-	while (!materialQueue.empty())
-	{
-		AddToShaderStage(materialQueue.front());
-		materialQueue.pop();
-	}
-	materialQueueMutex.unlock();
+void VertexShader::MetaLoaded(std::vector<char> fileData)
+{
+	filesLoaded.fetch_add(1, std::memory_order_relaxed);
 }

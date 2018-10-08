@@ -35,11 +35,11 @@ void FragmentShader::FileLoaded(std::vector<char> fileData)
 
 	isLoaded = true;
 
-	materialQueueMutex.lock();
-	while (!materialQueue.empty())
-	{
-		AddToShaderStage(materialQueue.front());
-		materialQueue.pop();
-	}
-	materialQueueMutex.unlock();
+	//materialQueueMutex.lock();
+	//while (!materialQueue.empty())
+	//{
+	//	AddToShaderStage(materialQueue.front());
+	//	materialQueue.pop();
+	//}
+	//materialQueueMutex.unlock();
 }

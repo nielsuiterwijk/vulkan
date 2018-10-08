@@ -132,7 +132,6 @@
     <ClInclude Include="graphics\buffers\CommandBufferPool.h" />
     <ClInclude Include="graphics\models\Mesh.h" />
     <ClInclude Include="graphics\helpers\VulkanSemaphore.h" />
-    <ClInclude Include="graphics\RenderObject.h" />
     <ClInclude Include="graphics\buffers\VulkanBuffer.h" />
     <ClInclude Include="graphics\memory\GPUAllocator.h" />
     <ClInclude Include="graphics\buffers\UniformBuffer.h" />

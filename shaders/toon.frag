@@ -6,7 +6,7 @@ layout(binding = 1) uniform sampler2D _albedo;
 //layout(binding = 3) uniform sampler2D _specular;
 //layout(binding = 4) uniform sampler2D _toonramp;
 
-layout(location = 0) in vec3 fragColor;
+layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 vertexNormal;
 layout(location = 3) in vec3 vertexPosition;
@@ -46,7 +46,7 @@ void main()
 	}
 	
 	vec4 albedoTex = texture(_albedo, fragTexCoord);
-	vec4 albedo = albedoTex * vec4(fragColor, 1.0);
+	vec4 albedo = albedoTex * fragColor;
 	
 	vec4 specular = specularHighlight * specColor;
 

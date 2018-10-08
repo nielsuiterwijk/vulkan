@@ -2,7 +2,6 @@
 
 #include "standard.h"
 #include "graphics/GraphicsDevice.h"
-#include "graphics/RenderObject.h"
 
 #include "helpers/IMGUIVulkan.h"
 #include "helpers/Timer.h"
@@ -10,6 +9,7 @@
 struct GLFWwindow;
 class Mesh;
 class Model;
+class VulkanSemaphore;
 
 class RavenApp
 {

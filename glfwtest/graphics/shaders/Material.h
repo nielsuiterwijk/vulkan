@@ -25,7 +25,9 @@ public:
 
 	std::shared_ptr<TextureSampler> GetSampler() const { return sampler; }
 	std::shared_ptr<Texture2D> GetTexture() const { return texture; }
-	
+
+	std::shared_ptr<VertexShader> GetVertex() const { return vertex; }
+	std::shared_ptr<FragmentShader> GetFragment() const { return fragment; }
 
 	bool IsLoaded() const;
 

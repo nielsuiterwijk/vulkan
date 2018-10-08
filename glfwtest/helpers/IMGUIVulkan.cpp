@@ -7,6 +7,7 @@
 #include "graphics/shaders/ShaderCache.h"
 #include "graphics/shaders/FragmentShader.h"
 #include "graphics/shaders/VertexShader.h"
+#include "graphics/buffers/UniformBuffer.h"
 
 
 #ifdef _WIN32

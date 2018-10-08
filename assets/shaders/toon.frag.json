@@ -22,7 +22,7 @@
             "location" : 1
         },
         {
-            "type" : "vec3",
+            "type" : "vec4",
             "name" : "fragColor",
             "location" : 0
         }

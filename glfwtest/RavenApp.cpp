@@ -10,7 +10,6 @@
 #include "graphics/VulkanInstance.h"
 #include "graphics\VulkanSwapChain.h"
 #include "graphics\PipelineStateObject.h"
-#include "graphics\RenderObject.h"
 #include "graphics\buffers\UniformBuffer.h"
 
 #include "graphics/memory/GPUAllocator.h"

@@ -8,8 +8,12 @@ public:
 	FragmentShader(const std::string& fileName);
 	virtual ~FragmentShader();
 
+
+	virtual bool IsLoaded() const override { return isLoaded; }
+
 private:
 	void FileLoaded(std::vector<char> fileData);
 
 private:
+	bool isLoaded;
 };
