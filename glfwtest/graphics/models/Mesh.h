@@ -21,6 +21,23 @@ struct Vertex
 	bool operator==(const Vertex& other) const {
 		return pos == other.pos && color == other.color && texCoords == other.texCoords && normal == other.normal;
 	}
+
+	static size_t GetOffsetFromLocation(int location)
+	{
+		switch (location)
+		{
+		case 0:
+			return offsetof(Vertex, pos);
+		case 1:
+			return offsetof(Vertex, texCoords);
+		case 2:
+			return offsetof(Vertex, color);
+		case 3:
+			return offsetof(Vertex, normal);
+		}
+
+		return -1;
+	}
 };
 
 class Mesh

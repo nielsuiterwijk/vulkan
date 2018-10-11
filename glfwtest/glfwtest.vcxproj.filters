@@ -156,5 +156,6 @@
     <ClInclude Include="graphics\memory\VulkanAllocator.h" />
     <ClInclude Include="helpers\Defensive.hpp" />
     <ClInclude Include="include\standard.h" />
+    <ClInclude Include="helpers\JsonParsers.h" />
   </ItemGroup>
 </Project>

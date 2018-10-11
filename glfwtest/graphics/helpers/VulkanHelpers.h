@@ -489,4 +489,16 @@ public:
 			return "Invalid format";
 		}
 	}
+
+	static const VkFormat GetFormatFromType(const std::string& input)
+	{
+		if (input == "vec2")
+			return VK_FORMAT_R32G32_SFLOAT;
+		else if (input == "vec3")
+			return VK_FORMAT_R32G32B32_SFLOAT;
+		else if (input == "vec4")
+			return VK_FORMAT_R32G32B32A32_SFLOAT;
+
+		return VK_FORMAT_UNDEFINED;
+	}
 };

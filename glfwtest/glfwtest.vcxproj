@@ -190,6 +190,7 @@
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -211,6 +212,7 @@
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -253,6 +255,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)external_libs\include\;$(SolutionDir)external_libs\include\glm\;$(SolutionDir)vulkan\include\</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -339,6 +342,7 @@
     <ClInclude Include="helpers\Defensive.hpp" />
     <ClInclude Include="helpers\Helpers.h" />
     <ClInclude Include="helpers\IMGUIVulkan.h" />
+    <ClInclude Include="helpers\JsonParsers.h" />
     <ClInclude Include="helpers\Singleton.h" />
     <ClInclude Include="includes\standard.h" />
     <ClInclude Include="graphics\helpers\InstanceWrapper.h" />
