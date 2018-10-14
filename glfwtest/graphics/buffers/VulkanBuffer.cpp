@@ -17,7 +17,7 @@ VulkanBuffer::VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType
 	switch (bufferType)
 	{
 	case BufferType::Static:
-		SetupStagingBuffer(bufferData);
+		SetupStagingBuffer();
 
 		Map(bufferData);
 
@@ -31,7 +31,7 @@ VulkanBuffer::VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType
 		break;
 
 	case BufferType::Staging:
-		SetupStagingBuffer(bufferData);
+		SetupStagingBuffer();
 		Map(bufferData);
 		break;
 	default:
@@ -113,7 +113,7 @@ void VulkanBuffer::SetupLocalStaticBuffer(VkBufferUsageFlags flags)
 	vkBindBufferMemory(GraphicsContext::LogicalDevice, deviceBuffer, nativeMemory, 0);
 }
 
-void VulkanBuffer::SetupStagingBuffer(void* bufferData)
+void VulkanBuffer::SetupStagingBuffer()
 {
 	VkBufferCreateInfo stagingBufferInfo = {};
 	stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;

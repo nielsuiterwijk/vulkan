@@ -6,7 +6,7 @@
 #include "graphics/PipelineStateObject.h"
 #include "graphics/buffers/UniformBuffer.h"
 
-class Mesh;
+class SkinnedMesh;
 
 
 class Model
@@ -29,7 +29,7 @@ private:
 	PipelineStateObject pso;
 
 	std::shared_ptr<CameraUBO> camera;
-	std::shared_ptr<Mesh> mesh;
+	std::shared_ptr<SkinnedMesh> mesh;
 	std::shared_ptr<Material> material;
 
 	std::vector<std::shared_ptr<Texture2D>> textures;

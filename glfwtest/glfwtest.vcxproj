@@ -323,6 +323,7 @@
     <ClInclude Include="graphics\models\importers\stl_loader.h" />
     <ClInclude Include="graphics\models\Mesh.h" />
     <ClInclude Include="graphics\models\MeshFileLoader.h" />
+    <ClInclude Include="graphics\models\SkinnedMesh.h" />
     <ClInclude Include="graphics\models\SubMesh.h" />
     <ClInclude Include="graphics\PipelineStateObject.h" />
     <ClInclude Include="graphics\RenderPass.h" />

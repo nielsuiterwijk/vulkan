@@ -37,7 +37,7 @@ public:
 	void Map(void* bufferData, uint32_t sizeToMap = -1) const;
 
 private:
-	void SetupStagingBuffer(void* bufferData);
+	void SetupStagingBuffer();
 	void SetupLocalStaticBuffer(VkBufferUsageFlags flags);
 
 	void SetupLocalDynamicBuffer(void* bufferData, VkBufferUsageFlags flags);

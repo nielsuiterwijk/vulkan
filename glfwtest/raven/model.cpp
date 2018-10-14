@@ -9,7 +9,7 @@
 #include "graphics/shaders/Material.h"
 #include "graphics/textures/Texture2D.h"
 #include "graphics/textures/TextureSampler.h"
-#include "graphics/models/Mesh.h"
+#include "graphics/models/SkinnedMesh.h"
 #include "graphics/models/SubMesh.h"
 #include "graphics/shaders/VertexShader.h"
 
@@ -38,7 +38,7 @@ void Model::FileLoaded(std::vector<char> fileData)
 	std::string meshFileName = jsonObject["mesh"];
 	std::string materialFileName = jsonObject["material"];
 
-	mesh = MeshFileLoader::Get(meshFileName);
+	mesh = std::static_pointer_cast<SkinnedMesh>(MeshFileLoader::Skinned(meshFileName));
 	material = std::make_shared<Material>(materialFileName);
 	material->AddUniformBuffer(new UniformBuffer(camera, sizeof(CameraUBO)));
 	

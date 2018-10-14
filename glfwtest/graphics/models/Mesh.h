@@ -34,10 +34,20 @@ struct Vertex
 			return offsetof(Vertex, color);
 		case 3:
 			return offsetof(Vertex, normal);
+		case 4:
+			return offsetof(Vertex, joint0);
+		case 5:
+			return offsetof(Vertex, weight0);
 		}
 
 		return -1;
 	}
+};
+
+enum class MeshType
+{
+	Static,
+	Skinned
 };
 
 class Mesh
@@ -56,11 +66,13 @@ public:
 	void BuildDescriptors(std::shared_ptr<Material> material);
 
 	bool IsLoaded() const;
+	
+	virtual MeshType GetMeshType() const { return MeshType::Static; }
 
-private:
+protected:
 	SubMesh* AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t triangles);
 
-private:
+protected:
 	uint32_t triangleCount;
 	uint32_t vertexFormatFlags;
 

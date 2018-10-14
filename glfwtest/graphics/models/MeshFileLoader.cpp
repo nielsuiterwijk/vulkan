@@ -2,6 +2,7 @@
 
 #include "io/FileSystem.h"
 #include "graphics/models/Mesh.h"
+#include "graphics/models/SkinnedMesh.h"
 #include "graphics/models/SubMesh.h"
 #include "graphics/helpers/color.h"
 
@@ -31,18 +32,7 @@ namespace std
 	};
 }
 
-MeshFileLoader::MeshFileLoader()
-{
-
-}
-
-MeshFileLoader::~MeshFileLoader()
-{
-
-}
-
-//TODO: implement glTF? https://godotengine.org/article/we-should-all-use-gltf-20-export-3d-assets-game-engines
-std::shared_ptr<Mesh> MeshFileLoader::Get(const std::string& fileName)
+std::shared_ptr<Mesh> MeshFileLoader::Static(const std::string& fileName)
 {
 	std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
 
@@ -56,6 +46,29 @@ std::shared_ptr<Mesh> MeshFileLoader::Get(const std::string& fileName)
 		fileType = MeshFileType::STL;
 	else if (extension == "gltf" || extension == "glb")
 		fileType = MeshFileType::GLTF;
+	else
+	{
+		std::cout << "Unhandled file extension: " << extension << std::endl;
+		assert(false);
+	}
+
+	FileSystem::LoadFileAsync("models/" + fileName, std::bind(MeshFileLoader::FileLoaded, std::placeholders::_1, mesh, fileType));
+
+	return mesh;
+}
+
+std::shared_ptr<Mesh> MeshFileLoader::Skinned(const std::string& fileName)
+{
+	std::shared_ptr<Mesh> mesh = std::make_shared<SkinnedMesh>();
+
+	std::string extension = Helpers::GetFileExtension(fileName);
+
+	MeshFileType::Enum fileType;
+
+	if (extension == "gltf" || extension == "glb")
+	{
+		fileType = MeshFileType::GLTF;
+	}
 	else
 	{
 		std::cout << "Unhandled file extension: " << extension << std::endl;
@@ -102,8 +115,10 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 	if (!ret) 
 	{
 		printf("Failed to parse glTF\n");
+		meshDestination = nullptr;
+		return;
 	}
-	
+		
 	for (const tinygltf::BufferView& bufferView : model.bufferViews)
 	{
 		if (bufferView.target == 0)
@@ -115,10 +130,34 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 		const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
 		std::cout << "buffer.size= " << buffer.data.size() << ", byteOffset= " << bufferView.byteOffset << std::endl;
 	}
+	
+	GLTFStaticMesh(&model, meshDestination);
 
-	auto meshes = model.meshes;
-	for (tinygltf::Mesh& mesh : meshes)
-	{		
+	if (meshDestination->GetMeshType() == MeshType::Skinned)
+	{
+
+		for (const tinygltf::Animation& animation : model.animations)
+		{
+			std::string name = animation.name;
+			const  std::vector<tinygltf::AnimationChannel>& channels = animation.channels;
+			const  std::vector<tinygltf::AnimationSampler>& samplers = animation.samplers;
+			
+			for (const tinygltf::AnimationChannel& channel : animation.channels)
+			{
+				const tinygltf::AnimationSampler& sampler = samplers[channel.sampler];
+
+				const tinygltf::Accessor& input = model.accessors[sampler.input];
+				const tinygltf::Accessor& out = model.accessors[sampler.output];
+
+			}
+		}
+	}
+}
+
+void MeshFileLoader::GLTFStaticMesh(const tinygltf::Model* model, std::shared_ptr<Mesh> meshDestination)
+{
+	for (const auto& mesh : model->meshes)
+	{
 		for (const auto& primitive : mesh.primitives)
 		{
 			if (primitive.indices < 0)
@@ -132,6 +171,7 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 			AABB aabb;
 
+			int32_t vertexCount = 0;
 			const float* bufferPos = nullptr;
 			const float* bufferNormals = nullptr;
 			const float* bufferTexCoords = nullptr;
@@ -140,51 +180,53 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 			assert(primitive.attributes.find("POSITION") != primitive.attributes.end());
 
-			const tinygltf::Accessor &posAccessor = model.accessors[primitive.attributes.find("POSITION")->second];
-			const tinygltf::BufferView &posView = model.bufferViews[posAccessor.bufferView];
-			bufferPos = reinterpret_cast<const float *>(&(model.buffers[posView.buffer].data[posAccessor.byteOffset + posView.byteOffset]));
-
-			if (primitive.attributes.find("NORMAL") != primitive.attributes.end()) 
 			{
-				const tinygltf::Accessor &normAccessor = model.accessors[primitive.attributes.find("NORMAL")->second];
-				const tinygltf::BufferView &normView = model.bufferViews[normAccessor.bufferView];
-				bufferNormals = reinterpret_cast<const float *>(&(model.buffers[normView.buffer].data[normAccessor.byteOffset + normView.byteOffset]));
+				const tinygltf::Accessor &posAccessor = model->accessors[primitive.attributes.find("POSITION")->second];
+				const tinygltf::BufferView &posView = model->bufferViews[posAccessor.bufferView];
+				bufferPos = reinterpret_cast<const float *>(&(model->buffers[posView.buffer].data[posAccessor.byteOffset + posView.byteOffset]));
+				vertexCount = posAccessor.count;
 			}
 
-			if (primitive.attributes.find("TEXCOORD_0") != primitive.attributes.end()) {
-				const tinygltf::Accessor &uvAccessor = model.accessors[primitive.attributes.find("TEXCOORD_0")->second];
-				const tinygltf::BufferView &uvView = model.bufferViews[uvAccessor.bufferView];
-				bufferTexCoords = reinterpret_cast<const float *>(&(model.buffers[uvView.buffer].data[uvAccessor.byteOffset + uvView.byteOffset]));
+			if (primitive.attributes.find("NORMAL") != primitive.attributes.end())
+			{
+				const tinygltf::Accessor &normAccessor = model->accessors[primitive.attributes.find("NORMAL")->second];
+				const tinygltf::BufferView &normView = model->bufferViews[normAccessor.bufferView];
+				bufferNormals = reinterpret_cast<const float *>(&(model->buffers[normView.buffer].data[normAccessor.byteOffset + normView.byteOffset]));
 			}
 
-			// Skinning
-			// Joints
-			if (primitive.attributes.find("JOINTS_0") != primitive.attributes.end()) 
+			if (primitive.attributes.find("TEXCOORD_0") != primitive.attributes.end()) 
 			{
-				const tinygltf::Accessor &jointAccessor = model.accessors[primitive.attributes.find("JOINTS_0")->second];
-				const tinygltf::BufferView &jointView = model.bufferViews[jointAccessor.bufferView];
-				bufferJoints = reinterpret_cast<const uint16_t *>(&(model.buffers[jointView.buffer].data[jointAccessor.byteOffset + jointView.byteOffset]));
+				const tinygltf::Accessor &uvAccessor = model->accessors[primitive.attributes.find("TEXCOORD_0")->second];
+				const tinygltf::BufferView &uvView = model->bufferViews[uvAccessor.bufferView];
+				bufferTexCoords = reinterpret_cast<const float *>(&(model->buffers[uvView.buffer].data[uvAccessor.byteOffset + uvView.byteOffset]));
+			}
+
+			if (primitive.attributes.find("JOINTS_0") != primitive.attributes.end())
+			{
+				const tinygltf::Accessor &jointAccessor = model->accessors[primitive.attributes.find("JOINTS_0")->second];
+				const tinygltf::BufferView &jointView = model->bufferViews[jointAccessor.bufferView];
+				bufferJoints = reinterpret_cast<const uint16_t *>(&(model->buffers[jointView.buffer].data[jointAccessor.byteOffset + jointView.byteOffset]));
 			}
 
 			if (primitive.attributes.find("WEIGHTS_0") != primitive.attributes.end())
 			{
-				const tinygltf::Accessor &uvAccessor = model.accessors[primitive.attributes.find("WEIGHTS_0")->second];
-				const tinygltf::BufferView &uvView = model.bufferViews[uvAccessor.bufferView];
-				bufferWeights = reinterpret_cast<const float *>(&(model.buffers[uvView.buffer].data[uvAccessor.byteOffset + uvView.byteOffset]));
+				const tinygltf::Accessor &uvAccessor = model->accessors[primitive.attributes.find("WEIGHTS_0")->second];
+				const tinygltf::BufferView &uvView = model->bufferViews[uvAccessor.bufferView];
+				bufferWeights = reinterpret_cast<const float *>(&(model->buffers[uvView.buffer].data[uvAccessor.byteOffset + uvView.byteOffset]));
 			}
 
 			bool hasSkin = (bufferJoints && bufferWeights);
 
-			for (size_t v = 0; v < posAccessor.count; v++) 
+			for (size_t v = 0; v < vertexCount; v++)
 			{
-				Vertex vertex {};
+				Vertex vertex{};
 				vertex.pos = glm::make_vec3(&bufferPos[v * 3]);
 				vertex.normal = glm::normalize(glm::vec3(bufferNormals ? glm::make_vec3(&bufferNormals[v * 3]) : glm::vec3(0.0f)));
-				vertex.texCoords = bufferTexCoords ? glm::make_vec2(&bufferTexCoords[v * 2]) : glm::vec3(0.0f);
+				vertex.texCoords = bufferTexCoords ? glm::make_vec2(&bufferTexCoords[v * 2]) : glm::vec2(0.0f);
 				vertex.color = glm::vec4(1.0f);
 
-				//vert.joint0 = hasSkin ? glm::vec4(glm::make_vec4(&bufferJoints[v * 4])) : glm::vec4(0.0f);
-				//vert.weight0 = hasSkin ? glm::make_vec4(&bufferWeights[v * 4]) : glm::vec4(0.0f);
+				vertex.joint0 = hasSkin ? glm::vec4(glm::make_vec4(&bufferJoints[v * 4])) : glm::vec4(0.0f);
+				vertex.weight0 = hasSkin ? glm::make_vec4(&bufferWeights[v * 4]) : glm::vec4(0.0f);
 				vertices.emplace_back(vertex);
 
 				aabb.Grow(vertex.pos);
@@ -194,9 +236,9 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 			// Indices
 			{
-				const tinygltf::Accessor &accessor = model.accessors[primitive.indices];
-				const tinygltf::BufferView &bufferView = model.bufferViews[accessor.bufferView];
-				const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
+				const tinygltf::Accessor &accessor = model->accessors[primitive.indices];
+				const tinygltf::BufferView &bufferView = model->bufferViews[accessor.bufferView];
+				const tinygltf::Buffer &buffer = model->buffers[bufferView.buffer];
 
 				uint32_t indexCount = static_cast<uint32_t>(accessor.count);
 
@@ -229,19 +271,14 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 				}
 			}
 
-			
+
 			uint32_t triangleCount = static_cast<uint32_t>(indices.size()) / 3;
-			SubMesh* subMesh = meshDestination->AllocateBuffers(static_cast<void*>(&vertices[0]), sizeof(Vertex) * vertices.size(),
-																static_cast<void*>(&indices[0]), sizeof(uint32_t) * indices.size(), triangleCount);
+			SubMesh* subMesh = meshDestination->AllocateBuffers(static_cast<void*>(&vertices[0]), sizeof(Vertex) * vertices.size(), static_cast<void*>(&indices[0]), sizeof(uint32_t) * indices.size(), triangleCount);
 			subMesh->SetAABB(aabb);
 		}
-
-
-		//VertexPTCN::GetBindingDescription(meshDestination->bindingDescription);
-		//VertexPTCN::GetAttributeDescriptions(meshDestination->attributeDescriptions);
 	}
-}
 
+}
 
 void MeshFileLoader::LoadOBJ(std::vector<char>& fileData, std::shared_ptr<Mesh> meshDestination)
 {
