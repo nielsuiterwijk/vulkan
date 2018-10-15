@@ -1,6 +1,6 @@
 #include "UniformBuffer.h"
 
-UniformBuffer::UniformBuffer(std::shared_ptr<void> data, size_t size) :
+UniformBuffer::UniformBuffer(std::shared_ptr<void> data, uint32_t size) :
 	data(data),
 	size(size),
 	vulkanBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, BufferType::Dynamic, data.get(), size),

@@ -26,7 +26,7 @@ SubMesh::~SubMesh()
 	delete indexBuffer;
 }
 
-bool SubMesh::AllocateBuffers(void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize)
+bool SubMesh::AllocateBuffers(void* vertexData, const uint32_t& vertexDataSize, void* indexData, const uint32_t& indexDataSize)
 {
 	assert(vertexBuffer == nullptr);
 	vertexBuffer = new VulkanBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, BufferType::Static, vertexData, vertexDataSize);

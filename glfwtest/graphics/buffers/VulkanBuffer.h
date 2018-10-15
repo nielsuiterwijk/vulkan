@@ -15,7 +15,7 @@ struct BufferType
 class VulkanBuffer
 {
 public:
-	VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType, void* data, size_t size);
+	VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType, void* data, uint32_t size);
 	~VulkanBuffer();
 
 	const VkBuffer& GetNative() const
@@ -28,7 +28,7 @@ public:
 		return &nativeMemory;
 	}
 
-	size_t GetSize() const { return size; }
+	uint32_t GetSize() const { return size; }
 
 	void CopyStagingToDevice();
 	void CopyStagingToImage(VkImage image, uint32_t width, uint32_t height);
@@ -52,6 +52,6 @@ private:
 	VkDeviceMemory stagingMemory;
 	VkDeviceMemory nativeMemory;
 
-	size_t size;
+	uint32_t size;
 	BufferType::Enum bufferType;
 };

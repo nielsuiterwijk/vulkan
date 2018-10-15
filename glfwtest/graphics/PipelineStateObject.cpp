@@ -227,7 +227,7 @@ void PipelineStateObject::SetVertexLayout(const VkVertexInputBindingDescription&
 
 void PipelineStateObject::SetShader(const std::vector<VkPipelineShaderStageCreateInfo>& shaders)
 {
-	pipelineInfo.stageCount = shaders.size();
+	pipelineInfo.stageCount = static_cast<uint32_t>(shaders.size());
 	pipelineInfo.pStages = shaders.data();
 	isDirty = true;
 }

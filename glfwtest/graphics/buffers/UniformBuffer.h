@@ -17,7 +17,7 @@ struct CameraUBO
 class UniformBuffer
 {
 public:
-	UniformBuffer(std::shared_ptr<void> data, size_t size);
+	UniformBuffer(std::shared_ptr<void> data, uint32_t size);
 	~UniformBuffer();
 	
 	void Upload();
@@ -35,7 +35,7 @@ public:
 
 private:
 	std::shared_ptr<void> data;
-	size_t size;
+	uint32_t size;
 	
 	VulkanBuffer vulkanBuffer;
 	VkDescriptorBufferInfo bufferInfo;

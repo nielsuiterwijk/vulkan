@@ -5,7 +5,7 @@
 
 #include <vulkan/vulkan.h>
 
-VulkanBuffer::VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType, void* bufferData, size_t size) :
+VulkanBuffer::VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType, void* bufferData, uint32_t size) :
 	nativeMemory(nullptr),
 	deviceBuffer(nullptr),
 	stagingMemory(nullptr),

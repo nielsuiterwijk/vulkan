@@ -2,6 +2,7 @@
 
 #include "standard.h"
 #include "Mesh.h"
+#include "graphics/animations/Animation.h"
 
 #define MAX_BONES 64
 #define MAX_BONES_PER_VERTEX 4
@@ -30,13 +31,20 @@ struct VertexBoneData
 // Stores information on a single bone
 struct BoneInfo
 {
-	glm::mat4x4 offset;
-	glm::mat4x4 finalTransformation;
+	glm::mat4 offset;
+	glm::mat4 finalTransformation;
 };
 
 
 class SkinnedMesh : public Mesh
 {
+	friend class MeshFileLoader;
+
 public:
 	virtual MeshType GetMeshType() const { return MeshType::Skinned; }
+
+	void AddBone(BoneInfo boneInfo) { bones.emplace_back(boneInfo); }
+
+private:
+	std::vector<BoneInfo> bones;
 };

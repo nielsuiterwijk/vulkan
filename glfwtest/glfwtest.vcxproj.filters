@@ -158,5 +158,6 @@
     <ClInclude Include="include\standard.h" />
     <ClInclude Include="helpers\JsonParsers.h" />
     <ClInclude Include="graphics\models\SkinnedMesh.h" />
+    <ClInclude Include="graphics\animations\Animation.h" />
   </ItemGroup>
 </Project>

@@ -308,6 +308,7 @@
     <ClCompile Include="raven\model.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="graphics\animations\Animation.h" />
     <ClInclude Include="graphics\buffers\CommandBuffer.h" />
     <ClInclude Include="graphics\buffers\CommandBufferPool.h" />
     <ClInclude Include="graphics\buffers\UniformBuffer.h" />

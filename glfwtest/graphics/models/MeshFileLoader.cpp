@@ -135,19 +135,58 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 	if (meshDestination->GetMeshType() == MeshType::Skinned)
 	{
+		std::shared_ptr<SkinnedMesh> skinnedMesh = std::static_pointer_cast<SkinnedMesh>(meshDestination);
+		skinnedMesh->bones.reserve(model.nodes.size());
 
-		for (const tinygltf::Animation& animation : model.animations)
+		tinygltf::Node rootNode;
+		if (model.skins.size() > 0)
+			rootNode = model.nodes[model.skins[0].skeleton];
+
+		for (const tinygltf::Node& node : model.nodes)
 		{
-			std::string name = animation.name;
-			const  std::vector<tinygltf::AnimationChannel>& channels = animation.channels;
-			const  std::vector<tinygltf::AnimationSampler>& samplers = animation.samplers;
+			glm::vec3 position = node.translation.size() == 0 ? glm::vec3(0.0f) : glm::make_vec3(node.translation.data());
+			glm::vec3 scale = node.scale.size() == 0 ? glm::vec3(1.0f) : glm::make_vec3(node.scale.data());
+			glm::quat rotation = node.rotation.size() == 0 ? glm::vec4(0.0f) : glm::make_vec4(node.rotation.data());
+
+			BoneInfo bone = {};
+			bone.offset = glm::translate(position) * glm::toMat4(rotation) * glm::scale(scale);
+			skinnedMesh->AddBone(bone);
+		}
+
+		for (const tinygltf::Animation& gltfAnimation : model.animations)
+		{
+			std::string name = gltfAnimation.name;
+			const  std::vector<tinygltf::AnimationChannel>& channels = gltfAnimation.channels;
+			const  std::vector<tinygltf::AnimationSampler>& samplers = gltfAnimation.samplers;
 			
-			for (const tinygltf::AnimationChannel& channel : animation.channels)
+			for (const tinygltf::AnimationChannel& channel : gltfAnimation.channels)
 			{
+				if (channel.target_node < 0)
+					continue;
+
+				const tinygltf::Node& targetNode = model.nodes[channel.target_node];
+
 				const tinygltf::AnimationSampler& sampler = samplers[channel.sampler];
 
-				const tinygltf::Accessor& input = model.accessors[sampler.input];
-				const tinygltf::Accessor& out = model.accessors[sampler.output];
+				const tinygltf::Accessor& timePointAccessor = model.accessors[sampler.input];
+				const tinygltf::Accessor& frameValueAccessor = model.accessors[sampler.output];
+				assert(timePointAccessor.count == frameValueAccessor.count);
+
+				const tinygltf::BufferView& inputBufferView = model.bufferViews[timePointAccessor.bufferView];
+				const tinygltf::BufferView& outputBufferView = model.bufferViews[frameValueAccessor.bufferView];
+
+				const float* inputBuffer = reinterpret_cast<const float *>(&(model.buffers[inputBufferView.buffer].data[timePointAccessor.byteOffset + inputBufferView.byteOffset]));
+				const float* outputBuffer = reinterpret_cast<const float *>(&(model.buffers[outputBufferView.buffer].data[frameValueAccessor.byteOffset + outputBufferView.byteOffset]));
+
+				Animation animation;
+				animation.keyFrames.reserve(timePointAccessor.count);
+				animation.values.reserve(timePointAccessor.count);
+
+				for (int i = 0; i < timePointAccessor.count; i++)
+				{
+					animation.keyFrames.emplace_back(inputBuffer[i]);
+					animation.values.emplace_back(glm::make_vec3(&outputBuffer[i * 3]));
+				}
 
 			}
 		}
@@ -185,6 +224,7 @@ void MeshFileLoader::GLTFStaticMesh(const tinygltf::Model* model, std::shared_pt
 				const tinygltf::BufferView &posView = model->bufferViews[posAccessor.bufferView];
 				bufferPos = reinterpret_cast<const float *>(&(model->buffers[posView.buffer].data[posAccessor.byteOffset + posView.byteOffset]));
 				vertexCount = posAccessor.count;
+				assert(posAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
 			}
 
 			if (primitive.attributes.find("NORMAL") != primitive.attributes.end())
@@ -192,6 +232,7 @@ void MeshFileLoader::GLTFStaticMesh(const tinygltf::Model* model, std::shared_pt
 				const tinygltf::Accessor &normAccessor = model->accessors[primitive.attributes.find("NORMAL")->second];
 				const tinygltf::BufferView &normView = model->bufferViews[normAccessor.bufferView];
 				bufferNormals = reinterpret_cast<const float *>(&(model->buffers[normView.buffer].data[normAccessor.byteOffset + normView.byteOffset]));
+				assert(normAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
 			}
 
 			if (primitive.attributes.find("TEXCOORD_0") != primitive.attributes.end()) 
@@ -199,6 +240,7 @@ void MeshFileLoader::GLTFStaticMesh(const tinygltf::Model* model, std::shared_pt
 				const tinygltf::Accessor &uvAccessor = model->accessors[primitive.attributes.find("TEXCOORD_0")->second];
 				const tinygltf::BufferView &uvView = model->bufferViews[uvAccessor.bufferView];
 				bufferTexCoords = reinterpret_cast<const float *>(&(model->buffers[uvView.buffer].data[uvAccessor.byteOffset + uvView.byteOffset]));
+				assert(uvAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
 			}
 
 			if (primitive.attributes.find("JOINTS_0") != primitive.attributes.end())
@@ -206,13 +248,17 @@ void MeshFileLoader::GLTFStaticMesh(const tinygltf::Model* model, std::shared_pt
 				const tinygltf::Accessor &jointAccessor = model->accessors[primitive.attributes.find("JOINTS_0")->second];
 				const tinygltf::BufferView &jointView = model->bufferViews[jointAccessor.bufferView];
 				bufferJoints = reinterpret_cast<const uint16_t *>(&(model->buffers[jointView.buffer].data[jointAccessor.byteOffset + jointView.byteOffset]));
+
+				assert(jointAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT);
 			}
 
 			if (primitive.attributes.find("WEIGHTS_0") != primitive.attributes.end())
 			{
-				const tinygltf::Accessor &uvAccessor = model->accessors[primitive.attributes.find("WEIGHTS_0")->second];
-				const tinygltf::BufferView &uvView = model->bufferViews[uvAccessor.bufferView];
-				bufferWeights = reinterpret_cast<const float *>(&(model->buffers[uvView.buffer].data[uvAccessor.byteOffset + uvView.byteOffset]));
+				const tinygltf::Accessor &weightAccessor = model->accessors[primitive.attributes.find("WEIGHTS_0")->second];
+				const tinygltf::BufferView &weightView = model->bufferViews[weightAccessor.bufferView];
+				bufferWeights = reinterpret_cast<const float *>(&(model->buffers[weightView.buffer].data[weightAccessor.byteOffset + weightView.byteOffset]));
+
+				assert(weightAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
 			}
 
 			bool hasSkin = (bufferJoints && bufferWeights);
