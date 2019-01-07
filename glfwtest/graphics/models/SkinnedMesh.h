@@ -10,21 +10,19 @@
 // Per-vertex bone IDs and weights
 struct VertexBoneData
 {
-	std::array<uint32_t, MAX_BONES_PER_VERTEX> IDs;
-	std::array<float, MAX_BONES_PER_VERTEX> weights;
+	std::array<uint32_t, MAX_BONES_PER_VERTEX> IDs {};
+	std::array<float, MAX_BONES_PER_VERTEX> weights {};
+	int idx = 0;
 
 	// Ad bone weighting to vertex info
-	void add(uint32_t boneID, float weight)
+	void Add(uint32_t boneID, float weight)
 	{
-		for (uint32_t i = 0; i < MAX_BONES_PER_VERTEX; i++)
-		{
-			if (weights[i] == 0.0f)
-			{
-				IDs[i] = boneID;
-				weights[i] = weight;
-				return;
-			}
-		}
+		if (idx >= MAX_BONES_PER_VERTEX)
+			return;
+
+		IDs[idx] = boneID;
+		weights[idx] = weight;
+		idx++;
 	}
 };
 
@@ -35,6 +33,13 @@ struct BoneInfo
 	glm::mat4 finalTransformation;
 };
 
+struct SkinInfo
+{
+	int32_t rootBone;
+	std::vector<int32_t> joints;
+	std::vector<glm::mat4> inverseBindMatrices;
+};
+
 
 class SkinnedMesh : public Mesh
 {
@@ -43,8 +48,18 @@ class SkinnedMesh : public Mesh
 public:
 	virtual MeshType GetMeshType() const { return MeshType::Skinned; }
 
-	void AddBone(BoneInfo boneInfo) { bones.emplace_back(boneInfo); }
+	void AddBone(BoneInfo boneInfo)
+	{
+		bones.emplace_back(boneInfo); 
+	}
+
+	void AddSkin(SkinInfo skinInfo)
+	{
+		skins.emplace_back(skinInfo);
+	}
 
 private:
 	std::vector<BoneInfo> bones;
+	std::vector<SkinInfo> skins;
+	//std::vector<int32_t> boneHierarchy;
 };

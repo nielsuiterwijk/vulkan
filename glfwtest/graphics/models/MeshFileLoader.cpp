@@ -142,6 +142,7 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 		if (model.skins.size() > 0)
 			rootNode = model.nodes[model.skins[0].skeleton];
 
+		//Load Nodes
 		for (const tinygltf::Node& node : model.nodes)
 		{
 			glm::vec3 position = node.translation.size() == 0 ? glm::vec3(0.0f) : glm::make_vec3(node.translation.data());
@@ -153,11 +154,17 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 			skinnedMesh->AddBone(bone);
 		}
 
+		//Load Animations
 		for (const tinygltf::Animation& gltfAnimation : model.animations)
 		{
 			std::string name = gltfAnimation.name;
 			const  std::vector<tinygltf::AnimationChannel>& channels = gltfAnimation.channels;
 			const  std::vector<tinygltf::AnimationSampler>& samplers = gltfAnimation.samplers;
+
+			assert((gltfAnimation.channels.size() % 3) == 0);
+
+			std::vector<Animation> animations;
+			animations.reserve(gltfAnimation.channels.size() / 3);
 			
 			for (const tinygltf::AnimationChannel& channel : gltfAnimation.channels)
 			{
@@ -178,19 +185,106 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 				const float* inputBuffer = reinterpret_cast<const float *>(&(model.buffers[inputBufferView.buffer].data[timePointAccessor.byteOffset + inputBufferView.byteOffset]));
 				const float* outputBuffer = reinterpret_cast<const float *>(&(model.buffers[outputBufferView.buffer].data[frameValueAccessor.byteOffset + outputBufferView.byteOffset]));
 
-				Animation animation;
-				animation.keyFrames.reserve(timePointAccessor.count);
-				animation.values.reserve(timePointAccessor.count);
+				Animation* animation = nullptr;
 
-				for (int i = 0; i < timePointAccessor.count; i++)
+				for (Animation& existingAnimation : animations)
 				{
-					animation.keyFrames.emplace_back(inputBuffer[i]);
-					animation.values.emplace_back(glm::make_vec3(&outputBuffer[i * 3]));
+					if (existingAnimation.targetBone == channel.target_node)
+					{
+						animation = &existingAnimation;
+					}
+				}
+
+				if (animation == nullptr)
+				{
+					animations.emplace_back(Animation{});
+					animation = &animations[animations.size() - 1];
+
+					animation->keyFrames.reserve(timePointAccessor.count);
+					animation->translations.reserve(frameValueAccessor.count);
+					animation->scales.reserve(frameValueAccessor.count);
+					animation->rotations.reserve(frameValueAccessor.count);
+
+					for (int i = 0; i < timePointAccessor.count; i++)
+					{
+						animation->keyFrames.emplace_back(inputBuffer[i]);
+					}
+
+					animation->name = gltfAnimation.name;
+					animation->name += "(" + std::to_string(animations.size()) + ")";
+
+					animation->targetBone = channel.target_node;
+
+					
+					if (sampler.interpolation.find("LINEAR") != std::string::npos)
+						animation->interpolationMode = Interpolation::Linear;
+					/*else if (sampler.interpolation.find("STEP") != std::string::npos)
+						animation->interpolationMode = Interpolation::Step;
+					else if (sampler.interpolation.find("CUBICSPLINE") != std::string::npos)
+						animation->interpolationMode = Interpolation::CubicSpline;*/
+					else
+						assert(false && "Unsupported interpolation method");
+
+				}				
+
+				if (channel.target_path.find("translation") != std::string::npos)
+				{
+					for (int i = 0; i < frameValueAccessor.count; i++)
+					{
+						animation->translations.emplace_back(glm::make_vec3(&outputBuffer[i * 3]));
+					}
+				}
+				else if (channel.target_path.find("scale") != std::string::npos)
+				{
+
+					for (int i = 0; i < frameValueAccessor.count; i++)
+					{
+						animation->scales.emplace_back(glm::make_vec3(&outputBuffer[i * 3]));
+					}
+				}
+				else if(channel.target_path.find("rotation") != std::string::npos)
+				{
+					for (int i = 0; i < frameValueAccessor.count; i++)
+					{
+						animation->rotations.emplace_back(glm::make_vec4(&outputBuffer[i * 4]));
+					}
+				}
+				else
+				{
+					assert(false && "Unsupported target path");
 				}
 
 			}
 		}
+
+		//Load Skins
+		for (const tinygltf::Skin& source : model.skins)
+		{
+			SkinInfo skinInfo = {};
+			//newSkin->name = source.name;
+
+			// Find skeleton root node
+			if (source.skeleton > -1) 
+			{
+				skinInfo.rootBone = source.skeleton;
+			}
+
+			skinInfo.joints = source.joints;
+			
+			// Get inverse bind matrices from buffer
+			if (source.inverseBindMatrices > -1) 
+			{
+				const tinygltf::Accessor& accessor = model.accessors[source.inverseBindMatrices];
+				const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+				const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+				skinInfo.inverseBindMatrices.resize(accessor.count);
+				memcpy(skinInfo.inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
+			}
+
+			skinnedMesh->AddSkin(skinInfo);
+		}
 	}
+
 }
 
 void MeshFileLoader::GLTFStaticMesh(const tinygltf::Model* model, std::shared_ptr<Mesh> meshDestination)
