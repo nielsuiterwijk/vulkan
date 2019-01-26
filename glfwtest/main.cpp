@@ -7,8 +7,10 @@
 #include "memory/FreeListAllocator.h"
 
 #include "standard.h"
+#include "helpers/Integer.h"
 
 #undef min
+#include "misc/cache_binary.h"
 
 
 int ThreadedCall(int a, int b)
@@ -25,25 +27,19 @@ void AsyncCallback(std::vector<char> fileData)
 }
 
 
+
 int main()
 {
 #if DEBUG
 	_CrtSetDbgFlag(_CRTDBG_CHECK_ALWAYS_DF);
 #endif
-		
+
+	//SearchTest::Run();
+			
 	FileSystem::Start();
 
-	std::cout << "size of size_t: " << sizeof(size_t) << std::endl;
+	//std::cout << "size of size_t: " << sizeof(size_t) << std::endl;
 
-	/*ThreadPool threadPool(8);
-	std::future<int> result = threadPool.Enqueue(ThreadedCall, 3, 7);
-
-	while (result.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
-	{
-		std::cout << "Waiting for result." << std::endl;
-	}
-
-	std::cout << "received result for ThreadedCalled: " << result.get() << std::endl;*/
 
 	{
 		RavenApp app;

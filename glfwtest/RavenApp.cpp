@@ -223,7 +223,7 @@ void RavenApp::Render(RavenApp* app)
 		std::shared_ptr<CommandBuffer> commandBuffer = app->commandBuffers[imageIndex];
 		{
 			
-			std::cout << "current index: " << GraphicsContext::DescriptorPool->GetCurrentIndex() << std::endl;
+			//std::cout << "current index: " << GraphicsContext::DescriptorPool->GetCurrentIndex() << std::endl;
 
 			{
 				commandBuffer->StartRecording(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);

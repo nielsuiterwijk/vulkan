@@ -159,5 +159,7 @@
     <ClInclude Include="helpers\JsonParsers.h" />
     <ClInclude Include="graphics\models\SkinnedMesh.h" />
     <ClInclude Include="graphics\animations\Animation.h" />
+    <ClInclude Include="helpers\measure\Measure.h" />
+    <ClInclude Include="misc\cache_binary.h" />
   </ItemGroup>
 </Project>

@@ -30,6 +30,7 @@ void CommandBuffer::Initialize()
 	if (vkAllocateCommandBuffers(GraphicsContext::LogicalDevice, &allocInfo, &commandBuffer) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to allocate command buffers!");
+
 	}
 }
 

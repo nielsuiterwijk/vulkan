@@ -250,3 +250,6 @@ paket-files/
 *.sln.iml
 assets/imgui.ini
 external_libs/lib/x64/external_libs.lib
+*.lib
+external_libs/lib/x64/external_libs_d.lib
+*.lib

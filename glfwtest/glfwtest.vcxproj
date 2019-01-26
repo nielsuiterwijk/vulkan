@@ -30,7 +30,7 @@
     <ProjectGuid>{9CFE5564-5867-454F-B0BC-9EAC76A75222}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>glfwtest</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -55,19 +55,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Optimized|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -181,8 +181,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG=1</PreprocessorDefinitions>
@@ -191,6 +190,10 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <AdditionalOptions>/Bt %(AdditionalOptions)</AdditionalOptions>
+      <PrecompiledHeaderFile>standard.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ForcedIncludeFiles>standard.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -248,7 +251,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -345,6 +348,7 @@
     <ClInclude Include="helpers\Helpers.h" />
     <ClInclude Include="helpers\IMGUIVulkan.h" />
     <ClInclude Include="helpers\JsonParsers.h" />
+    <ClInclude Include="helpers\measure\Measure.h" />
     <ClInclude Include="helpers\Singleton.h" />
     <ClInclude Include="includes\standard.h" />
     <ClInclude Include="graphics\helpers\InstanceWrapper.h" />
@@ -355,6 +359,7 @@
     <ClInclude Include="memory\FreeListAllocator.h" />
     <ClInclude Include="memory\MemoryUtils.h" />
     <ClInclude Include="memory\PoolAllocator.h" />
+    <ClInclude Include="misc\cache_binary.h" />
     <ClInclude Include="physics\aabb.h" />
     <ClInclude Include="RavenApp.h" />
     <ClInclude Include="raven\model.h" />
