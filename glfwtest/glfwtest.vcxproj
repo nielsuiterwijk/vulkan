@@ -270,6 +270,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="graphics\animations\Animation.cpp" />
     <ClCompile Include="graphics\buffers\CommandBuffer.cpp" />
     <ClCompile Include="graphics\buffers\CommandBufferPool.cpp" />
     <ClCompile Include="graphics\buffers\UniformBuffer.cpp" />
@@ -285,6 +286,7 @@
     <ClCompile Include="graphics\models\importers\stl_loader.cpp" />
     <ClCompile Include="graphics\models\Mesh.cpp" />
     <ClCompile Include="graphics\models\MeshFileLoader.cpp" />
+    <ClCompile Include="graphics\models\SkinnedMesh.cpp" />
     <ClCompile Include="graphics\models\SubMesh.cpp" />
     <ClCompile Include="graphics\PipelineStateObject.cpp" />
     <ClCompile Include="graphics\RenderPass.cpp" />
@@ -315,6 +317,7 @@
     <ClInclude Include="graphics\buffers\CommandBuffer.h" />
     <ClInclude Include="graphics\buffers\CommandBufferPool.h" />
     <ClInclude Include="graphics\buffers\UniformBuffer.h" />
+    <ClInclude Include="graphics\buffers\UniformBufferDefinition.h" />
     <ClInclude Include="graphics\buffers\VulkanBuffer.h" />
     <ClInclude Include="graphics\buffers\VulkanDescriptorPool.h" />
     <ClInclude Include="graphics\DepthBuffer.h" />

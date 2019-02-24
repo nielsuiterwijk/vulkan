@@ -46,6 +46,8 @@
     <ClCompile Include="memory\PoolAllocator.cpp" />
     <ClCompile Include="memory\MemoryUtils.cpp" />
     <ClCompile Include="graphics\memory\VulkanAllocator.cpp" />
+    <ClCompile Include="graphics\models\SkinnedMesh.cpp" />
+    <ClCompile Include="graphics\animations\Animation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -161,5 +163,6 @@
     <ClInclude Include="graphics\animations\Animation.h" />
     <ClInclude Include="helpers\measure\Measure.h" />
     <ClInclude Include="misc\cache_binary.h" />
+    <ClInclude Include="graphics\buffers\UniformBufferDefinition.h" />
   </ItemGroup>
 </Project>

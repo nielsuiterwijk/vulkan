@@ -431,13 +431,13 @@ struct AnimationSampler {
   bool operator==(const AnimationSampler &) const;
 };
 
-struct Animation {
+struct BoneAnimation {
   std::string name;
   std::vector<AnimationChannel> channels;
   std::vector<AnimationSampler> samplers;
   Value extras;
 
-  bool operator==(const Animation &) const;
+  bool operator==(const BoneAnimation &) const;
 };
 
 struct Skin {
@@ -766,7 +766,7 @@ class Model {
   bool operator==(const Model &) const;
 
   std::vector<Accessor> accessors;
-  std::vector<Animation> animations;
+  std::vector<BoneAnimation> animations;
   std::vector<Buffer> buffers;
   std::vector<BufferView> bufferViews;
   std::vector<Material> materials;
@@ -1171,7 +1171,7 @@ bool Accessor::operator==(const Accessor &other) const {
          Equals(this->minValues, other.minValues) && this->name == other.name &&
          this->normalized == other.normalized && this->type == other.type;
 }
-bool Animation::operator==(const Animation &other) const {
+bool BoneAnimation::operator==(const BoneAnimation &other) const {
   return this->channels == other.channels && this->extras == other.extras &&
          this->name == other.name && this->samplers == other.samplers;
 }
@@ -3224,7 +3224,7 @@ static bool ParseAnimationChannel(AnimationChannel *channel, std::string *err,
   return true;
 }
 
-static bool ParseAnimation(Animation *animation, std::string *err,
+static bool ParseAnimation(BoneAnimation *animation, std::string *err,
                            const json &o) {
   {
     json::const_iterator channelsIt = o.find("channels");
@@ -3949,7 +3949,7 @@ bool TinyGLTF::LoadFromString(Model *model, std::string *err, std::string *warn,
           }
           return false;
         }
-        Animation animation;
+        BoneAnimation animation;
         if (!ParseAnimation(&animation, err, it->get<json>())) {
           return false;
         }
@@ -4477,7 +4477,7 @@ static void SerializeGltfAnimationSampler(AnimationSampler &sampler, json &o) {
   }
 }
 
-static void SerializeGltfAnimation(Animation &animation, json &o) {
+static void SerializeGltfAnimation(BoneAnimation &animation, json &o) {
   if (!animation.name.empty())
     SerializeStringProperty("name", animation.name, o);
   json channels;

@@ -64,7 +64,6 @@ int main()
 	}
 
 	FileSystem::Exit();
-	Sleep(3000);
 
 	return EXIT_SUCCESS;
 }

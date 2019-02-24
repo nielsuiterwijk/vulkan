@@ -77,15 +77,15 @@ void PipelineStateObject::Create(std::shared_ptr<Material> material, const std::
 	viewport = {};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = GraphicsContext::WindowSize.x; 
-	viewport.height = GraphicsContext::WindowSize.y; //TODO: Need to be taken as input?
+	viewport.width = static_cast<float>(GraphicsContext::WindowSize.x);
+	viewport.height = static_cast<float>(GraphicsContext::WindowSize.y); //TODO: Need to be taken as input?
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
 	scissor = {};
 	scissor.offset = { 0, 0 };
-	scissor.extent.width = viewport.width;
-	scissor.extent.height = viewport.height;
+	scissor.extent.width = static_cast<uint32_t>(viewport.width);
+	scissor.extent.height = static_cast<uint32_t>(viewport.height);
 
 	viewportState = {};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -196,8 +196,8 @@ void PipelineStateObject::SetViewPort(int width, int height)
 
 	scissor = {};
 	scissor.offset = { 0, 0 };
-	scissor.extent.width = viewport.width;
-	scissor.extent.height = viewport.height;
+	scissor.extent.width = static_cast<uint32_t>(viewport.width);
+	scissor.extent.height = static_cast<uint32_t>(viewport.height);
 
 	viewportState = {};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

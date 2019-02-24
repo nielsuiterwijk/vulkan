@@ -154,8 +154,12 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 			skinnedMesh->AddBone(bone);
 		}
 
+
+		std::vector<Animation> animations;
+		animations.reserve(model.animations.size());
+
 		//Load Animations
-		for (const tinygltf::Animation& gltfAnimation : model.animations)
+		for (const tinygltf::BoneAnimation& gltfAnimation : model.animations)
 		{
 			std::string name = gltfAnimation.name;
 			const  std::vector<tinygltf::AnimationChannel>& channels = gltfAnimation.channels;
@@ -163,8 +167,9 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 			assert((gltfAnimation.channels.size() % 3) == 0);
 
-			std::vector<Animation> animations;
-			animations.reserve(gltfAnimation.channels.size() / 3);
+			std::vector<float> keyFrames;
+			std::vector<BoneAnimation> boneAnimations;
+			boneAnimations.reserve(gltfAnimation.channels.size() / 3);
 			
 			for (const tinygltf::AnimationChannel& channel : gltfAnimation.channels)
 			{
@@ -185,20 +190,21 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 				const float* inputBuffer = reinterpret_cast<const float *>(&(model.buffers[inputBufferView.buffer].data[timePointAccessor.byteOffset + inputBufferView.byteOffset]));
 				const float* outputBuffer = reinterpret_cast<const float *>(&(model.buffers[outputBufferView.buffer].data[frameValueAccessor.byteOffset + outputBufferView.byteOffset]));
 
-				Animation* animation = nullptr;
+				BoneAnimation* animation = nullptr;
 
-				for (Animation& existingAnimation : animations)
+				for (BoneAnimation& existingAnimation : boneAnimations)
 				{
 					if (existingAnimation.targetBone == channel.target_node)
 					{
 						animation = &existingAnimation;
+						break;
 					}
 				}
 
 				if (animation == nullptr)
 				{
-					animations.emplace_back(Animation{});
-					animation = &animations[animations.size() - 1];
+					boneAnimations.emplace_back(BoneAnimation{});
+					animation = &boneAnimations[boneAnimations.size() - 1];
 
 					animation->keyFrames.reserve(timePointAccessor.count);
 					animation->translations.reserve(frameValueAccessor.count);
@@ -211,7 +217,7 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 					}
 
 					animation->name = gltfAnimation.name;
-					animation->name += "(" + std::to_string(animations.size()) + ")";
+					animation->name += "(" + std::to_string(boneAnimations.size()) + ")";
 
 					animation->targetBone = channel.target_node;
 
@@ -255,7 +261,11 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 				}
 
 			}
+
+			animations.emplace_back(boneAnimations);
 		}
+
+		skinnedMesh->SetAnimation(animations);
 
 		//Load Skins
 		for (const tinygltf::Skin& source : model.skins)
@@ -283,6 +293,7 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 			skinnedMesh->AddSkin(skinInfo);
 		}
+
 	}
 
 }

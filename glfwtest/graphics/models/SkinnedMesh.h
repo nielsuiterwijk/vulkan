@@ -4,8 +4,8 @@
 #include "Mesh.h"
 #include "graphics/animations/Animation.h"
 
-#define MAX_BONES 64
-#define MAX_BONES_PER_VERTEX 4
+#include "graphics/buffers/UniformBufferDefinition.h"
+
 
 // Per-vertex bone IDs and weights
 struct VertexBoneData
@@ -14,7 +14,7 @@ struct VertexBoneData
 	std::array<float, MAX_BONES_PER_VERTEX> weights {};
 	int idx = 0;
 
-	// Ad bone weighting to vertex info
+	// Add bone weighting to vertex info
 	void Add(uint32_t boneID, float weight)
 	{
 		if (idx >= MAX_BONES_PER_VERTEX)
@@ -48,6 +48,8 @@ class SkinnedMesh : public Mesh
 public:
 	virtual MeshType GetMeshType() const { return MeshType::Skinned; }
 
+	void Update(float delta);
+
 	void AddBone(BoneInfo boneInfo)
 	{
 		bones.emplace_back(boneInfo); 
@@ -57,9 +59,22 @@ public:
 	{
 		skins.emplace_back(skinInfo);
 	}
+	
+	void SetAnimation(const std::vector<Animation>& newAnimations )
+	{
+		animations = newAnimations;
+	}
+
+private:
 
 private:
 	std::vector<BoneInfo> bones;
 	std::vector<SkinInfo> skins;
+	std::vector<Animation> animations;
+
+	Animation* selectedAnimation = nullptr;
+
+	SkinnedMeshBuffer ubo = {};
+
 	//std::vector<int32_t> boneHierarchy;
 };

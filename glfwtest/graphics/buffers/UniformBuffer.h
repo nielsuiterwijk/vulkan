@@ -6,13 +6,6 @@
 #include "graphics/buffers/VulkanDescriptorPool.h"
 
 
-struct CameraUBO
-{
-	glm::mat4 model;
-	glm::mat4 view;
-	glm::mat4 proj;
-};
-
 //A small wrapper class that owns the concrete ubo
 class UniformBuffer
 {

@@ -5,6 +5,7 @@
 #include "graphics/buffers/CommandBuffer.h"
 #include "graphics/PipelineStateObject.h"
 #include "graphics/buffers/UniformBuffer.h"
+#include "graphics/buffers/UniformBufferDefinition.h"
 
 class SkinnedMesh;
 
