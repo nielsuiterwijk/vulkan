@@ -366,9 +366,9 @@ void RavenApp::Run()
 	std::thread renderThread(RavenApp::RenderThread, this);
 #endif
 
-	float rotation = 86;
-	float translationY = -1.4f;
-	float scale = 0.02f;
+	float rotation = 310;
+	float translationY = 0;
+	float scale = 1;
 
 	while (!glfwWindowShouldClose(window))
 	{

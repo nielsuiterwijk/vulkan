@@ -29,6 +29,7 @@ struct VertexBoneData
 // Stores information on a single bone
 struct BoneInfo
 {
+	std::vector<int32_t> children;
 	glm::mat4 offset;
 	glm::mat4 finalTransformation;
 };
@@ -75,6 +76,8 @@ private:
 	Animation* selectedAnimation = nullptr;
 
 	SkinnedMeshBuffer ubo = {};
+
+	float time;
 
 	//std::vector<int32_t> boneHierarchy;
 };

@@ -1,7 +1,33 @@
 #include "Animation.h"
 
+#include "graphics/models/SkinnedMesh.h"
 
-int32_t Animation::CalculateFrame(float time, const BoneAnimation& boneAnimation)
+// Get node hierarchy for current animation time
+void Animation::ReadNodeHierarchy(float AnimationTime, int32_t rootBone, std::vector<BoneInfo>& bones, const glm::mat4& parentTransform) const
+{
+	BoneInfo& boneInfo = bones[rootBone];
+	const BoneAnimation& boneAnimation = boneAnimationFrames[rootBone];
+
+	std::string NodeName(boneAnimation.name);
+	// Get interpolated matrices between current and next frame
+	glm::mat4 matScale = interpolateScale(AnimationTime, boneAnimation);
+	glm::mat4 matRotation = interpolateRotation(AnimationTime, boneAnimation);
+	glm::mat4 matTranslation = interpolateTranslation(AnimationTime, boneAnimation);
+
+	glm::mat4 nodeTransformation = matTranslation * matRotation * matScale;
+
+	glm::mat4 globalTransformation = parentTransform * nodeTransformation;
+
+	boneInfo.finalTransformation = globalTransformation * boneInfo.offset;
+
+	for (uint32_t i = 0; i < boneInfo.children.size(); i++)
+	{
+		ReadNodeHierarchy(AnimationTime, boneInfo.children[i], bones, globalTransformation);
+	}
+}
+
+
+int32_t Animation::CalculateFrame(float time, const BoneAnimation& boneAnimation) const
 {
 	uint32_t frameIndex = 0;
 	for (uint32_t i = 0; i < boneAnimation.keyFrames.size() - 1; i++)
@@ -15,36 +41,8 @@ int32_t Animation::CalculateFrame(float time, const BoneAnimation& boneAnimation
 
 	return frameIndex;
 }
-
-// Get node hierarchy for current animation time
-void Animation::ReadNodeHierarchy(float AnimationTime, int32_t bone, const glm::mat4& parentTransform)
-{
-	const BoneAnimation& boneAnimation = boneAnimationFrames[bone];
-
-	std::string NodeName(boneAnimation.name);
-	// Get interpolated matrices between current and next frame
-	glm::mat4 matScale = interpolateScale(AnimationTime, boneAnimation);
-	glm::mat4 matRotation = interpolateRotation(AnimationTime, boneAnimation);
-	glm::mat4 matTranslation = interpolateTranslation(AnimationTime, boneAnimation);
-
-	glm::mat4 nodeTransformation = matTranslation * matRotation * matScale;
-
-	glm::mat4 globalTransformation = parentTransform * nodeTransformation;
-
-	/*if (boneMapping.find(NodeName) != boneMapping.end())
-	{
-		uint32_t BoneIndex = boneMapping[NodeName];
-		boneInfo[BoneIndex].finalTransformation = globalInverseTransform * GlobalTransformation * boneInfo[BoneIndex].offset;
-	}
-
-	for (uint32_t i = 0; i < pNode->mNumChildren; i++)
-	{
-		readNodeHierarchy(AnimationTime, pNode->mChildren[i], globalTransformation);
-	}*/
-}
-
 // Returns a 4x4 matrix with interpolated translation between current and next frame
-glm::mat4 Animation::interpolateTranslation(float time, const BoneAnimation& boneAnimation)
+glm::mat4 Animation::interpolateTranslation(float time, const BoneAnimation& boneAnimation) const
 {
 	glm::vec3 translation;
 
@@ -71,7 +69,7 @@ glm::mat4 Animation::interpolateTranslation(float time, const BoneAnimation& bon
 	return glm::translate(translation);
 }
 
-glm::mat4 Animation::interpolateScale(float time, const BoneAnimation & boneAnimation)
+glm::mat4 Animation::interpolateScale(float time, const BoneAnimation & boneAnimation) const
 {
 	glm::vec3 scale;
 
@@ -99,7 +97,7 @@ glm::mat4 Animation::interpolateScale(float time, const BoneAnimation & boneAnim
 }
 
 // Returns a 4x4 matrix with interpolated rotation between current and next frame
-glm::mat4 Animation::interpolateRotation(float time, const BoneAnimation& boneAnimation)
+glm::mat4 Animation::interpolateRotation(float time, const BoneAnimation& boneAnimation) const
 {
 	glm::quat rotation;
 

@@ -1,32 +1,31 @@
 #include "SkinnedMesh.h"
 
-void SkinnedMesh::Update(float Delta)
+void SkinnedMesh::Update(float delta)
 {
+	if (animations.size() == 0 || skins.size() == 0)
+		return;
+
+	const Animation& animation = animations[0];
+	const SkinInfo skin = skins[0];
+
+	time += delta;
+
 	// Update bones
-/*	float TicksPerSecond = (float)(scene->mAnimations[0]->mTicksPerSecond != 0 ? scene->mAnimations[0]->mTicksPerSecond : 25.0f);
+	constexpr float TicksPerSecond = 25.0f; //todo read from gltf
+	constexpr float Duration = 2.0f; //todo read from gltf
 	float TimeInTicks = time * TicksPerSecond;
-	float AnimationTime = fmod(TimeInTicks, (float)scene->mAnimations[0]->mDuration);
+	float AnimationTime = fmod(TimeInTicks, Duration); //todo read from gltf
 
 	glm::mat4 identity = glm::mat4(	1, 0, 0, 0, 
 									0, 1, 0, 0, 
 									0, 0, 1, 0, 
 									0, 0, 0, 1);
 
-	readNodeHierarchy(AnimationTime, scene->mRootNode, identity);
-
-	for (uint32_t i = 0; i < boneTransforms.size(); i++)
-	{
-		boneTransforms[i] = boneInfo[i].finalTransformation;
-	}
-
+	animation.ReadNodeHierarchy(AnimationTime, skin.rootBone, bones, identity);
+	
 	for (uint32_t i = 0; i < bones.size(); i++)
 	{
-		ubo.bones[i] = glm::transpose(glm::make_mat4(bones[i].finalTransformation));
+		ubo.bones[i] = bones[i].finalTransformation;
 	}
 
-	uniformBuffers.mesh.copyTo(&uboVS, sizeof(uboVS));
-
-	// Update floor animation
-	uboFloor.uvOffset.t -= 0.25f * skinnedMesh->animationSpeed * frameTimer;
-	uniformBuffers.floor.copyTo(&uboFloor, sizeof(uboFloor));*/
 }

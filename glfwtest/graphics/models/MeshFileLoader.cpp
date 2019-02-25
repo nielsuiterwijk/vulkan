@@ -150,6 +150,7 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 			glm::quat rotation = node.rotation.size() == 0 ? glm::vec4(0.0f) : glm::make_vec4(node.rotation.data());
 
 			BoneInfo bone = {};
+			bone.children = node.children;
 			bone.offset = glm::translate(position) * glm::toMat4(rotation) * glm::scale(scale);
 			skinnedMesh->AddBone(bone);
 		}

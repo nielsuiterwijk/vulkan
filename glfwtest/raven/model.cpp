@@ -109,7 +109,7 @@ void Model::Draw(std::shared_ptr<CommandBuffer> commandBuffer)
 		pso.SetVertexLayout(mesh->GetBindingDescription(), mesh->GetAttributeDescriptions());
 		pso.Build();
 	}
-
+	
 	material->GetUniformBuffers()[0]->Upload();
 	
 
