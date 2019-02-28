@@ -1,12 +1,14 @@
 #include "Animation.h"
 
+//#include "helpers/Utility.h"
 #include "graphics/models/SkinnedMesh.h"
 
 // Get node hierarchy for current animation time
-void Animation::ReadNodeHierarchy(float AnimationTime, int32_t rootBone, std::vector<BoneInfo>& bones, const glm::mat4& parentTransform) const
+void Animation::ReadNodeHierarchy(float AnimationTime, int32_t targetBone, std::vector<BoneInfo>& bones, const glm::mat4& parentTransform) const
 {
-	BoneInfo& boneInfo = bones[rootBone];
-	const BoneAnimation& boneAnimation = boneAnimationFrames[rootBone];
+	BoneInfo& boneInfo = bones[targetBone];
+
+	const BoneAnimation& boneAnimation = FindIf(boneAnimationFrames, [targetBone](const BoneAnimation & boneAnimation) { return boneAnimation.targetBone == targetBone; });
 
 	std::string NodeName(boneAnimation.name);
 	// Get interpolated matrices between current and next frame

@@ -1,4 +1,15 @@
 #include "SkinnedMesh.h"
+#include "graphics/buffers/UniformBuffer.h"
+
+SkinnedMesh::SkinnedMesh()
+{
+	ubo = new UniformBuffer({ &skinnedMeshBuffer, sizeof(SkinnedMeshBuffer) });
+}
+
+SkinnedMesh::~SkinnedMesh()
+{
+	delete ubo;
+}
 
 void SkinnedMesh::Update(float delta)
 {
@@ -6,7 +17,7 @@ void SkinnedMesh::Update(float delta)
 		return;
 
 	const Animation& animation = animations[0];
-	const SkinInfo skin = skins[0];
+	const SkinInfo& skin = skins[0];
 
 	time += delta;
 
@@ -25,7 +36,8 @@ void SkinnedMesh::Update(float delta)
 	
 	for (uint32_t i = 0; i < bones.size(); i++)
 	{
-		ubo.bones[i] = bones[i].finalTransformation;
+		skinnedMeshBuffer.bones[i] = bones[i].finalTransformation;
 	}
 
+	ubo->Upload();
 }

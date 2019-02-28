@@ -54,7 +54,7 @@ private:
 	TextureSampler* sampler;
 	Texture2D* imguiFont;
 	UniformBuffer* vulkanUbo;
-	std::shared_ptr<ScaleTranslateUBO> ubo;
+	ScaleTranslateUBO ubo;
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	std::shared_ptr<VertexShader> vertex;

@@ -56,7 +56,7 @@ public:
 	friend class MeshFileLoader;
 	
 	explicit Mesh();
-	~Mesh();
+	virtual ~Mesh();
 	
 	const std::vector<SubMesh*>& GetSubMeshes() const { return subMeshes; }
 

@@ -16,12 +16,9 @@
 
 Model::Model(const std::string& objectFile) : 
 	material(nullptr),
-	camera(nullptr),
 	mesh(nullptr)
 {
 	FileSystem::LoadFileAsync("gameobjects/" + objectFile + ".gameobject", std::bind(&Model::FileLoaded, this, std::placeholders::_1));
-
-	camera = std::make_shared<CameraUBO>();
 }
 
 Model::~Model()
@@ -40,7 +37,7 @@ void Model::FileLoaded(std::vector<char> fileData)
 
 	mesh = std::static_pointer_cast<SkinnedMesh>(MeshFileLoader::Skinned(meshFileName));
 	material = std::make_shared<Material>(materialFileName);
-	material->AddUniformBuffer(new UniformBuffer(camera, sizeof(CameraUBO)));
+	material->AddUniformBuffer(new UniformBuffer( { static_cast<void*>(&camera), sizeof(CameraUBO) } ));
 	
 	std::vector<std::string> texturesJson = jsonObject["textures"];
 
@@ -100,6 +97,9 @@ void Model::Draw(std::shared_ptr<CommandBuffer> commandBuffer)
 	if (!material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded())
 		return;
 
+	mesh->Update(0.01667f);
+
+
 	if (pso.IsDirty())
 	{
 		mesh->BuildDescriptors(material);
@@ -124,9 +124,4 @@ void Model::Draw(std::shared_ptr<CommandBuffer> commandBuffer)
 
 		meshes[i]->Draw(commandBuffer);
 	}
-}
-
-std::shared_ptr<CameraUBO> Model::GetUBO() const
-{
-	return camera;
 }

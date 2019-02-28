@@ -27,6 +27,7 @@ VkDescriptorPool VulkanDescriptorPool::GetNative() const
 	return descriptorPool;
 }
 
+//TODO: This needs to take in material and generate descriptor set based on the generated .vert.json file
 VkDescriptorSet VulkanDescriptorPool::GetDescriptorSet(UniformBuffer* uniformBuffer, Texture2D* texture, TextureSampler* sampler)
 {
 	assert(uniformBuffer != nullptr);

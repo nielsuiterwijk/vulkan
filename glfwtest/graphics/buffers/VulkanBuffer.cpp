@@ -5,7 +5,7 @@
 
 #include <vulkan/vulkan.h>
 
-VulkanBuffer::VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType, void* bufferData, uint32_t size) :
+VulkanBuffer::VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType, void* bufferData, VkDeviceSize size) :
 	nativeMemory(nullptr),
 	deviceBuffer(nullptr),
 	stagingMemory(nullptr),
@@ -203,7 +203,7 @@ void VulkanBuffer::CopyStagingToImage(VkImage image, uint32_t width, uint32_t he
 	FreeStagingBuffer();
 }
 
-void VulkanBuffer::Map(void* bufferData, uint32_t sizeToMap) const
+void VulkanBuffer::Map(void* bufferData, VkDeviceSize sizeToMap) const
 {
 	if (bufferData == nullptr)
 		return;

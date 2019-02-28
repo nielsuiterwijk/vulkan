@@ -164,5 +164,6 @@
     <ClInclude Include="helpers\measure\Measure.h" />
     <ClInclude Include="misc\cache_binary.h" />
     <ClInclude Include="graphics\buffers\UniformBufferDefinition.h" />
+    <ClInclude Include="helpers\Utility.h" />
   </ItemGroup>
 </Project>

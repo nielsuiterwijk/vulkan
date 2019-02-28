@@ -31,7 +31,6 @@ IMGUIVulkan::IMGUIVulkan() :
 	sampler(nullptr),
 	imguiFont(nullptr),
 	vulkanUbo(nullptr),
-	ubo(nullptr),
 	window(nullptr),
 	sizeOfVertexBuffer(0),
 	sizeOfIndexBuffer(0),
@@ -105,13 +104,11 @@ bool IMGUIVulkan::Init(GLFWwindow* window, bool installCallbacks)
 		RavenApp::OnKey.push_back(std::bind(&IMGUIVulkan::KeyCallback, this, _1, _2, _3, _4));
 		RavenApp::OnChar.push_back(std::bind(&IMGUIVulkan::CharCallback, this, _1));
 	}
-
-	ubo = std::make_shared<ScaleTranslateUBO>();
-
+	
 
 	vertex = ShaderCache::GetVertexShader("imgui");
 	fragment = ShaderCache::GetFragmentShader("imgui");
-	vulkanUbo = new UniformBuffer(ubo, sizeof(ScaleTranslateUBO));
+	vulkanUbo = new UniformBuffer( { static_cast<void*>(&ubo), sizeof(ScaleTranslateUBO) } );
 
 	std::vector<VkDynamicState> states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 	psoBasic2D.Create(nullptr, states, false);
@@ -167,9 +164,7 @@ void IMGUIVulkan::Shutdown()
 
 	delete sampler;
 	sampler = nullptr;
-
-	ubo = nullptr;
-
+	
 	delete vulkanUbo;
 	vulkanUbo = nullptr;
 
@@ -372,10 +367,10 @@ void IMGUIVulkan::Render(std::shared_ptr<CommandBuffer> commandBuffer)
 
 	// Setup scale and translation:
 	{
-		ubo->scale.x = 2.0f / io.DisplaySize.x;
-		ubo->scale.y = 2.0f / io.DisplaySize.y;
-		ubo->translate.x = -1.0f;
-		ubo->translate.y = -1.0f;
+		ubo.scale.x = 2.0f / io.DisplaySize.x;
+		ubo.scale.y = 2.0f / io.DisplaySize.y;
+		ubo.translate.x = -1.0f;
+		ubo.translate.y = -1.0f;
 
 		vulkanUbo->Upload();
 	}

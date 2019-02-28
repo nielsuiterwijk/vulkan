@@ -6,6 +6,7 @@
 
 #include "graphics/buffers/UniformBufferDefinition.h"
 
+class UniformBuffer;
 
 // Per-vertex bone IDs and weights
 struct VertexBoneData
@@ -46,27 +47,18 @@ class SkinnedMesh : public Mesh
 {
 	friend class MeshFileLoader;
 
-public:
+public:	
 	virtual MeshType GetMeshType() const { return MeshType::Skinned; }
+
+	SkinnedMesh();
+	virtual ~SkinnedMesh();
 
 	void Update(float delta);
 
-	void AddBone(BoneInfo boneInfo)
-	{
-		bones.emplace_back(boneInfo); 
-	}
-
-	void AddSkin(SkinInfo skinInfo)
-	{
-		skins.emplace_back(skinInfo);
-	}
+	void AddBone(BoneInfo boneInfo) { bones.emplace_back(boneInfo); }
+	void AddSkin(SkinInfo skinInfo) { skins.emplace_back(skinInfo); }
 	
-	void SetAnimation(const std::vector<Animation>& newAnimations )
-	{
-		animations = newAnimations;
-	}
-
-private:
+	void SetAnimation(const std::vector<Animation>& newAnimations ) { animations = newAnimations; }
 
 private:
 	std::vector<BoneInfo> bones;
@@ -75,9 +67,10 @@ private:
 
 	Animation* selectedAnimation = nullptr;
 
-	SkinnedMeshBuffer ubo = {};
+	SkinnedMeshBuffer skinnedMeshBuffer = {};
+	UniformBuffer* ubo = nullptr;
 
-	float time;
+	float time = 0;
 
 	//std::vector<int32_t> boneHierarchy;
 };

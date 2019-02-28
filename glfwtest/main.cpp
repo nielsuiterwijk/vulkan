@@ -35,6 +35,12 @@ int main()
 #endif
 
 	//SearchTest::Run();
+
+	std::vector<int> test = { 0, 5, 10, 15 };
+
+	auto Filter = [=](const int& Offer) -> bool { return Offer == 10; };
+	
+	
 			
 	FileSystem::Start();
 

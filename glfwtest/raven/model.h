@@ -20,7 +20,8 @@ public:
 	void WindowResized(int w, int h);
 	void Draw(std::shared_ptr<CommandBuffer> commandBuffer);
 
-	std::shared_ptr<CameraUBO> GetUBO() const;
+	const CameraUBO& GetUBO() const { return camera; }
+	CameraUBO& AccessUBO() { return camera; }
 private:
 	void FileLoaded(std::vector<char> fileData);
 
@@ -29,7 +30,7 @@ private:
 private:
 	PipelineStateObject pso;
 
-	std::shared_ptr<CameraUBO> camera;
+	CameraUBO camera;
 	std::shared_ptr<SkinnedMesh> mesh;
 	std::shared_ptr<Material> material;
 

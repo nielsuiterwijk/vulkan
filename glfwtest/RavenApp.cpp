@@ -401,7 +401,7 @@ void RavenApp::Run()
 			{
 				static auto startTime = std::chrono::high_resolution_clock::now();
 
-				std::shared_ptr<CameraUBO> camera = model->GetUBO();
+				CameraUBO& camera = model->AccessUBO();
 				
 				auto currentTime = std::chrono::high_resolution_clock::now();
 				float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
@@ -409,15 +409,15 @@ void RavenApp::Run()
 				//renderobject->camera->model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 				//renderobject->camera->model = glm::rotate(renderobject->camera->model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));		
 
-				camera->model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, translationY, 0.0f));
-				camera->model = glm::rotate(camera->model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-				camera->model = glm::scale(camera->model, glm::vec3(scale, scale, scale));
+				camera.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, translationY, 0.0f));
+				camera.model = glm::rotate(camera.model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+				camera.model = glm::scale(camera.model, glm::vec3(scale, scale, scale));
 
-				camera->view = glm::lookAt(glm::vec3(2, 1, 2), glm::vec3(0.0f, 0, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				camera.view = glm::lookAt(glm::vec3(2, 1, 2), glm::vec3(0.0f, 0, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 				//renderobject->camera->view = glm::lookAt(glm::vec3(40.0f, 40.0f, 40.0f), glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 				
-				camera->proj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.01f, 100.0f);
-				camera->proj[1][1] *= -1;
+				camera.proj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.01f, 100.0f);
+				camera.proj[1][1] *= -1;
 			}
 
 			imguiVulkan->NewFrame(delta);
