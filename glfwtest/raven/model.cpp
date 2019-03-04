@@ -119,7 +119,7 @@ void Model::Draw(std::shared_ptr<CommandBuffer> commandBuffer)
 	const std::vector<SubMesh*>& meshes = mesh->GetSubMeshes();
 	for (int i = 0; i < meshes.size(); i++)
 	{
-		VkDescriptorSet set = GraphicsContext::DescriptorPool->GetDescriptorSet(material->GetUniformBuffers()[0], textures[i].get(), material->GetSampler().get());
+		VkDescriptorSet set = GraphicsContext::DescriptorPool->GetDescriptorSet(material, textures[i].get(), material->GetSampler().get());
 		vkCmdBindDescriptorSets(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsContext::PipelineLayout, 0, 1, &set, 0, nullptr);
 
 		meshes[i]->Draw(commandBuffer);

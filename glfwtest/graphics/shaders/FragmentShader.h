@@ -15,5 +15,5 @@ private:
 	void FileLoaded(std::vector<char> fileData);
 
 private:
-	bool isLoaded;
+	bool isLoaded = false;
 };

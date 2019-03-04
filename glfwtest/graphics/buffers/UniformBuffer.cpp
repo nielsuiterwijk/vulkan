@@ -15,5 +15,5 @@ UniformBuffer::~UniformBuffer()
 
 void UniformBuffer::Upload()
 {
-	vulkanBuffer.Map(dataBlock.data);
+	vulkanBuffer.Map(dataBlock.data, dataBlock.size);
 }

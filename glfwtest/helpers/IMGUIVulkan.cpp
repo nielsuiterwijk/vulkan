@@ -8,6 +8,7 @@
 #include "graphics/shaders/FragmentShader.h"
 #include "graphics/shaders/VertexShader.h"
 #include "graphics/buffers/UniformBuffer.h"
+#include "graphics/shaders/material.h"
 
 
 #ifdef _WIN32
@@ -26,8 +27,6 @@ IMGUIVulkan::IMGUIVulkan() :
 	cpuIndex(nullptr),
 	showDemoWindow(true),
 	didRender(true),
-	fragment(nullptr),
-	vertex(nullptr),
 	sampler(nullptr),
 	imguiFont(nullptr),
 	vulkanUbo(nullptr),
@@ -105,11 +104,9 @@ bool IMGUIVulkan::Init(GLFWwindow* window, bool installCallbacks)
 		RavenApp::OnChar.push_back(std::bind(&IMGUIVulkan::CharCallback, this, _1));
 	}
 	
-
-	vertex = ShaderCache::GetVertexShader("imgui");
-	fragment = ShaderCache::GetFragmentShader("imgui");
-	vulkanUbo = new UniformBuffer( { static_cast<void*>(&ubo), sizeof(ScaleTranslateUBO) } );
-
+	material = std::make_shared<Material>("imgui");
+	material->AddUniformBuffer(new UniformBuffer({ static_cast<void*>(&ubo), sizeof(ScaleTranslateUBO) }));
+	   
 	std::vector<VkDynamicState> states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 	psoBasic2D.Create(nullptr, states, false);
 
@@ -165,12 +162,8 @@ void IMGUIVulkan::Shutdown()
 	delete sampler;
 	sampler = nullptr;
 	
-	delete vulkanUbo;
-	vulkanUbo = nullptr;
-
-	vertex = nullptr;
-	fragment = nullptr;
-
+	material = nullptr;
+	
 	delete indexBuffer;
 	delete vertexBuffer;
 	delete[] cpuVertex;
@@ -182,11 +175,11 @@ void IMGUIVulkan::NewFrame(float deltaTime)
 	if (!didRender)
 		return;
 
-	if (vertex->IsLoaded() && fragment->IsLoaded() && psoBasic2D.IsDirty())
+	if (material->IsLoaded() && psoBasic2D.IsDirty())
 	{
 		assert(shaderStages.size() == 0);
-		shaderStages.push_back(vertex->GetShaderStageCreateInfo());
-		shaderStages.push_back(fragment->GetShaderStageCreateInfo());
+		shaderStages.push_back(material->GetVertex()->GetShaderStageCreateInfo());
+		shaderStages.push_back(material->GetFragment()->GetShaderStageCreateInfo());
 
 		psoBasic2D.SetShader(shaderStages);
 		psoBasic2D.SetVertexLayout(binding_desc, attribute_desc);
@@ -342,7 +335,7 @@ void IMGUIVulkan::Render(std::shared_ptr<CommandBuffer> commandBuffer)
 	// Bind pipeline and descriptor sets:
 	{
 		vkCmdBindPipeline(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, psoBasic2D.GetPipeLine());
-		VkDescriptorSet set = GraphicsContext::DescriptorPool->GetDescriptorSet(vulkanUbo, imguiFont, sampler);
+		VkDescriptorSet set = GraphicsContext::DescriptorPool->GetDescriptorSet(material, imguiFont, sampler);
 		vkCmdBindDescriptorSets(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsContext::PipelineLayout, 0, 1, &set, 0, NULL);
 	}
 
@@ -372,7 +365,7 @@ void IMGUIVulkan::Render(std::shared_ptr<CommandBuffer> commandBuffer)
 		ubo.translate.x = -1.0f;
 		ubo.translate.y = -1.0f;
 
-		vulkanUbo->Upload();
+		material->GetUniformBuffers()[0]->Upload();
 	}
 
 

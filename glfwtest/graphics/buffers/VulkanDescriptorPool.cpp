@@ -4,6 +4,7 @@
 #include "graphics/buffers/UniformBuffer.h"
 #include "graphics/textures/Texture2D.h"
 #include "graphics/textures/TextureSampler.h"
+#include "graphics/shaders/Material.h"
 
 
 VulkanDescriptorPool::VulkanDescriptorPool(uint32_t count) :
@@ -28,11 +29,13 @@ VkDescriptorPool VulkanDescriptorPool::GetNative() const
 }
 
 //TODO: This needs to take in material and generate descriptor set based on the generated .vert.json file
-VkDescriptorSet VulkanDescriptorPool::GetDescriptorSet(UniformBuffer* uniformBuffer, Texture2D* texture, TextureSampler* sampler)
+VkDescriptorSet VulkanDescriptorPool::GetDescriptorSet(std::shared_ptr<Material> material, Texture2D* texture, TextureSampler* sampler)
 {
-	assert(uniformBuffer != nullptr);
+	assert(material != nullptr);
 	assert(texture != nullptr);
 	assert(sampler != nullptr);
+
+	UniformBuffer* uniformBuffer = material->GetUniformBuffers()[0];
 
 	assert(uniformBuffer->GetDescriptorInfo().buffer != nullptr);
 

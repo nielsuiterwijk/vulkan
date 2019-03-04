@@ -6,6 +6,7 @@
 class UniformBuffer;
 class Texture2D;
 class TextureSampler;
+class Material;
 
 class VulkanDescriptorPool
 {
@@ -15,7 +16,7 @@ public:
 
 	VkDescriptorPool GetNative() const;
 
-	VkDescriptorSet GetDescriptorSet(UniformBuffer* uniformBuffer, Texture2D* texture, TextureSampler* sampler);
+	VkDescriptorSet GetDescriptorSet(std::shared_ptr<Material> material, Texture2D* texture, TextureSampler* sampler);
 
 	uint32_t GetCurrentIndex() const { return currentIndex; }
 

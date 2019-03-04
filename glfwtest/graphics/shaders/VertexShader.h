@@ -32,7 +32,7 @@ private:
 	void MetaLoaded(std::vector<char> fileData);
 
 private:
-	std::atomic_int32_t filesLeft;
+	std::atomic_int32_t filesLeft = 0;
 
 	std::vector<ShaderInput> inputs;
 };

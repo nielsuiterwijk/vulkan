@@ -28,7 +28,7 @@ public:
 	virtual bool IsLoaded() const = 0;
 	
 protected:
-	VkPipelineShaderStageCreateInfo shaderInfo;
+	VkPipelineShaderStageCreateInfo shaderInfo = {};
 	InstanceWrapper<VkShaderModule> shaderModule;
 
 };

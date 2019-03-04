@@ -11,6 +11,7 @@ class TextureSampler;
 class VulkanBuffer;
 class VertexShader;
 class FragmentShader;
+class Material;
 
 
 //Adopted from: https://github.com/ocornut/imgui/tree/master/examples/vulkan_example
@@ -56,9 +57,9 @@ private:
 	UniformBuffer* vulkanUbo;
 	ScaleTranslateUBO ubo;
 
+	std::shared_ptr<Material> material;
+
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-	std::shared_ptr<VertexShader> vertex;
-	std::shared_ptr<FragmentShader> fragment;
 
 	PipelineStateObject psoBasic2D;
 
