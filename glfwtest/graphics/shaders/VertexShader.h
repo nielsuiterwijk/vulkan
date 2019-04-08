@@ -27,12 +27,20 @@ public:
 	void GetBindingDescription(VkVertexInputBindingDescription& bindingDescription);
 	void GetAttributeDescriptions(std::vector<VkVertexInputAttributeDescription>& attributeDescriptions);
 
+	const std::vector<VkDescriptorBufferInfo>& GetBufferDescriptors() const { return bufferDescriptors;  }
+
 private:
 	void ShaderLoaded(std::vector<char> fileData);
 	void MetaLoaded(std::vector<char> fileData);
 
 private:
 	std::atomic_int32_t filesLeft = 0;
+	
+	std::vector<VkDescriptorBufferInfo> bufferDescriptors;
 
 	std::vector<ShaderInput> inputs;
+
+#if DEBUG
+	std::string shaderFileName;
+#endif
 };

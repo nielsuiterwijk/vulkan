@@ -30,5 +30,5 @@ private:
 
 	std::vector<VkDescriptorSet> descriptorSets;
 
-	uint32_t currentIndex;
+	size_t currentIndex;
 };

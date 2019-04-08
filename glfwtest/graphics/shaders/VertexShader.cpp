@@ -10,6 +10,9 @@ VertexShader::VertexShader(const std::string& fileName) :
 	Shader(),
 	filesLeft(2)
 {
+#if DEBUG 
+	shaderFileName = "shaders/" + fileName;
+#endif
 	FileSystem::LoadFileAsync("shaders/" + fileName + ".vert.spv", std::bind(&VertexShader::ShaderLoaded, this, std::placeholders::_1));
 	FileSystem::LoadFileAsync("shaders/" + fileName + ".vert.json", std::bind(&VertexShader::MetaLoaded, this, std::placeholders::_1));
 }
@@ -49,13 +52,35 @@ void VertexShader::MetaLoaded(std::vector<char> fileData)
 	auto jsonObject = json::parse(fileContents);
 
 	auto inputsJson = jsonObject["inputs"];
-
+	inputs.reserve(inputsJson.size());
 	for (int i = 0; i < inputsJson.size(); i++)
 	{
 		auto object = inputsJson[i];
 
 		inputs.emplace_back(object);
 	}
+
+	auto ubos = jsonObject["ubos"];
+	bufferDescriptors.reserve(ubos.size());
+
+	for (int i = 0; i < ubos.size(); i++)
+	{
+		auto object = ubos[i];
+		/*	"type" : "_43",
+			"name" : "Bones",
+			"block_size" : 4176,
+			"set" : 0,
+			"binding" : 1	*/
+
+		VkDescriptorBufferInfo bufferInfo;
+		bufferInfo.buffer = nullptr;
+		bufferInfo.offset = 0;
+		bufferInfo.range = static_cast<VkDeviceSize>(object["block_size"]);
+
+		bufferDescriptors.emplace_back(bufferInfo);
+	}
+
+	
 
 	std::sort(std::begin(inputs), std::end(inputs), [](const ShaderInput& a, const ShaderInput& b) {return a.location < b.location; });
 

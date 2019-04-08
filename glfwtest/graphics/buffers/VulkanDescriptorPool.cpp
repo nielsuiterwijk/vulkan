@@ -5,6 +5,7 @@
 #include "graphics/textures/Texture2D.h"
 #include "graphics/textures/TextureSampler.h"
 #include "graphics/shaders/Material.h"
+#include "graphics/shaders/VertexShader.h"
 
 
 VulkanDescriptorPool::VulkanDescriptorPool(uint32_t count) :
@@ -39,6 +40,11 @@ VkDescriptorSet VulkanDescriptorPool::GetDescriptorSet(std::shared_ptr<Material>
 
 	assert(uniformBuffer->GetDescriptorInfo().buffer != nullptr);
 
+
+	//Problem is that vertex shader knows how many buffers and how large they are, but the actual data of the buffers is located in different places..
+	//std::vector<VkDescriptorBufferInfo> a = material->GetVertex()->GetBufferDescriptors();
+
+
 	VkDescriptorSet destinationDescriptorSet = descriptorSets[currentIndex];
 	currentIndex = (currentIndex + 1) % descriptorSets.size();
 
@@ -50,6 +56,7 @@ VkDescriptorSet VulkanDescriptorPool::GetDescriptorSet(std::shared_ptr<Material>
 	uboSet.pBufferInfo = &uniformBuffer->GetDescriptorInfo();
 	uboSet.dstBinding = 0;
 
+	
 	VkDescriptorImageInfo samplerDescription = {};
 	samplerDescription.sampler = sampler->GetNative();
 	samplerDescription.imageView = texture->GetImageView();

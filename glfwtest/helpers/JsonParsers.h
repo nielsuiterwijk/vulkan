@@ -1,8 +1,5 @@
 #pragma once
 
-#include "standard.h"
-
-
 void to_json(json& j, const ShaderInput& shaderInput) 
 {
 	throw std::runtime_error("to_json is not implemented");

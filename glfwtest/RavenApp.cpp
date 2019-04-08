@@ -126,11 +126,7 @@ bool RavenApp::Initialize()
 
 	GraphicsContext::GlobalAllocator.PrintStats();
 	VkResult result = glfwCreateWindowSurface(GraphicsContext::VulkanInstance->GetNative(), window, vulkanSwapChain->GetSurface().AllocationCallbacks(), vulkanSwapChain->GetSurface().Replace());
-
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create window surface!");
-	}
+	assert(result == VK_SUCCESS);
 
 	GraphicsDevice::Instance().Initialize(glm::u32vec2(1280, 720), vulkanSwapChain);
 
@@ -147,7 +143,8 @@ bool RavenApp::Initialize()
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.pNext = VK_NULL_HANDLE;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-	vkCreateFence(GraphicsContext::LogicalDevice, &fenceInfo, GraphicsContext::GlobalAllocator.Get(), &renderFence);
+	result = vkCreateFence(GraphicsContext::LogicalDevice, &fenceInfo, GraphicsContext::GlobalAllocator.Get(), &renderFence);
+	assert(result == VK_SUCCESS);
 
 	model = new Model("cesiumman");
 
@@ -163,6 +160,9 @@ void RavenApp::RenderThread(RavenApp* app)
 	GraphicsContext::GlobalAllocator.PrintStats();
 	while (app->run)
 	{
+		if (GraphicsContext::LogicalDevice == nullptr)
+			Sleep(50);
+
 		Render(app);
 	}
 }
@@ -272,6 +272,7 @@ void RavenApp::Render(RavenApp* app)
 			if (result != VK_SUCCESS)
 			{
 				std::cout << "vkWaitForFences error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+				throw std::runtime_error("failed to wait for fences!");
 			}
 
 			vkResetFences(GraphicsContext::LogicalDevice, 1, &app->renderFence);
