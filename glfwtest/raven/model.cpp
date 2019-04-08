@@ -97,8 +97,13 @@ void Model::Draw(std::shared_ptr<CommandBuffer> commandBuffer)
 	if (!material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded())
 		return;
 
-	mesh->Update(0.01667f);
+	mesh->Update(0.0001f);
 
+	if (material->GetUniformBuffers().size() != 2)
+		material->AddUniformBuffer(mesh->AccessUBO());
+	
+	material->UpdateUniformBuffers();
+	
 
 	if (pso.IsDirty())
 	{
@@ -112,7 +117,6 @@ void Model::Draw(std::shared_ptr<CommandBuffer> commandBuffer)
 	
 	material->GetUniformBuffers()[0]->Upload();
 	
-
 	vkCmdBindPipeline(commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine());
 	
 

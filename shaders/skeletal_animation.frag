@@ -1,7 +1,7 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
-layout(binding = 1) uniform sampler2D _albedo;
+layout(set=0, binding = 2) uniform sampler2D _albedo;
 //layout(binding = 2) uniform sampler2D _normal;
 //layout(binding = 3) uniform sampler2D _specular;
 //layout(binding = 4) uniform sampler2D _toonramp;
@@ -10,6 +10,7 @@ layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 vertexNormal;
 layout(location = 3) in vec3 vertexPosition;
+layout(location = 4) in vec2 debugInfo;
 
 layout(location = 0) out vec4 outColor;
 
@@ -51,6 +52,9 @@ void main()
 	vec4 specular = specularHighlight * specColor;
 
 	outColor = ambientColor + (lambert * albedo) + specular;
+	//outColor.b = 0.0;
+	//outColor.g = 0.0;
+	//outColor.r = debugInfo.r;
 	outColor.a = 1;
 
 }

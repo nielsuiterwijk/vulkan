@@ -18,7 +18,7 @@ public:
 
 	VkDescriptorSet GetDescriptorSet(std::shared_ptr<Material> material, Texture2D* texture, TextureSampler* sampler);
 
-	uint32_t GetCurrentIndex() const { return currentIndex; }
+	size_t GetCurrentIndex() const { return currentIndex; }
 
 private:
 	void CreateLayouts();
@@ -26,6 +26,7 @@ private:
 
 private:
 	InstanceWrapper<VkDescriptorPool> descriptorPool;
+
 	InstanceWrapper<VkDescriptorSetLayout> descriptorSetLayout;
 
 	std::vector<VkDescriptorSet> descriptorSets;

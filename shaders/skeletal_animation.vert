@@ -1,14 +1,14 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
-layout(binding = 0) uniform CameraBuffer 
+layout(set=0, binding = 0) uniform CameraBuffer 
 {
     mat4 model;
     mat4 view;
     mat4 proj;
 } camera;
 
-layout(binding = 1) uniform Bones 
+layout(set=0, binding = 1) uniform Bones 
 {
     mat4 model;
     mat4 bones[64];
@@ -27,6 +27,7 @@ layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
 layout(location = 2) out vec3 vertexNormal;
 layout(location = 3) out vec3 vertexPosition;
+layout(location = 4) out vec2 debugInfo;
 
 out gl_PerVertex 
 {
@@ -39,21 +40,38 @@ mat4 boneTransform()
 
   // Weight normalization factor
   float normalizationFactor = 1.0 / (inWeights.x + inWeights.y + inWeights.z + inWeights.w);
+  debugInfo.x = normalizationFactor;
 
   // Weight1 * Bone1 + Weight2 * Bone2
-  ret = normalizationFactor * inWeights.w * skeletal.bones[int(inJoints.w)]
-      + normalizationFactor * inWeights.z * skeletal.bones[int(inJoints.z)];
+  //ret = normalizationFactor * inWeights.w * skeletal.bones[int(inJoints.w)]
+  //    + normalizationFactor * inWeights.z * skeletal.bones[int(inJoints.z)];
+  //    + normalizationFactor * inWeights.y * skeletal.bones[int(inJoints.y)];
+  //    + normalizationFactor * inWeights.x * skeletal.bones[int(inJoints.x)];
+  
+  ret = normalizationFactor * inWeights.x * skeletal.bones[int(inJoints.x)];
       + normalizationFactor * inWeights.y * skeletal.bones[int(inJoints.y)];
-      + normalizationFactor * inWeights.x * skeletal.bones[int(inJoints.x)];
-
-  return ret;
+      + normalizationFactor * inWeights.z * skeletal.bones[int(inJoints.z)];
+      + normalizationFactor * inWeights.w * skeletal.bones[int(inJoints.w)];
+	  
+	return ret;
 }
 
-void main() {
-    gl_Position = camera.proj * camera.view * camera.model * vec4(inPosition, 1.0) * boneTransform();
+void main() 
+{
+	mat4 cameraTransform = camera.view * camera.model;
+	//mat4 boneTransform = mat4(1.0);
+	mat4 boneTransform = boneTransform();
+	
+    vec4 newVertex = cameraTransform * boneTransform * vec4(inPosition, 1.0);
+    vec4 newNormal = cameraTransform * boneTransform * vec4(inNormal, 0.0);
+	
+	newVertex.w = 1.0;
+	newNormal.w = 0.0;
+	
+    gl_Position = camera.proj * newVertex;
 		
-	vec4 a = camera.view * camera.model * vec4(inPosition, 1.0);
-	vec4 b = camera.view * camera.model * vec4(inNormal, 0.0);
+	vec4 a = newVertex;
+	vec4 b = newNormal;
 		
     vertexPosition = a.xyz;
 	vertexNormal = b.xyz;

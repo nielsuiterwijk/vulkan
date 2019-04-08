@@ -63,6 +63,14 @@ void Material::AddUniformBuffer(UniformBuffer* uniformBuffer)
 	uniformBuffers.push_back(uniformBuffer);
 }
 
+void Material::UpdateUniformBuffers()
+{
+	for (UniformBuffer* buffer : uniformBuffers)
+	{
+		buffer->Upload();
+	}
+}
+
 const std::vector<VkPipelineShaderStageCreateInfo>& Material::GetShaderStages()
 {
 	//TODO: Not the right place, should be done on a callback of some sorts.
@@ -74,11 +82,6 @@ const std::vector<VkPipelineShaderStageCreateInfo>& Material::GetShaderStages()
 	}
 
 	return shaderStages;
-}
-
-const std::vector<UniformBuffer*>& Material::GetUniformBuffers() const
-{
-	return uniformBuffers;
 }
 
 bool Material::IsLoaded() const 

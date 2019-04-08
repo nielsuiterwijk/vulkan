@@ -25,6 +25,11 @@
             "type" : "vec4",
             "name" : "fragColor",
             "location" : 0
+        },
+        {
+            "type" : "vec2",
+            "name" : "debugInfo",
+            "location" : 4
         }
     ],
     "outputs" : [
@@ -39,7 +44,7 @@
             "type" : "sampler2D",
             "name" : "_albedo",
             "set" : 0,
-            "binding" : 1
+            "binding" : 2
         }
     ]
 }

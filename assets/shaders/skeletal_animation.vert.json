@@ -6,7 +6,7 @@
         }
     ],
     "types" : {
-        "_43" : {
+        "_49" : {
             "name" : "Bones",
             "members" : [
                 {
@@ -29,16 +29,7 @@
                 }
             ]
         },
-        "_102" : {
-            "name" : "gl_PerVertex",
-            "members" : [
-                {
-                    "name" : "gl_Position",
-                    "type" : "vec4"
-                }
-            ]
-        },
-        "_106" : {
+        "_96" : {
             "name" : "CameraBuffer",
             "members" : [
                 {
@@ -55,6 +46,15 @@
                     "name" : "proj",
                     "type" : "mat4",
                     "offset" : 128
+                }
+            ]
+        },
+        "_135" : {
+            "name" : "gl_PerVertex",
+            "members" : [
+                {
+                    "name" : "gl_Position",
+                    "type" : "vec4"
                 }
             ]
         }
@@ -93,6 +93,11 @@
     ],
     "outputs" : [
         {
+            "type" : "vec2",
+            "name" : "debugInfo",
+            "location" : 4
+        },
+        {
             "type" : "vec3",
             "name" : "vertexPosition",
             "location" : 3
@@ -115,14 +120,14 @@
     ],
     "ubos" : [
         {
-            "type" : "_43",
+            "type" : "_49",
             "name" : "Bones",
             "block_size" : 4176,
             "set" : 0,
             "binding" : 1
         },
         {
-            "type" : "_106",
+            "type" : "_96",
             "name" : "CameraBuffer",
             "block_size" : 192,
             "set" : 0,

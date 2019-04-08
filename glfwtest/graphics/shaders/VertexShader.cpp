@@ -62,6 +62,11 @@ void VertexShader::MetaLoaded(std::vector<char> fileData)
 
 	auto ubos = jsonObject["ubos"];
 	bufferDescriptors.reserve(ubos.size());
+	for (int i = 0; i < ubos.size(); i++)
+	{
+		VkDescriptorBufferInfo bufferInfo;
+		bufferDescriptors.emplace_back(bufferInfo);
+	}
 
 	for (int i = 0; i < ubos.size(); i++)
 	{
@@ -72,12 +77,10 @@ void VertexShader::MetaLoaded(std::vector<char> fileData)
 			"set" : 0,
 			"binding" : 1	*/
 
-		VkDescriptorBufferInfo bufferInfo;
+		VkDescriptorBufferInfo& bufferInfo = bufferDescriptors[object["binding"]];
 		bufferInfo.buffer = nullptr;
 		bufferInfo.offset = 0;
 		bufferInfo.range = static_cast<VkDeviceSize>(object["block_size"]);
-
-		bufferDescriptors.emplace_back(bufferInfo);
 	}
 
 	

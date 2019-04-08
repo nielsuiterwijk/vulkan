@@ -142,7 +142,8 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 		if (model.skins.size() > 0)
 			rootNode = model.nodes[model.skins[0].skeleton];
 
-		//Load Nodes
+		//Load Nodes 
+		//TODO: Load these in recursive following https://github.com/SaschaWillems/Vulkan-glTF-PBR/blob/master/base/VulkanglTFModel.hpp line 658
 		for (const tinygltf::Node& node : model.nodes)
 		{
 			glm::vec3 position = node.translation.size() == 0 ? glm::vec3(0.0f) : glm::make_vec3(node.translation.data());
@@ -151,7 +152,12 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 			BoneInfo bone = {};
 			bone.children = node.children;
-			bone.offset = glm::translate(position) * glm::toMat4(rotation) * glm::scale(scale);
+			bone.localTransform = glm::translate(position) * glm::toMat4(rotation) * glm::scale(scale);
+
+			//bone.localTransform = glm::translate(glm::mat4(1.0f), position) * glm::mat4(rotation) * glm::scale(glm::mat4(1.0f), scale);
+
+			//bone.localTransform = glm::scale(scale) * glm::toMat4(rotation) * glm::translate(position);
+			bone.finalTransformation = bone.localTransform;
 			skinnedMesh->AddBone(bone);
 		}
 
@@ -272,7 +278,7 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 		for (const tinygltf::Skin& source : model.skins)
 		{
 			SkinInfo skinInfo = {};
-			//newSkin->name = source.name;
+			skinInfo.name = source.name;
 
 			// Find skeleton root node
 			if (source.skeleton > -1) 
@@ -281,16 +287,66 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 			}
 
 			skinInfo.joints = source.joints;
-			
+
+
 			// Get inverse bind matrices from buffer
 			if (source.inverseBindMatrices > -1) 
 			{
+				constexpr int mat4Size = sizeof(glm::mat4);
+
 				const tinygltf::Accessor& accessor = model.accessors[source.inverseBindMatrices];
 				const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
 				const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-				skinInfo.inverseBindMatrices.resize(accessor.count);
-				memcpy(skinInfo.inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
+
+
+
+				std::vector<glm::mat4> inverseBindMatrices;
+				inverseBindMatrices.resize(accessor.count);
+
+				/*
+				const float* bindMatrices = reinterpret_cast<const float*>(&buffer.data[bufferView.byteOffset + accessor.byteOffset]);
+				for (size_t i = 0; i < accessor.count; ++i) 
+				{
+					int offset = i * 16;
+
+					float a1 = bindMatrices[offset + 0];
+					float b1 = bindMatrices[offset + 1];
+					float c1 = bindMatrices[offset + 2];
+					float d1 = bindMatrices[offset + 3];
+
+					float a2 = bindMatrices[offset + 4];
+					float b2 = bindMatrices[offset + 5];
+					float c2 = bindMatrices[offset + 6];
+					float d2 = bindMatrices[offset + 7];
+
+					float a3 = bindMatrices[offset + 8];
+					float b3 = bindMatrices[offset + 9];
+					float c3 = bindMatrices[offset + 10];
+					float d3 = bindMatrices[offset + 11];
+
+					float a4 = bindMatrices[offset + 12];
+					float b4 = bindMatrices[offset + 13];
+					float c4 = bindMatrices[offset + 14];
+					float d4 = bindMatrices[offset + 15];
+
+					glm::mat4 invBindMat(a1, b1, c1, d1,
+										 a2, b2, c2, d2,
+										 a3, b3, c3, d3, 
+										 a4, b4, c4, d4 );
+
+					inverseBindMatrices[i] = invBindMat;
+				}*/
+
+				memcpy(inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * mat4Size);
+
+				int skinJointIndex = 0;
+				for (int jointId : source.joints)
+				{
+					skinnedMesh->bones[jointId].inverseBindMatrix = inverseBindMatrices[skinJointIndex];
+					skinJointIndex++;
+				}
 			}
+
 
 			skinnedMesh->AddSkin(skinInfo);
 		}

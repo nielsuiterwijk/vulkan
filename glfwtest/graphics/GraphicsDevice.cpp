@@ -75,7 +75,8 @@ void GraphicsDevice::Initialize(const glm::u32vec2& windowSize, std::shared_ptr<
 		eventInfo.flags = 0;
 		eventInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
 
-		vkCreateEvent(GraphicsContext::LogicalDevice, &eventInfo, GraphicsContext::GlobalAllocator.Get(), &GraphicsContext::TransportEvent);
+		VkResult result = vkCreateEvent(GraphicsContext::LogicalDevice, &eventInfo, GraphicsContext::GlobalAllocator.Get(), &GraphicsContext::TransportEvent);
+		assert(result == VK_SUCCESS);
 	}
 	
 	GraphicsContext::DeviceAllocator = new GPUAllocator(16 * 1024 * 1024, 8);

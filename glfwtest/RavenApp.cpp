@@ -250,7 +250,7 @@ void RavenApp::Render(RavenApp* app)
 			//app->renderobject->PrepareDraw(commandBuffer);
 			app->model->Draw(commandBuffer);
 
-			app->imguiVulkan->Render(commandBuffer);
+			//app->imguiVulkan->Render(commandBuffer);
 
 			{
 				vkCmdEndRenderPass(commandBuffer->GetNative());
@@ -272,7 +272,8 @@ void RavenApp::Render(RavenApp* app)
 			if (result != VK_SUCCESS)
 			{
 				std::cout << "vkWaitForFences error: " << Vulkan::GetVkResultAsString(result) << std::endl;
-				throw std::runtime_error("failed to wait for fences!");
+				//assert(false && "failed to wait for fences!");
+				goto crap;
 			}
 
 			vkResetFences(GraphicsContext::LogicalDevice, 1, &app->renderFence);
@@ -300,11 +301,12 @@ void RavenApp::Render(RavenApp* app)
 			if (result != VK_SUCCESS)
 			{
 				std::cout << "vkQueueSubmit error: " << Vulkan::GetVkResultAsString(result) << std::endl;
-				throw std::runtime_error("failed to submit draw command buffer!");
+				assert(false && "failed to submit draw command buffer!");
 			}
 		}
 		GraphicsContext::QueueLock.unlock();
 
+crap:
 
 		//Sleep(4);
 		app->renderQueuTimer.Stop();
@@ -331,7 +333,7 @@ void RavenApp::Render(RavenApp* app)
 			else if (result != VK_SUCCESS)
 			{
 				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
-				throw std::runtime_error("failed to present!");
+				assert(false && "failed to present!");
 			}
 		}
 		GraphicsContext::QueueLock.unlock();
@@ -421,7 +423,7 @@ void RavenApp::Run()
 				camera.proj[1][1] *= -1;
 			}
 
-			imguiVulkan->NewFrame(delta);
+			/*imguiVulkan->NewFrame(delta);
 
 			if (imguiVulkan->IsReady())
 			{
@@ -432,7 +434,7 @@ void RavenApp::Run()
 				ImGui::DragFloat("Scale", &scale, 0.0001f);
 
 				ImGui::End();
-			}
+			}*/
 				
 			statsTimer += delta;
 

@@ -18,10 +18,11 @@ public:
 	~Material();
 
 	void AddUniformBuffer(UniformBuffer* uniformBuffer);
+	void UpdateUniformBuffers();
 
 	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages();
 
-	const std::vector<UniformBuffer*>& GetUniformBuffers() const;
+	const std::vector<UniformBuffer*>& GetUniformBuffers() const { return uniformBuffers; }
 
 	std::shared_ptr<TextureSampler> GetSampler() const { return sampler; }
 	std::shared_ptr<Texture2D> GetTexture() const { return texture; }
