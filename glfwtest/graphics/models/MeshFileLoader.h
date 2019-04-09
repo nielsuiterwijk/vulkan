@@ -34,7 +34,7 @@ public:
 private:
 	static void FileLoaded(std::vector<char> fileData, std::shared_ptr<Mesh> mesh, MeshFileType::Enum fileType);
 
-	static void LoadNode(BoneInfo* parent, const tinygltf::Node& node, uint32_t nodeIndex, const tinygltf::Model& model, std::shared_ptr<SkinnedMesh> skinnedMesh);
+	static void LoadNode(BoneInfo* parent, uint32_t nodeIndex, const tinygltf::Model& model, std::shared_ptr<SkinnedMesh> skinnedMesh);
 	static void LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh> meshDestination);
 	static void GLTFStaticMesh(const tinygltf::Model* model, std::shared_ptr<Mesh> meshDestination);
 

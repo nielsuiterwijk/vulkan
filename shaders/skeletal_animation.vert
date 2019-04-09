@@ -42,12 +42,7 @@ mat4 boneTransform()
   float normalizationFactor = 1.0 / (inWeights.x + inWeights.y + inWeights.z + inWeights.w);
   debugInfo.x = normalizationFactor;
 
-  // Weight1 * Bone1 + Weight2 * Bone2
-  //ret = normalizationFactor * inWeights.w * skeletal.bones[int(inJoints.w)]
-  //    + normalizationFactor * inWeights.z * skeletal.bones[int(inJoints.z)];
-  //    + normalizationFactor * inWeights.y * skeletal.bones[int(inJoints.y)];
-  //    + normalizationFactor * inWeights.x * skeletal.bones[int(inJoints.x)];
-  
+  // Weight1 * Bone1 + Weight2 * Bone2  
   ret = normalizationFactor * inWeights.x * skeletal.bones[int(inJoints.x)];
       + normalizationFactor * inWeights.y * skeletal.bones[int(inJoints.y)];
       + normalizationFactor * inWeights.z * skeletal.bones[int(inJoints.z)];
@@ -62,13 +57,18 @@ void main()
 	//mat4 boneTransform = mat4(1.0);
 	mat4 boneTransform = boneTransform();
 	
+	
+	//gl_Position = camera.proj * cameraTransform * vec4(inPosition, 1.0) * boneTransform;
+	
     vec4 newVertex = cameraTransform * boneTransform * vec4(inPosition, 1.0);
     vec4 newNormal = cameraTransform * boneTransform * vec4(inNormal, 0.0);
+	
+	
+	gl_Position = camera.proj * newVertex;
 	
 	newVertex.w = 1.0;
 	newNormal.w = 0.0;
 	
-    gl_Position = camera.proj * newVertex;
 		
 	vec4 a = newVertex;
 	vec4 b = newNormal;

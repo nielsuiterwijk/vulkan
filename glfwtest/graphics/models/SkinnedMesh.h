@@ -30,10 +30,18 @@ struct VertexBoneData
 // Stores information on a single bone
 struct BoneInfo
 {
+	int32_t index = -1;
+	int32_t parent = -1;
 	std::vector<int32_t> children = {};
+
 	glm::mat4 localTransform = {};
 	glm::mat4 finalTransformation = {};
-	glm::mat4 inverseBindMatrix = {};
+	//glm::mat4 inverseBindMatrix = {};
+
+	//animation
+	glm::mat4 matScale = {};
+	glm::mat4 matRotation = {};
+	glm::mat4 matTranslation = {};
 };
 
 struct SkinInfo
@@ -41,6 +49,7 @@ struct SkinInfo
 	std::string name = {};
 	int32_t rootBone = {};
 	std::vector<int32_t> joints = {};
+	std::vector<glm::mat4> inverseBindMatrices = {};
 };
 
 
@@ -61,7 +70,12 @@ public:
 	
 	void SetAnimation(const std::vector<Animation>& newAnimations ) { animations = newAnimations; }
 
-	UniformBuffer* AccessUBO() { return ubo; }
+	UniformBuffer* AccessUBO() { return localMeshUniformBuffer; }
+
+private:
+	glm::mat4 localMatrix(const BoneInfo& bone);
+	glm::mat4 getMatrix(const BoneInfo& bone);
+
 
 private:
 	std::vector<BoneInfo> bones;
@@ -71,7 +85,7 @@ private:
 	Animation* selectedAnimation = nullptr;
 
 	SkinnedMeshBuffer skinnedMeshBuffer = {};
-	UniformBuffer* ubo = nullptr;
+	UniformBuffer* localMeshUniformBuffer = nullptr;
 
 	float time = 0;
 

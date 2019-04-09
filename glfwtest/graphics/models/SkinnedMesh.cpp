@@ -3,21 +3,42 @@
 
 SkinnedMesh::SkinnedMesh()
 {
-	ubo = new UniformBuffer({ &skinnedMeshBuffer, sizeof(SkinnedMeshBuffer) });
+	localMeshUniformBuffer = new UniformBuffer({ &skinnedMeshBuffer, sizeof(SkinnedMeshBuffer) });
 }
 
 SkinnedMesh::~SkinnedMesh()
 {
-	delete ubo;
+	delete localMeshUniformBuffer;
 }
+
+
+glm::mat4 SkinnedMesh::localMatrix(const BoneInfo& bone)
+{
+	return bone.matTranslation * bone.matRotation * bone.matScale * bone.localTransform;
+}
+
+glm::mat4 SkinnedMesh::getMatrix(const BoneInfo& bone)
+{
+	int32_t parentBoneIndex = bone.parent;
+	glm::mat4 returnValue = localMatrix(bone);
+	
+	while (parentBoneIndex >= 0)
+	{
+		const BoneInfo& parentBone = bones[parentBoneIndex];
+		returnValue = localMatrix(parentBone) * returnValue;
+		parentBoneIndex = parentBone.parent;
+	}
+	return returnValue;
+}
+
 
 void SkinnedMesh::Update(float delta)
 {
 	if (animations.size() == 0 || skins.size() == 0)
 		return;
 
-	const Animation & animation = animations[0];
-	const SkinInfo & skin = skins[0];
+	const Animation& animation = animations[0];
+	const SkinInfo& skin = skins[0];
 
 	time += delta;
 
@@ -27,12 +48,23 @@ void SkinnedMesh::Update(float delta)
 	float AnimationTime = fmod(TimeInTicks, Duration); //todo read from gltf
 
 	glm::mat4 identity = {};
-
-	animation.ReadNodeHierarchy(AnimationTime, skin.rootBone, bones, identity);
 	
-	/*jointMatrix(j) = globalTransformOfNodeThatTheMeshIsAttachedTo^-1 * globalTransformOfJointNode(j) * inverseBindMatrixForJoint(j);*/
-	for (uint32_t i = 0; i < bones.size(); i++)
+	animation.ReadNodeHierarchy(AnimationTime, skin.rootBone, bones, identity);
+
+
+	glm::mat4 rootTransform = getMatrix( bones[skin.rootBone] );
+	glm::mat4 inverseRootTransform = glm::inverse(rootTransform);
+
+	glm::mat4 jointMatrix;
+	int32_t a = 0;
+	for (int32_t jointIndex : skin.joints)
 	{
-		skinnedMeshBuffer.bones[i] = bones[i].finalTransformation;
+		const BoneInfo& bone = bones[jointIndex];
+
+		/*jointMatrix(j) = globalTransformOfNodeThatTheMeshIsAttachedTo^-1 * globalTransformOfJointNode(j) * inverseBindMatrixForJoint(j);*/
+		jointMatrix = inverseRootTransform * getMatrix(bone) * skin.inverseBindMatrices[a];
+
+		skinnedMeshBuffer.jointMatrix[jointIndex] = rootTransform * inverseRootTransform;
+		a++;
 	}
 }
