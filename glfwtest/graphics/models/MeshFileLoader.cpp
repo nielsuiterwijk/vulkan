@@ -98,6 +98,41 @@ void MeshFileLoader::FileLoaded(std::vector<char> fileData, std::shared_ptr<Mesh
 	}
 }
 
+namespace
+{
+	void TraverseBones(int32_t targetBone, const std::vector<BoneInfo>& bones, std::vector<int32_t>& boneOrder)
+	{
+		boneOrder.emplace_back(targetBone);
+		const BoneInfo& boneInfo = bones[targetBone];
+
+		for (int32_t child : boneInfo.children)
+		{
+			TraverseBones(child, bones, boneOrder);
+		}
+	}
+}
+
+void MeshFileLoader::LoadNode(BoneInfo* parent, const tinygltf::Node& node, uint32_t nodeIndex, const tinygltf::Model& model, std::shared_ptr<SkinnedMesh> skinnedMesh)
+{
+	glm::vec3 position = node.translation.size() == 0 ? glm::vec3(0.0f) : glm::make_vec3(node.translation.data());
+	glm::vec3 scale = node.scale.size() == 0 ? glm::vec3(1.0f) : glm::make_vec3(node.scale.data());
+	glm::quat rotation = node.rotation.size() == 0 ? glm::vec4(0.0f) : glm::make_vec4(node.rotation.data());
+
+	glm::mat4 transform = node.matrix.size() == 16 ? glm::make_mat4x4(node.matrix.data()) : glm::mat4();
+
+	BoneInfo& bone = skinnedMesh->bones[nodeIndex];
+	bone.children = node.children;
+
+	bone.localTransform = glm::translate(position) * glm::toMat4(rotation) * glm::scale(scale);
+	bone.localTransform *= transform;
+
+	for (int32_t nodeIndex : bone.children) 
+	{
+		LoadNode(&skinnedMesh->bones[nodeIndex], model.nodes[nodeIndex], nodeIndex, model, skinnedMesh);
+	}
+}
+
+
 void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh> meshDestination)
 {
 	tinygltf::Model model;
@@ -142,24 +177,40 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 		if (model.skins.size() > 0)
 			rootNode = model.nodes[model.skins[0].skeleton];
 
-		//Load Nodes 
-		//TODO: Load these in recursive following https://github.com/SaschaWillems/Vulkan-glTF-PBR/blob/master/base/VulkanglTFModel.hpp line 658
 		for (const tinygltf::Node& node : model.nodes)
 		{
+			BoneInfo bone = {};
+			bone.children = node.children;
+			skinnedMesh->AddBone(bone);
+		}
+
+		const tinygltf::Scene& scene = model.scenes[model.defaultScene > -1 ? model.defaultScene : 0];
+		for (int32_t nodeIndex : scene.nodes)
+		{
+			const tinygltf::Node& node = model.nodes[nodeIndex];
+			LoadNode(nullptr, node, nodeIndex, model, skinnedMesh);
+		}
+		//Load Nodes 
+		//TODO: Load these in recursive following https://github.com/SaschaWillems/Vulkan-glTF-PBR/blob/master/base/VulkanglTFModel.hpp line 658
+		/*for (const tinygltf::Node& node : model.nodes)
+		{
+
 			glm::vec3 position = node.translation.size() == 0 ? glm::vec3(0.0f) : glm::make_vec3(node.translation.data());
 			glm::vec3 scale = node.scale.size() == 0 ? glm::vec3(1.0f) : glm::make_vec3(node.scale.data());
 			glm::quat rotation = node.rotation.size() == 0 ? glm::vec4(0.0f) : glm::make_vec4(node.rotation.data());
 
+			glm::mat4 transform = node.matrix.size() == 16 ? glm::make_mat4x4(node.matrix.data()) : glm::mat4();
+
 			BoneInfo bone = {};
 			bone.children = node.children;
-			bone.localTransform = glm::translate(position) * glm::toMat4(rotation) * glm::scale(scale);
+			bone.localTransform = (glm::translate(position) * glm::toMat4(rotation) * glm::scale(scale)) * transform;
 
 			//bone.localTransform = glm::translate(glm::mat4(1.0f), position) * glm::mat4(rotation) * glm::scale(glm::mat4(1.0f), scale);
 
 			//bone.localTransform = glm::scale(scale) * glm::toMat4(rotation) * glm::translate(position);
 			bone.finalTransformation = bone.localTransform;
 			skinnedMesh->AddBone(bone);
-		}
+		}*/
 
 
 		std::vector<Animation> animations;
@@ -288,6 +339,11 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 			skinInfo.joints = source.joints;
 
+			std::vector<int32_t> boneOrder;
+			boneOrder.reserve(source.joints.size());
+			TraverseBones(source.skeleton, skinnedMesh->bones, boneOrder);
+
+			assert(boneOrder == source.joints);
 
 			// Get inverse bind matrices from buffer
 			if (source.inverseBindMatrices > -1) 
