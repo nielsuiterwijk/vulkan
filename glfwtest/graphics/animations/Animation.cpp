@@ -4,48 +4,19 @@
 #include "graphics/models/SkinnedMesh.h"
 
 // Get node hierarchy for current animation time
-void Animation::ReadNodeHierarchy(float AnimationTime, int32_t targetBone, std::vector<BoneInfo>& bones, const glm::mat4& parentTransform) const
+void Animation::ReadNodeHierarchy(float AnimationTime, int32_t targetBone, std::vector<BoneInfo>& bones) const
 {
 	BoneInfo& boneInfo = bones[targetBone];
 
 	const BoneAnimation& boneAnimation = FindIf(boneAnimationFrames, [targetBone](const BoneAnimation & boneAnimation) { return boneAnimation.targetBone == targetBone; });
-
-	std::string NodeName(boneAnimation.name);
-	// Get interpolated matrices between current and next frame
-	//boneInfo.matScale = interpolateScale(AnimationTime, boneAnimation);
-	//boneInfo.matRotation = interpolateRotation(AnimationTime, boneAnimation);
-	//boneInfo.matTranslation = interpolateTranslation(AnimationTime, boneAnimation);
-
+	
 	boneInfo.scale = interpolateScale(AnimationTime, boneAnimation);
 	boneInfo.rotation = interpolateRotation(AnimationTime, boneAnimation);
 	boneInfo.translation = interpolateTranslation(AnimationTime, boneAnimation);
-	
-	glm::mat4 localMatrix = {};
-	
-	/*
-		//		return glm::translate(glm::mat4(1.0f), translation) * glm::mat4(rotation) * glm::scale(glm::mat4(1.0f), scale) * matrix;
-	//	}
-	glm::mat4 localMatrix = {};// matTranslation* matRotation* matScale;
-
-	//https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_020_Skins.md
-	//jointMatrix(j) =
-	//				  globalTransformOfNodeThatTheMeshIsAttachedTo^-1 *
-	//				  globalTransformOfJointNode(j) *
-	//				  inverseBindMatrixForJoint(j);
-					  
-
-	
-	//glm::mat4 jointMat = jointNode->getMatrix() * skin->inverseBindMatrices[i];
-	//jointMat = inverseTransform * jointMat;
-	
-	glm::mat4 globalTransformation = localMatrix * boneInfo.inverseBindMatrix;
-	globalTransformation = glm::inverse(parentTransform) * globalTransformation;
-
-	boneInfo.finalTransformation = globalTransformation * boneInfo.localTransform;
-	*/
+		
 	for (uint32_t i = 0; i < boneInfo.children.size(); i++)
 	{
-		ReadNodeHierarchy(AnimationTime, boneInfo.children[i], bones, localMatrix);
+		ReadNodeHierarchy(AnimationTime, boneInfo.children[i], bones);
 	}
 }
 

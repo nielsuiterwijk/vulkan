@@ -371,7 +371,7 @@ void RavenApp::Run()
 
 	float rotation = 310-70;
 	float translationY = -1;
-	//float scale = 0.25;
+	//float scale = 0.025;
 	float scale = 1;
 
 	while (!glfwWindowShouldClose(window))

@@ -128,7 +128,7 @@ void MeshFileLoader::LoadNode(BoneInfo* parent, uint32_t nodeIndex, const tinygl
 	glm::mat4 transform = node.matrix.size() == 0 ? glm::mat4() : glm::make_mat4x4(node.matrix.data());
 
 	BoneInfo& bone = skinnedMesh->bones[nodeIndex];
-	bone.index = nodeIndex;
+	bone.jointIndex = nodeIndex;
 	bone.children = node.children;
 
 	bone.scale = scale;// glm::scale(glm::mat4(1.0f), scale);
@@ -137,7 +137,7 @@ void MeshFileLoader::LoadNode(BoneInfo* parent, uint32_t nodeIndex, const tinygl
 
 	if (parent != nullptr)
 	{
-		bone.parent = parent->index;
+		bone.parent = parent->jointIndex;
 	}
 
 	//bone.localTransform = glm::translate(position) * glm::toMat4(rotation) * glm::scale(scale);

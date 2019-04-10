@@ -39,21 +39,14 @@ mat4 boneTransform()
   mat4 ret;
 
   // Weight normalization factor
-  float normalizationFactor = 1.0;/// (inWeights.x + inWeights.y + inWeights.z + inWeights.w);
+  float normalizationFactor = 1.0 / (inWeights.x + inWeights.y + inWeights.z + inWeights.w);
   debugInfo.x = normalizationFactor;
-  
-   //ret = normalizationFactor * inWeights.x * skeletal.bones[int(inJoints.x)];
 
   // Weight1 * Bone1 + Weight2 * Bone2  
 	ret = normalizationFactor * inWeights.x * skeletal.bones[int(inJoints.x)];
 	ret += normalizationFactor * inWeights.y * skeletal.bones[int(inJoints.y)];
 	ret += normalizationFactor * inWeights.z * skeletal.bones[int(inJoints.z)];
 	ret += normalizationFactor * inWeights.w * skeletal.bones[int(inJoints.w)];
-  
-   //ret = normalizationFactor * inWeights.w * skeletal.bones[int(inJoints.w)];
-   //ret += normalizationFactor * inWeights.z * skeletal.bones[int(inJoints.z)];
-   //ret += normalizationFactor * inWeights.y * skeletal.bones[int(inJoints.y)];
-   //ret += normalizationFactor * inWeights.x * skeletal.bones[int(inJoints.x)];
 	  
 	return ret;
 }
@@ -61,19 +54,14 @@ mat4 boneTransform()
 void main() 
 {
 	mat4 boneTransform = boneTransform();
-	//mat4 boneTransform = mat4(1.0);
 
-	vec4 locPos = camera.model * skeletal.model * boneTransform * vec4(inPosition, 1.0);
+	vec4 locPos = camera.model * skeletal.model * boneTransform * vec4(inPosition, 1.0);	
 	
-	
+	vertexPosition = locPos.xyz / locPos.w;	
 	vertexNormal = normalize( transpose( inverse( mat3(camera.model * skeletal.model * boneTransform) ) ) * inNormal);
 	
-	//locPos.y = -locPos.y;
-	vertexPosition = locPos.xyz / locPos.w;	
-	
     fragColor = inColor;
-	fragTexCoord = inTexCoord;
-	
+	fragTexCoord = inTexCoord;	
 	
 	gl_Position =  camera.proj * camera.view * vec4(vertexPosition, 1.0);
 }
