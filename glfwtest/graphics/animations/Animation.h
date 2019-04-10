@@ -43,7 +43,7 @@ private:
 	inline int32_t CalculateFrame(float time, const BoneAnimation& boneAnimation) const;
 
 	// Returns a 4x4 matrix with interpolated translation between current and next frame
-	glm::mat4 interpolateTranslation(float time, const BoneAnimation& boneAnimation) const;
-	glm::mat4 interpolateScale(float time, const BoneAnimation& boneAnimation) const;
-	glm::mat4 interpolateRotation(float time, const BoneAnimation& boneAnimation) const;
+	glm::vec3 interpolateTranslation(float time, const BoneAnimation& boneAnimation) const;
+	glm::vec3 interpolateScale(float time, const BoneAnimation& boneAnimation) const;
+	glm::quat interpolateRotation(float time, const BoneAnimation& boneAnimation) const;
 };

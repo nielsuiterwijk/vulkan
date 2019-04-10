@@ -12,9 +12,13 @@ void Animation::ReadNodeHierarchy(float AnimationTime, int32_t targetBone, std::
 
 	std::string NodeName(boneAnimation.name);
 	// Get interpolated matrices between current and next frame
-	boneInfo.matScale = interpolateScale(AnimationTime, boneAnimation);
-	boneInfo.matRotation = interpolateRotation(AnimationTime, boneAnimation);
-	boneInfo.matTranslation = interpolateTranslation(AnimationTime, boneAnimation);
+	//boneInfo.matScale = interpolateScale(AnimationTime, boneAnimation);
+	//boneInfo.matRotation = interpolateRotation(AnimationTime, boneAnimation);
+	//boneInfo.matTranslation = interpolateTranslation(AnimationTime, boneAnimation);
+
+	boneInfo.scale = interpolateScale(AnimationTime, boneAnimation);
+	boneInfo.rotation = interpolateRotation(AnimationTime, boneAnimation);
+	boneInfo.translation = interpolateTranslation(AnimationTime, boneAnimation);
 	
 	glm::mat4 localMatrix = {};
 	
@@ -61,7 +65,7 @@ int32_t Animation::CalculateFrame(float time, const BoneAnimation& boneAnimation
 	return frameIndex;
 }
 // Returns a 4x4 matrix with interpolated translation between current and next frame
-glm::mat4 Animation::interpolateTranslation(float time, const BoneAnimation& boneAnimation) const
+glm::vec3 Animation::interpolateTranslation(float time, const BoneAnimation& boneAnimation) const
 {
 	glm::vec3 translation;
 
@@ -85,10 +89,9 @@ glm::mat4 Animation::interpolateTranslation(float time, const BoneAnimation& bon
 		translation = glm::lerp(start, end, delta);
 	}
 
-	return glm::translate(translation);
+	return translation;
 }
-
-glm::mat4 Animation::interpolateScale(float time, const BoneAnimation & boneAnimation) const
+glm::vec3 Animation::interpolateScale(float time, const BoneAnimation& boneAnimation) const
 {
 	glm::vec3 scale;
 
@@ -112,11 +115,11 @@ glm::mat4 Animation::interpolateScale(float time, const BoneAnimation & boneAnim
 		scale = glm::lerp(start, end, delta);
 	}
 
-	return glm::translate(scale);
+	return scale;
 }
 
 // Returns a 4x4 matrix with interpolated rotation between current and next frame
-glm::mat4 Animation::interpolateRotation(float time, const BoneAnimation& boneAnimation) const
+glm::quat Animation::interpolateRotation(float time, const BoneAnimation& boneAnimation) const
 {
 	glm::quat rotation;
 
@@ -137,8 +140,8 @@ glm::mat4 Animation::interpolateRotation(float time, const BoneAnimation& boneAn
 
 		float delta = (time - startTime) / (nextTime - startTime);
 
-		rotation = glm::slerp(start, end, delta);
+		rotation = glm::normalize(glm::slerp(start, end, delta));
 	}
 
-	return glm::toMat4(rotation);
+	return rotation;
 }

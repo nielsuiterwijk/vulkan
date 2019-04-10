@@ -6,7 +6,7 @@
         }
     ],
     "types" : {
-        "_49" : {
+        "_34" : {
             "name" : "Bones",
             "members" : [
                 {
@@ -29,7 +29,7 @@
                 }
             ]
         },
-        "_96" : {
+        "_129" : {
             "name" : "CameraBuffer",
             "members" : [
                 {
@@ -49,7 +49,7 @@
                 }
             ]
         },
-        "_133" : {
+        "_187" : {
             "name" : "gl_PerVertex",
             "members" : [
                 {
@@ -99,13 +99,13 @@
         },
         {
             "type" : "vec3",
-            "name" : "vertexPosition",
-            "location" : 3
+            "name" : "vertexNormal",
+            "location" : 2
         },
         {
             "type" : "vec3",
-            "name" : "vertexNormal",
-            "location" : 2
+            "name" : "vertexPosition",
+            "location" : 3
         },
         {
             "type" : "vec4",
@@ -120,14 +120,14 @@
     ],
     "ubos" : [
         {
-            "type" : "_49",
+            "type" : "_34",
             "name" : "Bones",
             "block_size" : 4176,
             "set" : 0,
             "binding" : 1
         },
         {
-            "type" : "_96",
+            "type" : "_129",
             "name" : "CameraBuffer",
             "block_size" : 192,
             "set" : 0,

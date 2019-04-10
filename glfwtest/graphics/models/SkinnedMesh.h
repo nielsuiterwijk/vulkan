@@ -39,9 +39,9 @@ struct BoneInfo
 	//glm::mat4 inverseBindMatrix = {};
 
 	//animation
-	glm::mat4 matScale = {};
-	glm::mat4 matRotation = {};
-	glm::mat4 matTranslation = {};
+	glm::vec3 translation = {};
+	glm::vec3 scale = {};
+	glm::quat rotation = {};
 };
 
 struct SkinInfo

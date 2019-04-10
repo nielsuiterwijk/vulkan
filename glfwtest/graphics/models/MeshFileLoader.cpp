@@ -123,17 +123,17 @@ void MeshFileLoader::LoadNode(BoneInfo* parent, uint32_t nodeIndex, const tinygl
 
 	glm::vec3 position = node.translation.size() == 0 ? glm::vec3(0.0f) : glm::make_vec3(node.translation.data());
 	glm::vec3 scale = node.scale.size() == 0 ? glm::vec3(1.0f) : glm::make_vec3(node.scale.data());
-	glm::quat rotation = node.rotation.size() == 0 ? glm::vec4(0.0f) : glm::make_vec4(node.rotation.data());
+	glm::quat rotation = node.rotation.size() == 0 ? glm::quat() : glm::make_quat(node.rotation.data());
 
-	glm::mat4 transform = node.matrix.size() == 16 ? glm::make_mat4x4(node.matrix.data()) : glm::mat4();
+	glm::mat4 transform = node.matrix.size() == 0 ? glm::mat4() : glm::make_mat4x4(node.matrix.data());
 
 	BoneInfo& bone = skinnedMesh->bones[nodeIndex];
 	bone.index = nodeIndex;
 	bone.children = node.children;
 
-	bone.matScale = glm::scale(scale);
-	bone.matRotation = glm::toMat4(rotation);
-	bone.matTranslation = glm::translate(position);
+	bone.scale = scale;// glm::scale(glm::mat4(1.0f), scale);
+	bone.rotation = rotation;// glm::mat4(rotation);
+	bone.translation = position;// glm::translate(glm::mat4(1.0f), position);
 
 	if (parent != nullptr)
 	{
@@ -244,7 +244,7 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 			std::vector<float> keyFrames;
 			std::vector<BoneAnimation> boneAnimations;
 			boneAnimations.reserve(gltfAnimation.channels.size() / 3);
-			
+									
 			for (const tinygltf::AnimationChannel& channel : gltfAnimation.channels)
 			{
 				if (channel.target_node < 0)
@@ -253,7 +253,7 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 				const tinygltf::Node& targetNode = model.nodes[channel.target_node];
 
 				const tinygltf::AnimationSampler& sampler = samplers[channel.sampler];
-
+				
 				const tinygltf::Accessor& timePointAccessor = model.accessors[sampler.input];
 				const tinygltf::Accessor& frameValueAccessor = model.accessors[sampler.output];
 				assert(timePointAccessor.count == frameValueAccessor.count);
@@ -261,8 +261,11 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 				const tinygltf::BufferView& inputBufferView = model.bufferViews[timePointAccessor.bufferView];
 				const tinygltf::BufferView& outputBufferView = model.bufferViews[frameValueAccessor.bufferView];
 
-				const float* inputBuffer = reinterpret_cast<const float *>(&(model.buffers[inputBufferView.buffer].data[timePointAccessor.byteOffset + inputBufferView.byteOffset]));
-				const float* outputBuffer = reinterpret_cast<const float *>(&(model.buffers[outputBufferView.buffer].data[frameValueAccessor.byteOffset + outputBufferView.byteOffset]));
+				const tinygltf::Buffer& inputBuffer = model.buffers[inputBufferView.buffer];
+				const tinygltf::Buffer& outputBuffer = model.buffers[outputBufferView.buffer];
+
+				const float* inputArray = reinterpret_cast<const float *>(&(inputBuffer.data[timePointAccessor.byteOffset + inputBufferView.byteOffset]));
+				const float* outputArray = reinterpret_cast<const float *>(&(outputBuffer.data[frameValueAccessor.byteOffset + outputBufferView.byteOffset]));
 
 				BoneAnimation* animation = nullptr;
 
@@ -287,11 +290,11 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 					for (int i = 0; i < timePointAccessor.count; i++)
 					{
-						animation->keyFrames.emplace_back(inputBuffer[i]);
+						animation->keyFrames.emplace_back(inputArray[i]);
 					}
 
 					animation->name = gltfAnimation.name;
-					animation->name += "(" + std::to_string(boneAnimations.size()) + ")";
+					animation->name += "( target_node: " + std::to_string(channel.target_node) + ")";
 
 					animation->targetBone = channel.target_node;
 
@@ -311,7 +314,7 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 				{
 					for (int i = 0; i < frameValueAccessor.count; i++)
 					{
-						animation->translations.emplace_back(glm::make_vec3(&outputBuffer[i * 3]));
+						animation->translations.emplace_back(glm::make_vec3(&outputArray[i * 3]));
 					}
 				}
 				else if (channel.target_path.find("scale") != std::string::npos)
@@ -319,14 +322,21 @@ void MeshFileLoader::LoadGLTF(std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 					for (int i = 0; i < frameValueAccessor.count; i++)
 					{
-						animation->scales.emplace_back(glm::make_vec3(&outputBuffer[i * 3]));
+						animation->scales.emplace_back(glm::make_vec3(&outputArray[i * 3]));
 					}
 				}
 				else if(channel.target_path.find("rotation") != std::string::npos)
 				{
 					for (int i = 0; i < frameValueAccessor.count; i++)
 					{
-						animation->rotations.emplace_back(glm::make_vec4(&outputBuffer[i * 4]));
+						glm::vec4 input = glm::make_vec4(&outputArray[i * 4]);
+						glm::quat quaternion;
+						quaternion.x = input.x;
+						quaternion.y = input.y;
+						quaternion.z = input.z;
+						quaternion.w = input.w;
+
+						animation->rotations.emplace_back(quaternion);
 					}
 				}
 				else

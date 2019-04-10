@@ -39,42 +39,41 @@ mat4 boneTransform()
   mat4 ret;
 
   // Weight normalization factor
-  float normalizationFactor = 1.0 / (inWeights.x + inWeights.y + inWeights.z + inWeights.w);
+  float normalizationFactor = 1.0;/// (inWeights.x + inWeights.y + inWeights.z + inWeights.w);
   debugInfo.x = normalizationFactor;
+  
+   //ret = normalizationFactor * inWeights.x * skeletal.bones[int(inJoints.x)];
 
   // Weight1 * Bone1 + Weight2 * Bone2  
-  ret = normalizationFactor * inWeights.x * skeletal.bones[int(inJoints.x)];
-      + normalizationFactor * inWeights.y * skeletal.bones[int(inJoints.y)];
-      + normalizationFactor * inWeights.z * skeletal.bones[int(inJoints.z)];
-      + normalizationFactor * inWeights.w * skeletal.bones[int(inJoints.w)];
+	ret = normalizationFactor * inWeights.x * skeletal.bones[int(inJoints.x)];
+	ret += normalizationFactor * inWeights.y * skeletal.bones[int(inJoints.y)];
+	ret += normalizationFactor * inWeights.z * skeletal.bones[int(inJoints.z)];
+	ret += normalizationFactor * inWeights.w * skeletal.bones[int(inJoints.w)];
+  
+   //ret = normalizationFactor * inWeights.w * skeletal.bones[int(inJoints.w)];
+   //ret += normalizationFactor * inWeights.z * skeletal.bones[int(inJoints.z)];
+   //ret += normalizationFactor * inWeights.y * skeletal.bones[int(inJoints.y)];
+   //ret += normalizationFactor * inWeights.x * skeletal.bones[int(inJoints.x)];
 	  
 	return ret;
 }
 
 void main() 
 {
-	mat4 cameraTransform = camera.view * camera.model;
-	//mat4 boneTransform = mat4(1.0);
 	mat4 boneTransform = boneTransform();
+	//mat4 boneTransform = mat4(1.0);
+
+	vec4 locPos = camera.model * skeletal.model * boneTransform * vec4(inPosition, 1.0);
 	
 	
-	//gl_Position = camera.proj * cameraTransform * vec4(inPosition, 1.0) * boneTransform;
+	vertexNormal = normalize( transpose( inverse( mat3(camera.model * skeletal.model * boneTransform) ) ) * inNormal);
 	
-    vec4 newVertex = cameraTransform * boneTransform * vec4(inPosition, 1.0);
-    vec4 newNormal = cameraTransform * boneTransform * vec4(inNormal, 0.0);
+	//locPos.y = -locPos.y;
+	vertexPosition = locPos.xyz / locPos.w;	
 	
-	
-	gl_Position = camera.proj * newVertex;
-	
-	newVertex.w = 1.0;
-	newNormal.w = 0.0;
-	
-		
-	vec4 a = newVertex;
-	vec4 b = newNormal;
-		
-    vertexPosition = a.xyz;
-	vertexNormal = b.xyz;
     fragColor = inColor;
 	fragTexCoord = inTexCoord;
+	
+	
+	gl_Position =  camera.proj * camera.view * vec4(vertexPosition, 1.0);
 }
