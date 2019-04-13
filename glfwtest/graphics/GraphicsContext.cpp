@@ -25,4 +25,4 @@ VkQueue GraphicsContext::TransportQueue = {};
 VkQueue GraphicsContext::GraphicsQueue = {};
 VkQueue GraphicsContext::PresentQueue = {};
 
-glm::u32vec2 GraphicsContext::WindowSize = glm::uvec2(0, 0);
+glm::u32vec2 GraphicsContext::WindowSize = glm::uvec2( 0, 0 );

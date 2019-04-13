@@ -15,14 +15,14 @@ struct BufferType
 class VulkanBuffer
 {
 public:
-	VulkanBuffer(VkBufferUsageFlags flags, BufferType::Enum bufferType, void* data, VkDeviceSize size);
+	VulkanBuffer( VkBufferUsageFlags flags, BufferType::Enum bufferType, void* data, VkDeviceSize size );
 	~VulkanBuffer();
 
 	const VkBuffer& GetNative() const
 	{
 		return deviceBuffer;
 	}
-	
+
 	VkDeviceMemory* GetDeviceMemory()
 	{
 		return &nativeMemory;
@@ -31,16 +31,15 @@ public:
 	VkDeviceSize GetSize() const { return size; }
 
 	void CopyStagingToDevice();
-	void CopyStagingToImage(VkImage image, uint32_t width, uint32_t height);
+	void CopyStagingToImage( VkImage image, uint32_t width, uint32_t height );
 
-
-	void Map(void* bufferData, VkDeviceSize sizeToMap = -1) const;
+	void Map( void* bufferData, VkDeviceSize sizeToMap = -1 ) const;
 
 private:
 	void SetupStagingBuffer();
-	void SetupLocalStaticBuffer(VkBufferUsageFlags flags);
+	void SetupLocalStaticBuffer( VkBufferUsageFlags flags );
 
-	void SetupLocalDynamicBuffer(void* bufferData, VkBufferUsageFlags flags);
+	void SetupLocalDynamicBuffer( void* bufferData, VkBufferUsageFlags flags );
 
 	void FreeStagingBuffer();
 	void FreeDeviceBuffer();

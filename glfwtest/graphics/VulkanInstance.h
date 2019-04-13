@@ -1,12 +1,12 @@
 #pragma once
 
-#include "helpers/InstanceWrapper.h"
 #include "graphics/memory/VulkanAllocator.h"
+#include "helpers/InstanceWrapper.h"
 
 #include <glm/fwd.hpp>
 
-#include <vector>
 #include <string>
+#include <vector>
 
 class VulkanInstance
 {
@@ -14,10 +14,10 @@ public:
 	VulkanInstance();
 	~VulkanInstance();
 
-	void CreateInstance(std::vector<std::string> requiredExtensions);
+	void CreateInstance( std::vector<std::string> requiredExtensions );
 	void HookDebugCallback();
 
-	bool IsExtensionAvailable(const std::string& extension);
+	bool IsExtensionAvailable( const std::string& extension );
 
 	const InstanceWrapper<VkInstance>& GetNative() const;
 
@@ -26,7 +26,6 @@ private:
 	void CacheLayers();
 
 	bool CheckValidationLayers();
-
 
 private:
 	std::vector<VkExtensionProperties> availableExtensions;
@@ -37,8 +36,7 @@ private:
 	InstanceWrapper<VkDebugReportCallbackEXT> debugCallback;
 
 	//TODO: load from file
-	const std::vector<const char*> validationLayers =
-	{
+	const std::vector<const char*> validationLayers = {
 		"VK_LAYER_LUNARG_standard_validation"
 	};
 
@@ -47,5 +45,4 @@ private:
 #else
 	const bool enableValidationLayers = true;
 #endif
-
 };

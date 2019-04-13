@@ -322,7 +322,7 @@
     <ClInclude Include="graphics\DepthBuffer.h" />
     <ClInclude Include="graphics\FrameBuffer.h" />
     <ClInclude Include="graphics\GraphicsContext.h" />
-    <ClInclude Include="graphics\helpers\color.h" />
+    <ClInclude Include="graphics\helpers\Color.h" />
     <ClInclude Include="helpers\Utility.h" />
     <ClInclude Include="graphics\memory\VulkanAllocator.h" />
     <ClInclude Include="graphics\helpers\VulkanSemaphore.h" />

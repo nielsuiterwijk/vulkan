@@ -5,7 +5,7 @@
 class Timer
 {
 public:
-	Timer();	
+	Timer();
 	~Timer();
 
 	void Start();
@@ -14,9 +14,9 @@ public:
 	float GetTimeInSeconds();
 
 private:
-	LARGE_INTEGER	m_ticksPerSecond;
-	LARGE_INTEGER	m_currentTicks;
-	LARGE_INTEGER	m_frameDelay;
+	LARGE_INTEGER m_ticksPerSecond;
+	LARGE_INTEGER m_currentTicks;
+	LARGE_INTEGER m_frameDelay;
 
 	float timeInSeconds;
 };

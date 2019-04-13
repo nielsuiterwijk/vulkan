@@ -9,7 +9,7 @@ class GraphicsDevice;
 class RenderPass
 {
 public:
-	RenderPass(VkFormat frameBufferFormat, VkFormat depthFormat);
+	RenderPass( VkFormat frameBufferFormat, VkFormat depthFormat );
 	~RenderPass();
 
 	const InstanceWrapper<VkRenderPass>& GetNative() const;

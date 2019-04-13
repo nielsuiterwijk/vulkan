@@ -3,14 +3,14 @@
 #include "graphics\GraphicsContext.h"
 
 VulkanSemaphore::VulkanSemaphore() :
-	semaphore(GraphicsContext::LogicalDevice, vkDestroySemaphore, GraphicsContext::GlobalAllocator.Get())
+	semaphore( GraphicsContext::LogicalDevice, vkDestroySemaphore, GraphicsContext::GlobalAllocator.Get() )
 {
 	VkSemaphoreCreateInfo semaphoreInfo = {};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	if (vkCreateSemaphore(GraphicsContext::LogicalDevice, &semaphoreInfo, semaphore.AllocationCallbacks(), semaphore.Replace()) != VK_SUCCESS)
+	if ( vkCreateSemaphore( GraphicsContext::LogicalDevice, &semaphoreInfo, semaphore.AllocationCallbacks(), semaphore.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error("failed to create semaphores!");
+		throw std::runtime_error( "failed to create semaphores!" );
 	}
 }
 
@@ -19,7 +19,7 @@ VulkanSemaphore::~VulkanSemaphore()
 	semaphore = nullptr;
 }
 
-const InstanceWrapper<VkSemaphore>& VulkanSemaphore::GetNative() const 
-{ 
-	return semaphore; 
+const InstanceWrapper<VkSemaphore>& VulkanSemaphore::GetNative() const
+{
+	return semaphore;
 }

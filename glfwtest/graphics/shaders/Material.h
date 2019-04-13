@@ -1,7 +1,7 @@
 #pragma once
 
-#include "graphics\helpers\InstanceWrapper.h"
 #include "graphics\buffers\VulkanDescriptorPool.h"
+#include "graphics\helpers\InstanceWrapper.h"
 
 #include "standard.h"
 
@@ -14,10 +14,10 @@ class TextureSampler;
 class Material
 {
 public:
-	Material(const std::string& fileName);
+	Material( const std::string& fileName );
 	~Material();
 
-	void AddUniformBuffer(UniformBuffer* uniformBuffer);
+	void AddUniformBuffer( UniformBuffer* uniformBuffer );
 	void UpdateUniformBuffers();
 
 	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages();
@@ -33,7 +33,7 @@ public:
 	bool IsLoaded() const;
 
 private:
-	void FileLoaded(std::vector<char> fileData);
+	void FileLoaded( std::vector<char> fileData );
 
 private:
 	std::shared_ptr<VertexShader> vertex;
@@ -43,6 +43,6 @@ private:
 	std::shared_ptr<TextureSampler> sampler;
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-	
+
 	std::vector<UniformBuffer*> uniformBuffers;
 };

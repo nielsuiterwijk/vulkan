@@ -7,17 +7,15 @@
 class Vulkan
 {
 public:
-
-
-	static bool HasStencilComponent(VkFormat format)
+	static bool HasStencilComponent( VkFormat format )
 	{
 		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 	}
 
 	//https://www.reddit.com/r/vulkan/comments/4ta9nj/is_there_a_comprehensive_list_of_the_names_and/
-	static const char* GetVendorName(int vendorId)
+	static const char* GetVendorName( int vendorId )
 	{
-		switch (vendorId)
+		switch ( vendorId )
 		{
 		case 0x1002:
 			return "AMD";
@@ -36,9 +34,9 @@ public:
 		}
 	}
 
-	static const char* GetAllocationScopeName(VkSystemAllocationScope scope)
+	static const char* GetAllocationScopeName( VkSystemAllocationScope scope )
 	{
-		switch (scope)
+		switch ( scope )
 		{
 		case VK_SYSTEM_ALLOCATION_SCOPE_COMMAND:
 			return "COMMAND";
@@ -55,9 +53,9 @@ public:
 		}
 	}
 
-	static const char* GetVkResultAsString(VkResult result)
+	static const char* GetVkResultAsString( VkResult result )
 	{
-		switch (result)
+		switch ( result )
 		{
 		case VK_SUCCESS:
 			return "VK_SUCCESS";
@@ -117,9 +115,9 @@ public:
 		}
 	}
 
-	static const char* GetFormatName(VkFormat format)
+	static const char* GetFormatName( VkFormat format )
 	{
-		switch (format)
+		switch ( format )
 		{
 		case VK_FORMAT_UNDEFINED:
 			return "VK_FORMAT_UNDEFINED";
@@ -387,11 +385,11 @@ public:
 			return "VK_FORMAT_BC1_RGBA_SRGB_BLOCK";
 		case VK_FORMAT_BC2_UNORM_BLOCK:
 			return "VK_FORMAT_BC2_UNORM_BLOCK";
-		case VK_FORMAT_BC2_SRGB_BLOCK :
+		case VK_FORMAT_BC2_SRGB_BLOCK:
 			return "VK_FORMAT_BC2_SRGB_BLOCK";
 		case VK_FORMAT_BC3_UNORM_BLOCK:
 			return "VK_FORMAT_BC3_UNORM_BLOCK";
-		case VK_FORMAT_BC3_SRGB_BLOCK :
+		case VK_FORMAT_BC3_SRGB_BLOCK:
 			return "VK_FORMAT_BC3_SRGB_BLOCK";
 		case VK_FORMAT_BC4_UNORM_BLOCK:
 			return "VK_FORMAT_BC4_UNORM_BLOCK";
@@ -431,72 +429,72 @@ public:
 			return "VK_FORMAT_EAC_R11G11_SNORM_BLOCK";
 		case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
 			return "VK_FORMAT_ASTC_4x4_UNORM_BLOCK";
-		case VK_FORMAT_ASTC_4x4_SRGB_BLOCK :
+		case VK_FORMAT_ASTC_4x4_SRGB_BLOCK:
 			return "VK_FORMAT_ASTC_4x4_SRGB_BLOCK";
 		case VK_FORMAT_ASTC_5x4_UNORM_BLOCK:
 			return "VK_FORMAT_ASTC_5x4_UNORM_BLOCK";
-		case VK_FORMAT_ASTC_5x4_SRGB_BLOCK :
+		case VK_FORMAT_ASTC_5x4_SRGB_BLOCK:
 			return "VK_FORMAT_ASTC_5x4_SRGB_BLOCK";
 		case VK_FORMAT_ASTC_5x5_UNORM_BLOCK:
 			return "VK_FORMAT_ASTC_5x5_UNORM_BLOCK";
-		case VK_FORMAT_ASTC_5x5_SRGB_BLOCK :
+		case VK_FORMAT_ASTC_5x5_SRGB_BLOCK:
 			return "VK_FORMAT_ASTC_5x5_SRGB_BLOCK";
 		case VK_FORMAT_ASTC_6x5_UNORM_BLOCK:
 			return "VK_FORMAT_ASTC_6x5_UNORM_BLOCK";
-		case VK_FORMAT_ASTC_6x5_SRGB_BLOCK :
+		case VK_FORMAT_ASTC_6x5_SRGB_BLOCK:
 			return "VK_FORMAT_ASTC_6x5_SRGB_BLOCK";
 		case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:
 			return "VK_FORMAT_ASTC_6x6_UNORM_BLOCK";
-		case VK_FORMAT_ASTC_6x6_SRGB_BLOCK :
+		case VK_FORMAT_ASTC_6x6_SRGB_BLOCK:
 			return "VK_FORMAT_ASTC_6x6_SRGB_BLOCK";
 		case VK_FORMAT_ASTC_8x5_UNORM_BLOCK:
 			return "VK_FORMAT_ASTC_8x5_UNORM_BLOCK";
-		case VK_FORMAT_ASTC_8x5_SRGB_BLOCK :
+		case VK_FORMAT_ASTC_8x5_SRGB_BLOCK:
 			return "VK_FORMAT_ASTC_8x5_SRGB_BLOCK";
 		case VK_FORMAT_ASTC_8x6_UNORM_BLOCK:
 			return "VK_FORMAT_ASTC_8x6_UNORM_BLOCK";
-		case VK_FORMAT_ASTC_8x6_SRGB_BLOCK :
+		case VK_FORMAT_ASTC_8x6_SRGB_BLOCK:
 			return "VK_FORMAT_ASTC_8x6_SRGB_BLOCK";
 		case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
 			return "VK_FORMAT_ASTC_8x8_UNORM_BLOCK";
-		case VK_FORMAT_ASTC_8x8_SRGB_BLOCK :
+		case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
 			return "VK_FORMAT_ASTC_8x8_SRGB_BLOCK";
 		case VK_FORMAT_ASTC_10x5_UNORM_BLOCK:
 			return "VK_FORMAT_ASTC_10x5_UNORM_BLOCK";
-		case VK_FORMAT_ASTC_10x5_SRGB_BLOCK :
+		case VK_FORMAT_ASTC_10x5_SRGB_BLOCK:
 			return "VK_FORMAT_ASTC_10x5_SRGB_BLOCK";
 		case VK_FORMAT_ASTC_10x6_UNORM_BLOCK:
 			return "VK_FORMAT_ASTC_10x6_UNORM_BLOCK";
-		case VK_FORMAT_ASTC_10x6_SRGB_BLOCK :
+		case VK_FORMAT_ASTC_10x6_SRGB_BLOCK:
 			return "VK_FORMAT_ASTC_10x6_SRGB_BLOCK";
 		case VK_FORMAT_ASTC_10x8_UNORM_BLOCK:
 			return "VK_FORMAT_ASTC_10x8_UNORM_BLOCK";
-		case VK_FORMAT_ASTC_10x8_SRGB_BLOCK :
+		case VK_FORMAT_ASTC_10x8_SRGB_BLOCK:
 			return "VK_FORMAT_ASTC_10x8_SRGB_BLOCK";
 		case VK_FORMAT_ASTC_10x10_UNORM_BLOCK:
 			return "VK_FORMAT_ASTC_10x10_UNORM_BLOCK";
-		case VK_FORMAT_ASTC_10x10_SRGB_BLOCK :
+		case VK_FORMAT_ASTC_10x10_SRGB_BLOCK:
 			return "VK_FORMAT_ASTC_10x10_SRGB_BLOCK";
 		case VK_FORMAT_ASTC_12x10_UNORM_BLOCK:
 			return "VK_FORMAT_ASTC_12x10_UNORM_BLOCK";
-		case VK_FORMAT_ASTC_12x10_SRGB_BLOCK :
+		case VK_FORMAT_ASTC_12x10_SRGB_BLOCK:
 			return "VK_FORMAT_ASTC_12x10_SRGB_BLOCK";
 		case VK_FORMAT_ASTC_12x12_UNORM_BLOCK:
 			return "VK_FORMAT_ASTC_12x12_UNORM_BLOCK";
-		case VK_FORMAT_ASTC_12x12_SRGB_BLOCK :
+		case VK_FORMAT_ASTC_12x12_SRGB_BLOCK:
 			return "VK_FORMAT_ASTC_12x12_SRGB_BLOCK";
 		default:
 			return "Invalid format";
 		}
 	}
 
-	static const VkFormat GetFormatFromType(const std::string& input)
+	static const VkFormat GetFormatFromType( const std::string& input )
 	{
-		if (input == "vec2")
+		if ( input == "vec2" )
 			return VK_FORMAT_R32G32_SFLOAT;
-		else if (input == "vec3")
+		else if ( input == "vec3" )
 			return VK_FORMAT_R32G32B32_SFLOAT;
-		else if (input == "vec4")
+		else if ( input == "vec4" )
 			return VK_FORMAT_R32G32B32A32_SFLOAT;
 
 		return VK_FORMAT_UNDEFINED;

@@ -2,16 +2,16 @@
 
 #include "graphics/GraphicsContext.h"
 
-GPUAllocator::GPUAllocator(int32_t size, int32_t alignment)
+GPUAllocator::GPUAllocator( int32_t size, int32_t alignment )
 {
 	memoryProperties = new VkPhysicalDeviceMemoryProperties();
-	vkGetPhysicalDeviceMemoryProperties(GraphicsContext::PhysicalDevice, memoryProperties);
+	vkGetPhysicalDeviceMemoryProperties( GraphicsContext::PhysicalDevice, memoryProperties );
 
-	const VkDeviceSize heapSize1 = memoryProperties->memoryHeaps[0].size;
-	const VkDeviceSize heapSize2 = memoryProperties->memoryHeaps[1].size;
+	const VkDeviceSize heapSize1 = memoryProperties->memoryHeaps[ 0 ].size;
+	const VkDeviceSize heapSize2 = memoryProperties->memoryHeaps[ 1 ].size;
 
-	std::cout << "RAM: " << Helpers::MemorySizeToString(heapSize2) << std::endl;
-	std::cout << "VRAM: " << Helpers::MemorySizeToString(heapSize1) << std::endl;
+	std::cout << "RAM: " << Helpers::MemorySizeToString( heapSize2 ) << std::endl;
+	std::cout << "VRAM: " << Helpers::MemorySizeToString( heapSize1 ) << std::endl;
 
 	/*VkMemoryAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -28,33 +28,31 @@ GPUAllocator::GPUAllocator(int32_t size, int32_t alignment)
 
 GPUAllocator::~GPUAllocator()
 {
-
 }
 
-void GPUAllocator::Allocate(const VkBuffer& buffer, VkDeviceMemory* memory, VkMemoryPropertyFlags requiredProperties)
+void GPUAllocator::Allocate( const VkBuffer& buffer, VkDeviceMemory* memory, VkMemoryPropertyFlags requiredProperties )
 {
 	VkMemoryRequirements memoryRequirements;
-	vkGetBufferMemoryRequirements(GraphicsContext::LogicalDevice, buffer, &memoryRequirements);
+	vkGetBufferMemoryRequirements( GraphicsContext::LogicalDevice, buffer, &memoryRequirements );
 
-	int32_t memoryType = FindProperties(memoryRequirements.memoryTypeBits, requiredProperties);
+	int32_t memoryType = FindProperties( memoryRequirements.memoryTypeBits, requiredProperties );
 
-	assert(memoryType >= 0);
+	assert( memoryType >= 0 );
 
 	VkMemoryAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memoryRequirements.size;
 	allocInfo.memoryTypeIndex = memoryType;
 
-	if (vkAllocateMemory(GraphicsContext::LogicalDevice, &allocInfo, GraphicsContext::GlobalAllocator.Get(), memory) != VK_SUCCESS)
+	if ( vkAllocateMemory( GraphicsContext::LogicalDevice, &allocInfo, GraphicsContext::GlobalAllocator.Get(), memory ) != VK_SUCCESS )
 	{
-		throw std::runtime_error("failed to allocate vertex buffer memory!");
+		throw std::runtime_error( "failed to allocate vertex buffer memory!" );
 	}
 
-	std::cout << "Allocated " << Helpers::MemorySizeToString(memoryRequirements.size) << " for general usage" << std::endl;
+	std::cout << "Allocated " << Helpers::MemorySizeToString( memoryRequirements.size ) << " for general usage" << std::endl;
 }
 
-
-void GPUAllocator::AllocateImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, InstanceWrapper<VkImage>& outImage, InstanceWrapper<VkDeviceMemory>& outImageMemory)
+void GPUAllocator::AllocateImage( uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, InstanceWrapper<VkImage>& outImage, InstanceWrapper<VkDeviceMemory>& outImageMemory )
 {
 	VkImageCreateInfo imageInfo = {};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -71,47 +69,47 @@ void GPUAllocator::AllocateImage(uint32_t width, uint32_t height, uint32_t mipLe
 	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	if (vkCreateImage(GraphicsContext::LogicalDevice, &imageInfo, outImage.AllocationCallbacks(), outImage.Replace()) != VK_SUCCESS)
+	if ( vkCreateImage( GraphicsContext::LogicalDevice, &imageInfo, outImage.AllocationCallbacks(), outImage.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error("failed to create image!");
+		throw std::runtime_error( "failed to create image!" );
 	}
 
 	VkMemoryRequirements memoryRequirements;
-	vkGetImageMemoryRequirements(GraphicsContext::LogicalDevice, outImage, &memoryRequirements);
+	vkGetImageMemoryRequirements( GraphicsContext::LogicalDevice, outImage, &memoryRequirements );
 
 	VkMemoryAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memoryRequirements.size;
-	allocInfo.memoryTypeIndex = FindProperties(memoryRequirements.memoryTypeBits, properties);
+	allocInfo.memoryTypeIndex = FindProperties( memoryRequirements.memoryTypeBits, properties );
 
-	if (vkAllocateMemory(GraphicsContext::LogicalDevice, &allocInfo, outImageMemory.AllocationCallbacks(), outImageMemory.Replace()) != VK_SUCCESS)
+	if ( vkAllocateMemory( GraphicsContext::LogicalDevice, &allocInfo, outImageMemory.AllocationCallbacks(), outImageMemory.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error("failed to allocate image memory!");
+		throw std::runtime_error( "failed to allocate image memory!" );
 	}
 
-	std::cout << "Allocated " << Helpers::MemorySizeToString(memoryRequirements.size) << " for image" << std::endl;
+	std::cout << "Allocated " << Helpers::MemorySizeToString( memoryRequirements.size ) << " for image" << std::endl;
 
-	vkBindImageMemory(GraphicsContext::LogicalDevice, outImage, outImageMemory, 0);
+	vkBindImageMemory( GraphicsContext::LogicalDevice, outImage, outImageMemory, 0 );
 }
 
 // Find a memory in `memoryTypeBitsRequirement` that includes all of `requiredProperties`
-int32_t GPUAllocator::FindProperties(uint32_t memoryTypeBitsRequirement, VkMemoryPropertyFlags requiredProperties)
+int32_t GPUAllocator::FindProperties( uint32_t memoryTypeBitsRequirement, VkMemoryPropertyFlags requiredProperties )
 {
 	const uint32_t memoryCount = memoryProperties->memoryTypeCount;
 
-	for (uint32_t memoryIndex = 0; memoryIndex < memoryCount; ++memoryIndex)
+	for ( uint32_t memoryIndex = 0; memoryIndex < memoryCount; ++memoryIndex )
 	{
-		const uint32_t memoryTypeBits = (1 << memoryIndex);
-		const bool isRequiredMemoryType = (memoryTypeBitsRequirement & memoryTypeBits) == memoryTypeBits;
+		const uint32_t memoryTypeBits = ( 1 << memoryIndex );
+		const bool isRequiredMemoryType = ( memoryTypeBitsRequirement & memoryTypeBits ) == memoryTypeBits;
 
-		const VkMemoryPropertyFlags properties = memoryProperties->memoryTypes[memoryIndex].propertyFlags;
-		const bool hasRequiredProperties = (properties & requiredProperties) == requiredProperties;
+		const VkMemoryPropertyFlags properties = memoryProperties->memoryTypes[ memoryIndex ].propertyFlags;
+		const bool hasRequiredProperties = ( properties & requiredProperties ) == requiredProperties;
 
-		if (isRequiredMemoryType && hasRequiredProperties)
-			return static_cast<int32_t>(memoryIndex);
+		if ( isRequiredMemoryType && hasRequiredProperties )
+			return static_cast<int32_t>( memoryIndex );
 	}
 
-	throw std::runtime_error("failed to find memory property!");
+	throw std::runtime_error( "failed to find memory property!" );
 	// failed to find memory type
 	return -1;
 }

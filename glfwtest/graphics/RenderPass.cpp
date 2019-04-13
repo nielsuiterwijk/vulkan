@@ -1,12 +1,12 @@
 #include "RenderPass.h"
-#include "graphics\GraphicsDevice.h"
 #include "graphics\GraphicsContext.h"
+#include "graphics\GraphicsDevice.h"
 #include "graphics\VulkanSwapChain.h"
 
 #include <vulkan\vulkan.h>
 
-RenderPass::RenderPass(VkFormat frameBufferFormat, VkFormat depthFormat) :
-	renderPass(GraphicsContext::LogicalDevice, vkDestroyRenderPass, GraphicsContext::GlobalAllocator.Get()),
+RenderPass::RenderPass( VkFormat frameBufferFormat, VkFormat depthFormat ) :
+	renderPass( GraphicsContext::LogicalDevice, vkDestroyRenderPass, GraphicsContext::GlobalAllocator.Get() ),
 	subpass(),
 	colorAttachment(),
 	colorAttachmentRef(),
@@ -55,17 +55,16 @@ RenderPass::RenderPass(VkFormat frameBufferFormat, VkFormat depthFormat) :
 	std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	renderPassInfo.attachmentCount = static_cast<uint32_t>( attachments.size() );
 	renderPassInfo.pAttachments = attachments.data();
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
 
-
-	if (vkCreateRenderPass(GraphicsContext::LogicalDevice, &renderPassInfo, renderPass.AllocationCallbacks(), renderPass.Replace()) != VK_SUCCESS)
+	if ( vkCreateRenderPass( GraphicsContext::LogicalDevice, &renderPassInfo, renderPass.AllocationCallbacks(), renderPass.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error("failed to create render pass!");
+		throw std::runtime_error( "failed to create render pass!" );
 	}
 }
 

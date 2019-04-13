@@ -35,8 +35,8 @@ protected:
 	virtual ~Singleton() {};
 
 private:
-	Singleton(Singleton const&);
-	Singleton& operator=(Singleton const&);
+	Singleton( Singleton const& );
+	Singleton& operator=( Singleton const& );
 };
 
 #endif

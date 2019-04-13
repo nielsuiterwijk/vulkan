@@ -1,8 +1,8 @@
 #pragma once
 
-#include "standard.h"
 #include "Mesh.h"
 #include "graphics/animations/Animation.h"
+#include "standard.h"
 
 #include "graphics/buffers/UniformBufferDefinition.h"
 
@@ -31,30 +31,28 @@ struct SkinInfo
 	std::vector<glm::mat4> inverseBindMatrices = {};
 };
 
-
 class SkinnedMesh : public Mesh
 {
 	friend class MeshFileLoader;
 
-public:	
+public:
 	virtual MeshType GetMeshType() const { return MeshType::Skinned; }
 
 	SkinnedMesh();
 	virtual ~SkinnedMesh();
 
-	void Update(float delta);
+	void Update( float delta );
 
-	void AddBone(BoneInfo boneInfo) { bones.emplace_back(boneInfo); }
-	void AddSkin(SkinInfo skinInfo) { skins.emplace_back(skinInfo); }
-	
-	void SetAnimation(const std::vector<Animation>& newAnimations ) { animations = newAnimations; }
+	void AddBone( BoneInfo boneInfo ) { bones.emplace_back( boneInfo ); }
+	void AddSkin( SkinInfo skinInfo ) { skins.emplace_back( skinInfo ); }
+
+	void SetAnimation( const std::vector<Animation>& newAnimations ) { animations = newAnimations; }
 
 	UniformBuffer* AccessUBO() { return localMeshUniformBuffer; }
 
 private:
-	glm::mat4 localMatrix(const BoneInfo& bone);
-	glm::mat4 getMatrix(const BoneInfo& bone);
-
+	glm::mat4 localMatrix( const BoneInfo& bone );
+	glm::mat4 getMatrix( const BoneInfo& bone );
 
 private:
 	std::vector<BoneInfo> bones;

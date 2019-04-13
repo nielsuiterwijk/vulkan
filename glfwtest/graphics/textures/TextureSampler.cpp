@@ -3,9 +3,8 @@
 #include "graphics/GraphicsContext.h"
 
 TextureSampler::TextureSampler() :
-	sampler(GraphicsContext::LogicalDevice, vkDestroySampler, GraphicsContext::GlobalAllocator.Get())
+	sampler( GraphicsContext::LogicalDevice, vkDestroySampler, GraphicsContext::GlobalAllocator.Get() )
 {
-	
 }
 
 TextureSampler::~TextureSampler()
@@ -13,8 +12,7 @@ TextureSampler::~TextureSampler()
 	sampler = nullptr;
 }
 
-
-void TextureSampler::Initialize(VkFilter min, VkFilter mag, VkSamplerMipmapMode mipmapMode, VkSamplerAddressMode addressMode, uint32_t mipLevels)
+void TextureSampler::Initialize( VkFilter min, VkFilter mag, VkSamplerMipmapMode mipmapMode, VkSamplerAddressMode addressMode, uint32_t mipLevels )
 {
 	//https://www.khronos.org/registry/vulkan/specs/1.0/man/html/VkSamplerCreateInfo.html
 	VkSamplerCreateInfo samplerInfo = {};
@@ -33,10 +31,10 @@ void TextureSampler::Initialize(VkFilter min, VkFilter mag, VkSamplerMipmapMode 
 	samplerInfo.mipmapMode = mipmapMode;
 	samplerInfo.mipLodBias = 0.0f;
 	samplerInfo.minLod = 0.0f;
-	samplerInfo.maxLod = static_cast<float>(mipLevels);
+	samplerInfo.maxLod = static_cast<float>( mipLevels );
 
-	if (vkCreateSampler(GraphicsContext::LogicalDevice, &samplerInfo, sampler.AllocationCallbacks(), sampler.Replace()) != VK_SUCCESS)
+	if ( vkCreateSampler( GraphicsContext::LogicalDevice, &samplerInfo, sampler.AllocationCallbacks(), sampler.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error("failed to create texture sampler!");
+		throw std::runtime_error( "failed to create texture sampler!" );
 	}
 }

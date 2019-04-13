@@ -2,13 +2,13 @@
 
 #include "standard.h"
 
-#include "graphics\buffers\CommandBufferPool.h"
 #include "graphics\GraphicsDevice.h"
+#include "graphics\RenderPass.h"
+#include "graphics\VulkanInstance.h"
+#include "graphics\VulkanSwapChain.h"
+#include "graphics\buffers\CommandBufferPool.h"
 #include "graphics\helpers\InstanceWrapper.h"
 #include "graphics\memory\GPUAllocator.h"
-#include "graphics\RenderPass.h"
-#include "graphics\VulkanSwapChain.h"
-#include "graphics\VulkanInstance.h"
 
 ///Static class so everyone can access it who needs..
 class GraphicsContext

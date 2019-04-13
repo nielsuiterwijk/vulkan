@@ -1,7 +1,7 @@
 #include "FreeListAllocator.h"
 
 FreeListAllocator::FreeListAllocator() :
-	freeBlocks(nullptr)
+	freeBlocks( nullptr )
 {
 }
 
@@ -10,10 +10,10 @@ FreeListAllocator::~FreeListAllocator()
 	freeBlocks = nullptr;
 }
 
-void FreeListAllocator::Initialize(size_t size, void* start)
+void FreeListAllocator::Initialize( size_t size, void* start )
 {
-	Allocator::Initialize(size, start);
-	assert(size > sizeof(FreeBlock));
+	Allocator::Initialize( size, start );
+	assert( size > sizeof( FreeBlock ) );
 
 	freeBlocks = (FreeBlock*)start;
 
@@ -21,39 +21,39 @@ void FreeListAllocator::Initialize(size_t size, void* start)
 	freeBlocks->next = nullptr;
 }
 
-void* FreeListAllocator::Allocate(size_t size, size_t alignment)
+void* FreeListAllocator::Allocate( size_t size, size_t alignment )
 {
-	assert(size != 0);
+	assert( size != 0 );
 
-	std::lock_guard<std::mutex> guard(lock);
+	std::lock_guard<std::mutex> guard( lock );
 
 	FreeBlock* previousBlock = nullptr;
 	FreeBlock* currentBlock = freeBlocks;
 
-	while (currentBlock != nullptr)
+	while ( currentBlock != nullptr )
 	{
 		// Calculate adjustment needed to keep object correctly aligned
-		size_t adjustment = Util::GetAlignedPtrAdjustment(currentBlock, alignment, sizeof(AllocationHeader));
+		size_t adjustment = Util::GetAlignedPtrAdjustment( currentBlock, alignment, sizeof( AllocationHeader ) );
 
 		size_t totalSize = size + adjustment;
 
 		// If allocation doesn't fit in this FreeBlock, try the next
-		if (currentBlock->size < totalSize)
+		if ( currentBlock->size < totalSize )
 		{
 			previousBlock = currentBlock;
 			currentBlock = currentBlock->next;
 			continue;
 		}
 
-		static_assert(sizeof(AllocationHeader) >= sizeof(FreeBlock), "sizeof(AllocationHeader) < sizeof(FreeBlock)");
+		static_assert( sizeof( AllocationHeader ) >= sizeof( FreeBlock ), "sizeof(AllocationHeader) < sizeof(FreeBlock)" );
 
 		// If allocations in the remaining memory will be impossible
-		if (currentBlock->size - totalSize <= sizeof(AllocationHeader))
+		if ( currentBlock->size - totalSize <= sizeof( AllocationHeader ) )
 		{
 			// Increase allocation size instead of creating a new FreeBlock
 			totalSize = currentBlock->size;
 
-			if (previousBlock != nullptr)
+			if ( previousBlock != nullptr )
 			{
 				previousBlock->next = currentBlock->next;
 			}
@@ -65,11 +65,11 @@ void* FreeListAllocator::Allocate(size_t size, size_t alignment)
 		else
 		{
 			// Else create a new FreeBlock containing remaining memory
-			FreeBlock* nextBlock = (FreeBlock*)Util::AddPtr(currentBlock, (int)totalSize);
+			FreeBlock* nextBlock = (FreeBlock*)Util::AddPtr( currentBlock, (int)totalSize );
 			nextBlock->size = currentBlock->size - totalSize;
 			nextBlock->next = currentBlock->next;
 
-			if (previousBlock != nullptr)
+			if ( previousBlock != nullptr )
 			{
 				previousBlock->next = nextBlock;
 			}
@@ -81,16 +81,16 @@ void* FreeListAllocator::Allocate(size_t size, size_t alignment)
 
 		uintptr_t alignedAddress = (uintptr_t)currentBlock + adjustment;
 
-		AllocationHeader* header = (AllocationHeader*)(alignedAddress - sizeof(AllocationHeader));
+		AllocationHeader* header = (AllocationHeader*)( alignedAddress - sizeof( AllocationHeader ) );
 		header->size = totalSize;
-		assert(alignment <= 0xffff && adjustment <= 0xffff); //assert when alignment or adjustment does not fit in 16 bits.
+		assert( alignment <= 0xffff && adjustment <= 0xffff ); //assert when alignment or adjustment does not fit in 16 bits.
 		header->alignment = (uint16_t)alignment;
 		header->adjustment = (uint16_t)adjustment;
 
 		usedMemory += totalSize;
 		numAllocations++;
 
-		assert((alignedAddress & (alignment - 1)) == 0);
+		assert( ( alignedAddress & ( alignment - 1 ) ) == 0 );
 
 		return (void*)alignedAddress;
 	}
@@ -98,27 +98,27 @@ void* FreeListAllocator::Allocate(size_t size, size_t alignment)
 	return nullptr;
 }
 
-void FreeListAllocator::Deallocate(void* address)
+void FreeListAllocator::Deallocate( void* address )
 {
-	if (address == nullptr)
+	if ( address == nullptr )
 	{
 		return;
 	}
 
-	std::lock_guard<std::mutex> guard(lock);
+	std::lock_guard<std::mutex> guard( lock );
 
-	AllocationHeader* header = (AllocationHeader*)Util::AddPtr(address, -(int)sizeof(AllocationHeader));
+	AllocationHeader* header = (AllocationHeader*)Util::AddPtr( address, -(int)sizeof( AllocationHeader ) );
 
-	uintptr_t blockStart = reinterpret_cast<uintptr_t>(address) - header->adjustment;
+	uintptr_t blockStart = reinterpret_cast<uintptr_t>( address ) - header->adjustment;
 	size_t blockSize = header->size;
 	uintptr_t blockEnd = blockStart + blockSize;
 
 	FreeBlock* previousBlock = nullptr;
 	FreeBlock* currentBlock = freeBlocks;
 
-	while (currentBlock != nullptr)
+	while ( currentBlock != nullptr )
 	{
-		if ((uintptr_t)currentBlock >= blockEnd)
+		if ( (uintptr_t)currentBlock >= blockEnd )
 		{
 			break;
 		}
@@ -127,7 +127,7 @@ void FreeListAllocator::Deallocate(void* address)
 		currentBlock = currentBlock->next;
 	}
 
-	if (previousBlock == nullptr)
+	if ( previousBlock == nullptr )
 	{
 		previousBlock = (FreeBlock*)blockStart;
 		previousBlock->size = blockSize;
@@ -135,7 +135,7 @@ void FreeListAllocator::Deallocate(void* address)
 
 		freeBlocks = previousBlock;
 	}
-	else if ((uintptr_t)previousBlock + previousBlock->size == blockStart)
+	else if ( (uintptr_t)previousBlock + previousBlock->size == blockStart )
 	{
 		previousBlock->size += blockSize;
 	}
@@ -149,7 +149,7 @@ void FreeListAllocator::Deallocate(void* address)
 		previousBlock = temp;
 	}
 
-	if (currentBlock != nullptr && (uintptr_t)currentBlock == blockEnd)
+	if ( currentBlock != nullptr && (uintptr_t)currentBlock == blockEnd )
 	{
 		previousBlock->size += currentBlock->size;
 		previousBlock->next = currentBlock->next;
@@ -159,28 +159,28 @@ void FreeListAllocator::Deallocate(void* address)
 	usedMemory -= blockSize;
 }
 
-size_t FreeListAllocator::GetSizeOf(void* address)
+size_t FreeListAllocator::GetSizeOf( void* address )
 {
-	if (address == nullptr)
+	if ( address == nullptr )
 	{
 		return 0;
 	}
 
-	std::lock_guard<std::mutex> guard(lock);
+	std::lock_guard<std::mutex> guard( lock );
 
-	AllocationHeader* header = (AllocationHeader*)Util::AddPtr(address, -(int)sizeof(AllocationHeader));
+	AllocationHeader* header = (AllocationHeader*)Util::AddPtr( address, -(int)sizeof( AllocationHeader ) );
 	return header->size - header->adjustment;
 }
 
-size_t FreeListAllocator::GetAlignmentOf(void* address)
+size_t FreeListAllocator::GetAlignmentOf( void* address )
 {
-	if (address == nullptr)
+	if ( address == nullptr )
 	{
 		return 0;
 	}
 
-	std::lock_guard<std::mutex> guard(lock);
+	std::lock_guard<std::mutex> guard( lock );
 
-	AllocationHeader* header = (AllocationHeader*)Util::AddPtr(address, -(int)sizeof(AllocationHeader));
+	AllocationHeader* header = (AllocationHeader*)Util::AddPtr( address, -(int)sizeof( AllocationHeader ) );
 	return header->alignment;
 }

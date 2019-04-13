@@ -7,7 +7,7 @@ class VulkanSemaphore
 public:
 	VulkanSemaphore();
 	~VulkanSemaphore();
-	
+
 	const InstanceWrapper<VkSemaphore>& GetNative() const;
 
 private:

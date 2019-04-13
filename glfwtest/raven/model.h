@@ -1,29 +1,28 @@
 #pragma once
 
-#include "standard.h"
-#include "graphics/shaders/Material.h"
-#include "graphics/buffers/CommandBuffer.h"
 #include "graphics/PipelineStateObject.h"
+#include "graphics/buffers/CommandBuffer.h"
 #include "graphics/buffers/UniformBuffer.h"
 #include "graphics/buffers/UniformBufferDefinition.h"
+#include "graphics/shaders/Material.h"
+#include "standard.h"
 
 class SkinnedMesh;
-
 
 class Model
 {
 public:
-	Model(const std::string& objectFile);
+	Model( const std::string& objectFile );
 	~Model();
 
-
-	void WindowResized(int w, int h);
-	void Draw(std::shared_ptr<CommandBuffer> commandBuffer);
+	void WindowResized( int w, int h );
+	void Draw( std::shared_ptr<CommandBuffer> commandBuffer );
 
 	const CameraUBO& GetUBO() const { return camera; }
 	CameraUBO& AccessUBO() { return camera; }
+
 private:
-	void FileLoaded(std::vector<char> fileData);
+	void FileLoaded( std::vector<char> fileData );
 
 	bool TexturesLoaded() const;
 

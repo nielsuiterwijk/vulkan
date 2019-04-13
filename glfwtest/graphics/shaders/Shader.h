@@ -9,7 +9,7 @@ class Shader
 {
 protected:
 	Shader() :
-		shaderModule(GraphicsContext::LogicalDevice, vkDestroyShaderModule, GraphicsContext::GlobalAllocator.Get()),
+		shaderModule( GraphicsContext::LogicalDevice, vkDestroyShaderModule, GraphicsContext::GlobalAllocator.Get() ),
 		shaderInfo()
 	{
 	}
@@ -18,17 +18,16 @@ protected:
 	{
 		shaderModule = nullptr;
 	}
-public:
 
+public:
 	const VkPipelineShaderStageCreateInfo& GetShaderStageCreateInfo() const
 	{
 		return shaderInfo;
 	}
 
 	virtual bool IsLoaded() const = 0;
-	
+
 protected:
 	VkPipelineShaderStageCreateInfo shaderInfo = {};
 	InstanceWrapper<VkShaderModule> shaderModule;
-
 };

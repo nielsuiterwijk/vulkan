@@ -1,16 +1,16 @@
 #include "RavenApp.h"
 
-#include <vector>
 #include <iostream>
 #include <thread>
+#include <vector>
 
-#include "helpers/DebugAssert.h"
-#include "helpers/Helpers.h"
 #include "graphics/GraphicsDevice.h"
 #include "graphics/VulkanInstance.h"
-#include "graphics\VulkanSwapChain.h"
 #include "graphics\PipelineStateObject.h"
+#include "graphics\VulkanSwapChain.h"
 #include "graphics\buffers\UniformBuffer.h"
+#include "helpers/DebugAssert.h"
+#include "helpers/Helpers.h"
 
 #include "graphics/memory/GPUAllocator.h"
 #include "graphics/models/Mesh.h"
@@ -20,26 +20,23 @@
 
 #include "raven/model.h"
 
-
-std::vector<std::function<void(int, int, int)>> RavenApp::OnMouseButton = {};
-std::vector<std::function<void(double, double)>> RavenApp::OnMouseScroll = {};
-std::vector<std::function<void(int, int, int, int)>> RavenApp::OnKey = {};
-std::vector<std::function<void(unsigned int)>> RavenApp::OnChar = {};
-std::vector<std::function<void(int, int)>> RavenApp::OnWindowResized = {};
-
+std::vector<std::function<void( int, int, int )>> RavenApp::OnMouseButton = {};
+std::vector<std::function<void( double, double )>> RavenApp::OnMouseScroll = {};
+std::vector<std::function<void( int, int, int, int )>> RavenApp::OnKey = {};
+std::vector<std::function<void( unsigned int )>> RavenApp::OnChar = {};
+std::vector<std::function<void( int, int )>> RavenApp::OnWindowResized = {};
 
 std::mutex RavenApp::queue_mutex;
 std::condition_variable RavenApp::renderThreadWait;
 std::condition_variable RavenApp::updateThreadWait;
 
 RavenApp::RavenApp() :
-	window(nullptr),
-	imguiVulkan(nullptr),
-	updateFrameIndex(0),
-	renderFrameIndex(0),
-	accumelatedTime(0)
+	window( nullptr ),
+	imguiVulkan( nullptr ),
+	updateFrameIndex( 0 ),
+	renderFrameIndex( 0 ),
+	accumelatedTime( 0 )
 {
-
 }
 
 RavenApp::~RavenApp()
@@ -48,136 +45,133 @@ RavenApp::~RavenApp()
 	delete renderSemaphore;
 	delete imguiVulkan;
 
-	vkDestroyFence(GraphicsContext::LogicalDevice, renderFence, GraphicsContext::GlobalAllocator.Get());
+	vkDestroyFence( GraphicsContext::LogicalDevice, renderFence, GraphicsContext::GlobalAllocator.Get() );
 
 	GraphicsDevice::Instance().Finalize();
 
-	glfwDestroyWindow(window);
+	glfwDestroyWindow( window );
 
 	glfwTerminate();
 }
 
-void error_callback(int error, const char* description)
+void error_callback( int error, const char* description )
 {
-	puts(description);
+	puts( description );
 }
 
 bool RavenApp::Initialize()
 {
 	{
-		if (!glfwInit()) //Initialize GLFW
+		if ( !glfwInit() ) //Initialize GLFW
 		{
 			std::cout << "GLFW not initialized." << std::endl;
 			return false;
 		}
-		
-		glfwSetErrorCallback(error_callback);
 
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+		glfwSetErrorCallback( error_callback );
 
-		window = glfwCreateWindow(1280, 720, "Vulkan window", nullptr, nullptr);
+		glfwWindowHint( GLFW_CLIENT_API, GLFW_NO_API );
+		glfwWindowHint( GLFW_RESIZABLE, GLFW_TRUE );
+
+		window = glfwCreateWindow( 1280, 720, "Vulkan window", nullptr, nullptr );
 	}
 
-	if (glfwVulkanSupported() == GLFW_TRUE)
+	if ( glfwVulkanSupported() == GLFW_TRUE )
 	{
 		std::cout << "Vulkan is supported." << std::endl;
 	}
-	else 
+	else
 	{
 		std::cout << "Vulkan is NOT supported. Falling back to DirectX11" << std::endl;
 	}
 
 	uint32_t glfwExtensionCount = 0;
-	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-	
-	std::vector<std::string> windowExtensionsNeeded(glfwExtensions, glfwExtensions + glfwExtensionCount);
+	const char** glfwExtensions = glfwGetRequiredInstanceExtensions( &glfwExtensionCount );
+
+	std::vector<std::string> windowExtensionsNeeded( glfwExtensions, glfwExtensions + glfwExtensionCount );
 
 	//Note: Ownership given to GraphicsDevice
 	GraphicsContext::VulkanInstance = std::make_shared<VulkanInstance>();
 
 	std::cout << glfwExtensionCount << " extensions needed:" << std::endl;
-	for (size_t i = 0; i < windowExtensionsNeeded.size(); i++)
+	for ( size_t i = 0; i < windowExtensionsNeeded.size(); i++ )
 	{
-		if (!GraphicsContext::VulkanInstance->IsExtensionAvailable(windowExtensionsNeeded[i]))
+		if ( !GraphicsContext::VulkanInstance->IsExtensionAvailable( windowExtensionsNeeded[ i ] ) )
 		{
-			std::cout << "Missing " << windowExtensionsNeeded[i] << " extension." << std::endl;
+			std::cout << "Missing " << windowExtensionsNeeded[ i ] << " extension." << std::endl;
 			return false;
 		}
 
-		std::cout << windowExtensionsNeeded[i] << " extension is available." << std::endl;
+		std::cout << windowExtensionsNeeded[ i ] << " extension is available." << std::endl;
 	}
 
+	glfwSetWindowUserPointer( window, this );
 
-	glfwSetWindowUserPointer(window, this);
+	glfwSetWindowSizeCallback( window, RavenApp::WindowResizedCallback );
+	glfwSetMouseButtonCallback( window, RavenApp::MouseButtonCallback );
+	glfwSetScrollCallback( window, RavenApp::ScrollCallback );
+	glfwSetKeyCallback( window, RavenApp::KeyCallback );
+	glfwSetCharCallback( window, RavenApp::CharCallback );
 
-	glfwSetWindowSizeCallback(window, RavenApp::WindowResizedCallback);
-	glfwSetMouseButtonCallback(window, RavenApp::MouseButtonCallback);
-	glfwSetScrollCallback(window, RavenApp::ScrollCallback);
-	glfwSetKeyCallback(window, RavenApp::KeyCallback);
-	glfwSetCharCallback(window, RavenApp::CharCallback);
-
-	GraphicsContext::VulkanInstance->CreateInstance(windowExtensionsNeeded);
+	GraphicsContext::VulkanInstance->CreateInstance( windowExtensionsNeeded );
 	GraphicsContext::VulkanInstance->HookDebugCallback();
-
 
 	//Note: Ownership given to GraphicsDevice
 	std::shared_ptr<VulkanSwapChain> vulkanSwapChain = std::make_shared<VulkanSwapChain>();
 
 	GraphicsContext::GlobalAllocator.PrintStats();
-	VkResult result = glfwCreateWindowSurface(GraphicsContext::VulkanInstance->GetNative(), window, vulkanSwapChain->GetSurface().AllocationCallbacks(), vulkanSwapChain->GetSurface().Replace());
-	assert(result == VK_SUCCESS);
+	VkResult result = glfwCreateWindowSurface( GraphicsContext::VulkanInstance->GetNative(), window, vulkanSwapChain->GetSurface().AllocationCallbacks(), vulkanSwapChain->GetSurface().Replace() );
+	assert( result == VK_SUCCESS );
 
-	GraphicsDevice::Instance().Initialize(glm::u32vec2(1280, 720), vulkanSwapChain);
+	GraphicsDevice::Instance().Initialize( glm::u32vec2( 1280, 720 ), vulkanSwapChain );
 
 	GraphicsContext::GlobalAllocator.PrintStats();
-	
-	GraphicsContext::CommandBufferPool->Create(commandBuffers, GraphicsContext::SwapChain->GetAmountOfFrameBuffers());
+
+	GraphicsContext::CommandBufferPool->Create( commandBuffers, GraphicsContext::SwapChain->GetAmountOfFrameBuffers() );
 
 	imguiVulkan = new IMGUIVulkan();
 	IMGUI_CHECKVERSION();
-	ImGui::CreateContext(nullptr);	
-	imguiVulkan->Init(window, true);
-	
+	ImGui::CreateContext( nullptr );
+	imguiVulkan->Init( window, true );
+
 	VkFenceCreateInfo fenceInfo = {};
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.pNext = VK_NULL_HANDLE;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-	result = vkCreateFence(GraphicsContext::LogicalDevice, &fenceInfo, GraphicsContext::GlobalAllocator.Get(), &renderFence);
-	assert(result == VK_SUCCESS);
+	result = vkCreateFence( GraphicsContext::LogicalDevice, &fenceInfo, GraphicsContext::GlobalAllocator.Get(), &renderFence );
+	assert( result == VK_SUCCESS );
 
-	model = new Model("cesiumman");
+	model = new Model( "cesiumman" );
 
 	renderSemaphore = new VulkanSemaphore();
 
-	
 	return true;
 }
 
 #if MULTITHREADED_RENDERING
-void RavenApp::RenderThread(RavenApp* app)
+void RavenApp::RenderThread( RavenApp* app )
 {
 	GraphicsContext::GlobalAllocator.PrintStats();
-	while (app->run)
+	while ( app->run )
 	{
-		if (GraphicsContext::LogicalDevice == nullptr)
-			Sleep(50);
+		if ( GraphicsContext::LogicalDevice == nullptr )
+			Sleep( 50 );
 
-		Render(app);
+		Render( app );
 	}
 }
 #endif
 
-void RavenApp::Render(RavenApp* app)
+void RavenApp::Render( RavenApp* app )
 {
 	VkResult result;
 	{
-		std::unique_lock<std::mutex> lock(queue_mutex);
+		std::unique_lock<std::mutex> lock( queue_mutex );
 		// Wait until update thread is done with the next frame
-		RavenApp::renderThreadWait.wait(lock, [=] { return app->updateFrameIndex > app->renderFrameIndex || !app->run; });
+		RavenApp::renderThreadWait.wait( lock, [=] { return app->updateFrameIndex > app->renderFrameIndex || !app->run; } );
 	}
 
-	if (!app->run)
+	if ( !app->run )
 		return;
 
 	//std::cout << "Start of frame " << app->renderFrameIndex << " render " << std::endl;
@@ -188,13 +182,9 @@ void RavenApp::Render(RavenApp* app)
 
 	GraphicsDevice::Instance().Lock();
 
-
-
 	//draw
 	{
 		app->acquireTimer.Start();
-
-		
 
 		//Prepare
 		uint32_t imageIndex = -1;
@@ -202,31 +192,31 @@ void RavenApp::Render(RavenApp* app)
 		{
 			imageIndex = GraphicsContext::SwapChain->PrepareBackBuffer();
 
-			if (imageIndex == -1)
+			if ( imageIndex == -1 )
 			{
 				GraphicsDevice::Instance().Unlock();
 				GraphicsDevice::Instance().SwapchainInvalidated();
 				GraphicsDevice::Instance().Lock();
 			}
 
-		} while (imageIndex == -1);
+		} while ( imageIndex == -1 );
 
-		const FrameBuffer& frameBuffer = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex);
+		const FrameBuffer& frameBuffer = GraphicsContext::SwapChain->GetFrameBuffer( imageIndex );
 		const InstanceWrapper<VkSemaphore>& backBufferSemaphore = frameBuffer.GetLock();
 
 		VkSemaphore renderSemaphore[] = { app->renderSemaphore->GetNative() }; //This semaphore will be signaled when done with rendering the queue
 
-																		  //Sleep(4);
+		//Sleep(4);
 		app->acquireTimer.Stop();
 		app->drawCallTimer.Start();
 
-		std::shared_ptr<CommandBuffer> commandBuffer = app->commandBuffers[imageIndex];
+		std::shared_ptr<CommandBuffer> commandBuffer = app->commandBuffers[ imageIndex ];
 		{
-			
+
 			//std::cout << "current index: " << GraphicsContext::DescriptorPool->GetCurrentIndex() << std::endl;
 
 			{
-				commandBuffer->StartRecording(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+				commandBuffer->StartRecording( VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT );
 
 				VkRenderPassBeginInfo renderPassInfo = {};
 				renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -236,27 +226,26 @@ void RavenApp::Render(RavenApp* app)
 				renderPassInfo.renderArea.extent = GraphicsContext::SwapChain->GetExtent();
 
 				std::array<VkClearValue, 2> clearValues = {};
-				clearValues[0].color = { 100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1.0f }; // = cornflower blue :)
-				clearValues[1].depthStencil = { 1.0f, 0 }; //1.0 means pixel is furthest away, so stuff can be rendered on top of it.
+				clearValues[ 0 ].color = { 100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1.0f }; // = cornflower blue :)
+				clearValues[ 1 ].depthStencil = { 1.0f, 0 }; //1.0 means pixel is furthest away, so stuff can be rendered on top of it.
 
-				renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+				renderPassInfo.clearValueCount = static_cast<uint32_t>( clearValues.size() );
 				renderPassInfo.pClearValues = clearValues.data();
 
-				vkCmdBeginRenderPass(commandBuffer->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+				vkCmdBeginRenderPass( commandBuffer->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE );
 			}
 
 			//TODO: Make the prepare threadsafe by doing a copy?
 			//TODO: dont pass the mesh, it should be owned / held by the renderObject
 			//app->renderobject->PrepareDraw(commandBuffer);
-			app->model->Draw(commandBuffer);
+			app->model->Draw( commandBuffer );
 
 			//app->imguiVulkan->Render(commandBuffer);
 
 			{
-				vkCmdEndRenderPass(commandBuffer->GetNative());
+				vkCmdEndRenderPass( commandBuffer->GetNative() );
 				commandBuffer->StopRecording();
 			}
-
 		}
 		app->drawCallTimer.Stop();
 
@@ -268,15 +257,14 @@ void RavenApp::Render(RavenApp* app)
 
 		//At this point, make sure to wait that the previous render submit was done.
 		{
-			result = vkWaitForFences(GraphicsContext::LogicalDevice, 1, &app->renderFence, true, UINT64_MAX);
-			if (result != VK_SUCCESS)
+			result = vkWaitForFences( GraphicsContext::LogicalDevice, 1, &app->renderFence, true, UINT64_MAX );
+			if ( result != VK_SUCCESS )
 			{
-				std::cout << "vkWaitForFences error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+				std::cout << "vkWaitForFences error: " << Vulkan::GetVkResultAsString( result ) << std::endl;
 				//assert(false && "failed to wait for fences!");
-				goto crap;
 			}
 
-			vkResetFences(GraphicsContext::LogicalDevice, 1, &app->renderFence);
+			vkResetFences( GraphicsContext::LogicalDevice, 1, &app->renderFence );
 		}
 
 		app->renderQueuTimer.Start();
@@ -297,16 +285,14 @@ void RavenApp::Render(RavenApp* app)
 		GraphicsContext::QueueLock.lock();
 		{
 			//Draw (wait until surface is available)
-			result = vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, app->renderFence);
-			if (result != VK_SUCCESS)
+			result = vkQueueSubmit( GraphicsContext::GraphicsQueue, 1, &submitInfo, app->renderFence );
+			if ( result != VK_SUCCESS )
 			{
-				std::cout << "vkQueueSubmit error: " << Vulkan::GetVkResultAsString(result) << std::endl;
-				assert(false && "failed to submit draw command buffer!");
+				std::cout << "vkQueueSubmit error: " << Vulkan::GetVkResultAsString( result ) << std::endl;
+				assert( false && "failed to submit draw command buffer!" );
 			}
 		}
 		GraphicsContext::QueueLock.unlock();
-
-crap:
 
 		//Sleep(4);
 		app->renderQueuTimer.Stop();
@@ -323,17 +309,17 @@ crap:
 		GraphicsContext::QueueLock.lock();
 		{
 			//Present (wait until drawing is done)
-			result = vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
+			result = vkQueuePresentKHR( GraphicsContext::PresentQueue, &presentInfo );
 
-			if (result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR)
+			if ( result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR )
 			{
-				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString( result ) << std::endl;
 				recreateSwapChain = true;
 			}
-			else if (result != VK_SUCCESS)
+			else if ( result != VK_SUCCESS )
 			{
-				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
-				assert(false && "failed to present!");
+				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString( result ) << std::endl;
+				assert( false && "failed to present!" );
 			}
 		}
 		GraphicsContext::QueueLock.unlock();
@@ -341,10 +327,9 @@ crap:
 	}
 	GraphicsDevice::Instance().Unlock();
 
-
-	if (recreateSwapChain)
+	if ( recreateSwapChain )
 	{
-		RavenApp::WindowResizedCallback(app->window, GraphicsContext::WindowSize.x, GraphicsContext::WindowSize.y);
+		RavenApp::WindowResizedCallback( app->window, GraphicsContext::WindowSize.x, GraphicsContext::WindowSize.y );
 	}
 
 	//Sleep(16);
@@ -352,7 +337,7 @@ crap:
 	app->accumelatedTime += app->timer.GetTimeInSeconds();
 
 	{
-		if (app->accumelatedTime > 2.0f)
+		if ( app->accumelatedTime > 2.0f )
 		{
 			std::cout << "a: " << app->acquireTimer.GetTimeInSeconds() << " d: " << app->drawCallTimer.GetTimeInSeconds() << " q: " << app->renderQueuTimer.GetTimeInSeconds() << " p: " << app->presentTimer.GetTimeInSeconds() << std::endl;
 			app->accumelatedTime -= 2.0f;
@@ -366,15 +351,15 @@ void RavenApp::Run()
 	run = true;
 
 #if MULTITHREADED_RENDERING
-	std::thread renderThread(RavenApp::RenderThread, this);
+	std::thread renderThread( RavenApp::RenderThread, this );
 #endif
 
-	float rotation = 310-70;
+	float rotation = 310 - 70;
 	float translationY = -1;
 	//float scale = 0.025;
 	float scale = 1;
 
-	while (!glfwWindowShouldClose(window))
+	while ( !glfwWindowShouldClose( window ) )
 	{
 		//update
 		glfwPollEvents();
@@ -386,7 +371,7 @@ void RavenApp::Run()
 		bool runUpdate = false;
 
 		{
-			std::unique_lock<std::mutex> lock(queue_mutex);
+			std::unique_lock<std::mutex> lock( queue_mutex );
 
 			//The condition will take the lock and will wait for to be notified and will continue
 			//only if were stopping (stop == true) or if there are tasks to do, else it will keep waiting.
@@ -394,34 +379,34 @@ void RavenApp::Run()
 			runUpdate = updateFrameIndex == renderFrameIndex;
 		}
 
-		float delta = std::chrono::duration<float, std::chrono::seconds::period>(std::chrono::high_resolution_clock::now() - previousTime).count();
+		float delta = std::chrono::duration<float, std::chrono::seconds::period>( std::chrono::high_resolution_clock::now() - previousTime ).count();
 		previousTime = std::chrono::high_resolution_clock::now();
 
-		if (runUpdate)
+		if ( runUpdate )
 		{
 			//std::cout << "Start of frame " << app->updateFrameIndex << " update " << std::endl;
-			
+
 			//if (renderobject->standardMaterial != nullptr)
 			{
 				static auto startTime = std::chrono::high_resolution_clock::now();
 
 				CameraUBO& camera = model->AccessUBO();
-				
+
 				auto currentTime = std::chrono::high_resolution_clock::now();
-				float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+				float time = std::chrono::duration<float, std::chrono::seconds::period>( currentTime - startTime ).count();
 
 				//renderobject->camera->model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-				//renderobject->camera->model = glm::rotate(renderobject->camera->model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));		
+				//renderobject->camera->model = glm::rotate(renderobject->camera->model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 
-				camera.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, translationY, 0.0f));
-				camera.model = glm::rotate(camera.model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-				camera.model = glm::scale(camera.model, glm::vec3(scale, scale, scale));
+				camera.model = glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, translationY, 0.0f ) );
+				camera.model = glm::rotate( camera.model, glm::radians( rotation ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+				camera.model = glm::scale( camera.model, glm::vec3( scale, scale, scale ) );
 
-				camera.view = glm::lookAt(glm::vec3(2, 1, 2), glm::vec3(0.0f, 0, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				camera.view = glm::lookAt( glm::vec3( 2, 1, 2 ), glm::vec3( 0.0f, 0, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
 				//renderobject->camera->view = glm::lookAt(glm::vec3(40.0f, 40.0f, 40.0f), glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-				
-				camera.proj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.01f, 100.0f);
-				camera.proj[1][1] *= -1;
+
+				camera.proj = glm::perspective( glm::radians( 45.0f ), 16.0f / 9.0f, 0.01f, 100.0f );
+				camera.proj[ 1 ][ 1 ] *= -1;
 			}
 
 			/*imguiVulkan->NewFrame(delta);
@@ -436,10 +421,10 @@ void RavenApp::Run()
 
 				ImGui::End();
 			}*/
-				
+
 			statsTimer += delta;
 
-			if (statsTimer > 30.0f)
+			if ( statsTimer > 30.0f )
 			{
 				GraphicsContext::GlobalAllocator.PrintStats();
 				statsTimer = 0;
@@ -451,16 +436,15 @@ void RavenApp::Run()
 			RavenApp::renderThreadWait.notify_one();
 		}
 
-
 #if !MULTITHREADED_RENDERING
-		Render(this);
+		Render( this );
 #endif
 
-		Sleep(1);
-		
-		std::string windowTitle = std::string("delta time: ") + Helpers::ValueToString(delta*1000.0f);
+		Sleep( 1 );
 
-		glfwSetWindowTitle(window, windowTitle.c_str());
+		std::string windowTitle = std::string( "delta time: " ) + Helpers::ValueToString( delta * 1000.0f );
+
+		glfwSetWindowTitle( window, windowTitle.c_str() );
 	}
 
 	run = false;
@@ -468,66 +452,66 @@ void RavenApp::Run()
 	//updateThread.join();                // pauses until first finishes
 #if MULTITHREADED_RENDERING
 	RavenApp::renderThreadWait.notify_one();
-	renderThread.join();               // pauses until second finishes
+	renderThread.join(); // pauses until second finishes
 #endif
 
-	for (auto& x : commandBuffers) 
-	{ 
+	for ( auto& x : commandBuffers )
+	{
 		x = nullptr;
 	}
 
-	vkDeviceWaitIdle(GraphicsContext::LogicalDevice);
-}	
+	vkDeviceWaitIdle( GraphicsContext::LogicalDevice );
+}
 
-void RavenApp::WindowResizedCallback(GLFWwindow* window, int width, int height)
+void RavenApp::WindowResizedCallback( GLFWwindow* window, int width, int height )
 {
-	if (width == 0 || height == 0)
+	if ( width == 0 || height == 0 )
 		return;
 
 	std::cout << "WindowResizedCallback:  " << width << "x" << height << std::endl;
 
-	GraphicsContext::WindowSize = glm::ivec2(width, height);
+	GraphicsContext::WindowSize = glm::ivec2( width, height );
 
 	GraphicsDevice::Instance().SwapchainInvalidated();
 
-	for (size_t i = 0; i < OnWindowResized.size(); i++)
+	for ( size_t i = 0; i < OnWindowResized.size(); i++ )
 	{
-		OnWindowResized[i](width, height);
+		OnWindowResized[ i ]( width, height );
 	}
 
-	RavenApp* app = reinterpret_cast<RavenApp*>(glfwGetWindowUserPointer(window));
+	RavenApp* app = reinterpret_cast<RavenApp*>( glfwGetWindowUserPointer( window ) );
 
-	app->model->WindowResized(width, height);
+	app->model->WindowResized( width, height );
 }
 
-void RavenApp::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+void RavenApp::MouseButtonCallback( GLFWwindow* window, int button, int action, int mods )
 {
-	for (size_t i = 0; i < OnMouseButton.size(); i++)
+	for ( size_t i = 0; i < OnMouseButton.size(); i++ )
 	{
-		OnMouseButton[i](button, action, mods);
-	}
-}
-
-void RavenApp::ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
-{
-	for (size_t i = 0; i < OnMouseScroll.size(); i++)
-	{
-		OnMouseScroll[i](xoffset, yoffset);
+		OnMouseButton[ i ]( button, action, mods );
 	}
 }
 
-void RavenApp::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void RavenApp::ScrollCallback( GLFWwindow* window, double xoffset, double yoffset )
 {
-	for (size_t i = 0; i < OnKey.size(); i++)
+	for ( size_t i = 0; i < OnMouseScroll.size(); i++ )
 	{
-		OnKey[i](key, scancode, action, mods);
+		OnMouseScroll[ i ]( xoffset, yoffset );
 	}
 }
 
-void RavenApp::CharCallback(GLFWwindow* window, unsigned int c)
+void RavenApp::KeyCallback( GLFWwindow* window, int key, int scancode, int action, int mods )
 {
-	for (size_t i = 0; i < OnChar.size(); i++)
+	for ( size_t i = 0; i < OnKey.size(); i++ )
 	{
-		OnChar[i](c);
+		OnKey[ i ]( key, scancode, action, mods );
+	}
+}
+
+void RavenApp::CharCallback( GLFWwindow* window, unsigned int c )
+{
+	for ( size_t i = 0; i < OnChar.size(); i++ )
+	{
+		OnChar[ i ]( c );
 	}
 }

@@ -9,33 +9,38 @@ class AABB
 {
 public:
 	explicit AABB() :
-		min(100, 100, 100),
-		max(-100, -100, -100)
-	{
+		min( 100, 100, 100 ),
+		max( -100, -100, -100 ) {
 
-	};
+		};
 
 	~AABB() {};
 
-	AABB(const AABB& mE) = default;
-	AABB(AABB&& mE) = default;
-	AABB& operator=(const AABB& mE) = default;
-	AABB& operator=(AABB&& mE) = default;
+	AABB( const AABB& mE ) = default;
+	AABB( AABB&& mE ) = default;
+	AABB& operator=( const AABB& mE ) = default;
+	AABB& operator=( AABB&& mE ) = default;
 
-	void Grow(const glm::vec3& newPoint)
+	void Grow( const glm::vec3& newPoint )
 	{
-		max = glm::max(newPoint, max);
-		min = glm::min(newPoint, min);
+		max = glm::max( newPoint, max );
+		min = glm::min( newPoint, min );
 	}
 
-	bool Overlaps(const AABB& other)
+	bool Overlaps( const AABB& other )
 	{
-		if (min.x > other.max.x) return false;
-		if (min.y > other.max.y) return false;
-		if (min.z > other.max.z) return false;
-		if (max.x < other.min.x) return false;
-		if (max.y < other.min.y) return false;
-		if (max.z < other.min.z) return false;
+		if ( min.x > other.max.x )
+			return false;
+		if ( min.y > other.max.y )
+			return false;
+		if ( min.z > other.max.z )
+			return false;
+		if ( max.x < other.min.x )
+			return false;
+		if ( max.y < other.min.y )
+			return false;
+		if ( max.z < other.min.z )
+			return false;
 
 		return true;
 

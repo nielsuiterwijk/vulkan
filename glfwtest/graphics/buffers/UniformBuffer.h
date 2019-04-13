@@ -1,9 +1,9 @@
 #pragma once
 
-#include "standard.h"
-#include "graphics/GraphicsDevice.h"
 #include "graphics/GraphicsContext.h"
+#include "graphics/GraphicsDevice.h"
 #include "graphics/buffers/VulkanDescriptorPool.h"
+#include "standard.h"
 
 struct DataBlock
 {
@@ -15,19 +15,22 @@ struct DataBlock
 class UniformBuffer
 {
 public:
-	UniformBuffer(DataBlock data);
+	UniformBuffer( DataBlock data );
 	~UniformBuffer();
-	
+
 	void Upload();
 
 	template <class T>
-	const T* Get() const { return static_cast<T*>(dataBlock.data); }
+	const T* Get() const
+	{
+		return static_cast<T*>( dataBlock.data );
+	}
 
 	const VkDescriptorBufferInfo& GetDescriptorInfo() const { return bufferInfo; }
 
 private:
 	DataBlock dataBlock;
-	
+
 	VulkanBuffer vulkanBuffer;
 	VkDescriptorBufferInfo bufferInfo;
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 #pragma warning( push )
-#pragma warning( disable: 4127 )
+#pragma warning( disable : 4127 )
 
 #include "DebugAssert.h"
 
@@ -18,24 +18,23 @@ typedef int int32;
 typedef unsigned long long uint64;
 typedef long long int64;
 
-
 class Integer
 {
 public:
 	static void RunSanityCheck()
 	{
-		ASSERT(sizeof(byte) == 1);
-		ASSERT(sizeof(uint8) == 1);
-		ASSERT(sizeof(sbyte) == 1);
+		ASSERT( sizeof( byte ) == 1 );
+		ASSERT( sizeof( uint8 ) == 1 );
+		ASSERT( sizeof( sbyte ) == 1 );
 
-		ASSERT(sizeof(int16) == 2);
-		ASSERT(sizeof(uint16) == 2);
+		ASSERT( sizeof( int16 ) == 2 );
+		ASSERT( sizeof( uint16 ) == 2 );
 
-		ASSERT(sizeof(uint32) == 4);
-		ASSERT(sizeof(int32) == 4);
+		ASSERT( sizeof( uint32 ) == 4 );
+		ASSERT( sizeof( int32 ) == 4 );
 
-		ASSERT(sizeof(uint64) == 8);
-		ASSERT(sizeof(int64) == 8);
+		ASSERT( sizeof( uint64 ) == 8 );
+		ASSERT( sizeof( int64 ) == 8 );
 	}
 
 	static constexpr sbyte MAX_INT8 = 127;
@@ -56,4 +55,4 @@ public:
 	static constexpr uint64 MAX_UINT64 = 18446744073709551615U;
 };
 
-#pragma warning(pop)
+#pragma warning( pop )

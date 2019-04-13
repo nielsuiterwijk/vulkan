@@ -11,16 +11,16 @@ class CommandBufferPool;
 class CommandBuffer
 {
 public:
-	CommandBuffer(std::shared_ptr<CommandBufferPool> commandBufferPool);
+	CommandBuffer( std::shared_ptr<CommandBufferPool> commandBufferPool );
 	~CommandBuffer();
 
 	void Initialize();
 	void Finalize();
 
-	void StartRecording(VkCommandBufferUsageFlagBits flag);
+	void StartRecording( VkCommandBufferUsageFlagBits flag );
 	void StopRecording();
 
-	const VkCommandBuffer&  GetNative() const;
+	const VkCommandBuffer& GetNative() const;
 
 private:
 	VkCommandBuffer commandBuffer;

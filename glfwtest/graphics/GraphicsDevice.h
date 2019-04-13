@@ -4,21 +4,20 @@
 
 #include "graphics/memory/GPUAllocator.h"
 
-#include "shaders\Material.h"
-#include "graphics\buffers\CommandBufferPool.h"
 #include "graphics\PipelineStateObject.h"
 #include "graphics\RenderPass.h"
+#include "graphics\buffers\CommandBufferPool.h"
+#include "shaders\Material.h"
 
 #include "standard.h"
 
-#include <vector>
-#include <string>
 #include <memory>
 #include <mutex>
+#include <string>
+#include <vector>
 
 class VulkanInstance;
 class VulkanSwapChain;
-
 
 struct QueueFamilyIndices
 {
@@ -31,8 +30,6 @@ struct QueueFamilyIndices
 		return graphicsFamily >= 0 && presentFamily >= 0 && transportFamily >= 0;
 	}
 };
-
-
 
 class GraphicsDevice
 {
@@ -49,13 +46,13 @@ public:
 
 	void Finalize();
 
-	void Initialize(const glm::u32vec2& windowSize, std::shared_ptr<VulkanSwapChain> vulkanSwapChain);
+	void Initialize( const glm::u32vec2& windowSize, std::shared_ptr<VulkanSwapChain> vulkanSwapChain );
 
 	void SwapchainInvalidated();
 
-	std::shared_ptr<Material> CreateMaterial(const std::string& fileName);
+	std::shared_ptr<Material> CreateMaterial( const std::string& fileName );
 
-	void OnSwapchainInvalidated(std::function<void()> callback);
+	void OnSwapchainInvalidated( std::function<void()> callback );
 
 	void Lock() { busy.lock(); }
 	void Unlock() { busy.unlock(); }
@@ -64,12 +61,12 @@ private:
 	GraphicsDevice();
 
 private:
-	void CreatePhysicalDevice(const InstanceWrapper<VkSurfaceKHR>& surface);
+	void CreatePhysicalDevice( const InstanceWrapper<VkSurfaceKHR>& surface );
 	void CreateLogicalDevice();
 
-	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physicalDevice, const InstanceWrapper<VkSurfaceKHR>&  surface);
+	QueueFamilyIndices FindQueueFamilies( VkPhysicalDevice physicalDevice, const InstanceWrapper<VkSurfaceKHR>& surface );
 
-	bool HasAllRequiredExtensions(VkPhysicalDevice device);
+	bool HasAllRequiredExtensions( VkPhysicalDevice device );
 
 	void DestroySwapchain();
 	void RebuildSwapchain();
@@ -77,14 +74,9 @@ private:
 	void CreateDescriptorPool();
 
 private:
+	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
-	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME	};
-
-
-	std::vector< std::function<void()> > swapchainInvalidatedCallbacks;
+	std::vector<std::function<void()>> swapchainInvalidatedCallbacks;
 
 	std::mutex busy;
-
-
-
 };

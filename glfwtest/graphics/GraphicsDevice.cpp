@@ -2,19 +2,18 @@
 
 #include "standard.h"
 
+#include "GraphicsContext.h"
 #include "PipelineStateObject.h"
 #include "RenderPass.h"
-#include "shaders\ShaderCache.h"
-#include "helpers/VulkanHelpers.h"
 #include "VulkanInstance.h"
 #include "VulkanSwapChain.h"
-#include "GraphicsContext.h"
+#include "helpers/VulkanHelpers.h"
+#include "shaders\ShaderCache.h"
 
 #include "memory/GPUAllocator.h"
 
 #include <iostream>
 #include <set>
-
 
 GraphicsDevice::GraphicsDevice()
 {
@@ -22,7 +21,7 @@ GraphicsDevice::GraphicsDevice()
 
 void GraphicsDevice::Finalize()
 {
-	if (GraphicsContext::SwapChain == nullptr)
+	if ( GraphicsContext::SwapChain == nullptr )
 		return;
 
 	GraphicsContext::SwapChain->DestroyFrameBuffers();
@@ -40,10 +39,9 @@ void GraphicsDevice::Finalize()
 
 	GraphicsContext::SwapChain->DestroySwapchain();
 
-
 	delete GraphicsContext::DeviceAllocator;
 
-	vkDestroyEvent(GraphicsContext::LogicalDevice, GraphicsContext::TransportEvent, GraphicsContext::GlobalAllocator.Get());
+	vkDestroyEvent( GraphicsContext::LogicalDevice, GraphicsContext::TransportEvent, GraphicsContext::GlobalAllocator.Get() );
 
 	GraphicsContext::LogicalDevice = nullptr;
 	//a = nullptr;
@@ -57,14 +55,14 @@ GraphicsDevice::~GraphicsDevice()
 	Finalize();
 }
 
-void GraphicsDevice::Initialize(const glm::u32vec2& windowSize, std::shared_ptr<VulkanSwapChain> vulkanSwapChain)
+void GraphicsDevice::Initialize( const glm::u32vec2& windowSize, std::shared_ptr<VulkanSwapChain> vulkanSwapChain )
 {
 	GraphicsContext::WindowSize = windowSize;
 	GraphicsContext::SwapChain = vulkanSwapChain;
 
-	CreatePhysicalDevice(GraphicsContext::SwapChain->GetSurface());
-	
-	GraphicsContext::FamilyIndices = FindQueueFamilies(GraphicsContext::PhysicalDevice, GraphicsContext::SwapChain->GetSurface());
+	CreatePhysicalDevice( GraphicsContext::SwapChain->GetSurface() );
+
+	GraphicsContext::FamilyIndices = FindQueueFamilies( GraphicsContext::PhysicalDevice, GraphicsContext::SwapChain->GetSurface() );
 
 	CreateLogicalDevice();
 
@@ -75,17 +73,17 @@ void GraphicsDevice::Initialize(const glm::u32vec2& windowSize, std::shared_ptr<
 		eventInfo.flags = 0;
 		eventInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
 
-		VkResult result = vkCreateEvent(GraphicsContext::LogicalDevice, &eventInfo, GraphicsContext::GlobalAllocator.Get(), &GraphicsContext::TransportEvent);
-		assert(result == VK_SUCCESS);
+		VkResult result = vkCreateEvent( GraphicsContext::LogicalDevice, &eventInfo, GraphicsContext::GlobalAllocator.Get(), &GraphicsContext::TransportEvent );
+		assert( result == VK_SUCCESS );
 	}
-	
-	GraphicsContext::DeviceAllocator = new GPUAllocator(16 * 1024 * 1024, 8);
 
-	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.transportFamily, 0, &GraphicsContext::TransportQueue);
-	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.graphicsFamily, 0, &GraphicsContext::GraphicsQueue);
-	vkGetDeviceQueue(GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.presentFamily, 0, &GraphicsContext::PresentQueue);
+	GraphicsContext::DeviceAllocator = new GPUAllocator( 16 * 1024 * 1024, 8 );
 
-	if (GraphicsContext::TransportQueue == GraphicsContext::GraphicsQueue && GraphicsContext::GraphicsQueue == GraphicsContext::PresentQueue)
+	vkGetDeviceQueue( GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.transportFamily, 0, &GraphicsContext::TransportQueue );
+	vkGetDeviceQueue( GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.graphicsFamily, 0, &GraphicsContext::GraphicsQueue );
+	vkGetDeviceQueue( GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.presentFamily, 0, &GraphicsContext::PresentQueue );
+
+	if ( GraphicsContext::TransportQueue == GraphicsContext::GraphicsQueue && GraphicsContext::GraphicsQueue == GraphicsContext::PresentQueue )
 	{
 		std::cout << "Single queue platform" << std::endl;
 	}
@@ -94,26 +92,21 @@ void GraphicsDevice::Initialize(const glm::u32vec2& windowSize, std::shared_ptr<
 		std::cout << "Multiple queue platform" << std::endl;
 	}
 
+	GraphicsContext::CommandBufferPool = std::make_shared<CommandBufferPool>( VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT );
+	GraphicsContext::CommandBufferPoolTransient = std::make_shared<CommandBufferPool>( VK_COMMAND_POOL_CREATE_TRANSIENT_BIT );
 
-	GraphicsContext::CommandBufferPool = std::make_shared<CommandBufferPool>(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-	GraphicsContext::CommandBufferPoolTransient = std::make_shared<CommandBufferPool>(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
+	GraphicsContext::SwapChain->Connect( GraphicsContext::WindowSize, GraphicsContext::FamilyIndices );
 
-	GraphicsContext::SwapChain->Connect(GraphicsContext::WindowSize, GraphicsContext::FamilyIndices);
-	
-
-	GraphicsContext::RenderPass = std::make_shared<RenderPass>(GraphicsContext::SwapChain->GetSurfaceFormat().format, GraphicsContext::SwapChain->GetDepthBuffer().GetFormat());
+	GraphicsContext::RenderPass = std::make_shared<RenderPass>( GraphicsContext::SwapChain->GetSurfaceFormat().format, GraphicsContext::SwapChain->GetDepthBuffer().GetFormat() );
 	GraphicsContext::SwapChain->SetupFrameBuffers();
-	
 
 	CreateDescriptorPool();
-	
 }
 
 void GraphicsDevice::CreateDescriptorPool()
 {
-	GraphicsContext::DescriptorPool = std::make_shared<VulkanDescriptorPool>(70);
+	GraphicsContext::DescriptorPool = std::make_shared<VulkanDescriptorPool>( 70 );
 }
-
 
 void GraphicsDevice::DestroySwapchain()
 {
@@ -133,9 +126,9 @@ void GraphicsDevice::DestroySwapchain()
 void GraphicsDevice::RebuildSwapchain()
 {
 	//rebuild:
-	GraphicsContext::SwapChain->Connect(GraphicsContext::WindowSize, GraphicsContext::FamilyIndices);
+	GraphicsContext::SwapChain->Connect( GraphicsContext::WindowSize, GraphicsContext::FamilyIndices );
 
-	GraphicsContext::RenderPass = std::make_shared<RenderPass>(GraphicsContext::SwapChain->GetSurfaceFormat().format, GraphicsContext::SwapChain->GetDepthBuffer().GetFormat());
+	GraphicsContext::RenderPass = std::make_shared<RenderPass>( GraphicsContext::SwapChain->GetSurfaceFormat().format, GraphicsContext::SwapChain->GetDepthBuffer().GetFormat() );
 	GraphicsContext::SwapChain->SetupFrameBuffers();
 
 	GraphicsContext::CommandBufferPool->RecreateAll();
@@ -144,30 +137,29 @@ void GraphicsDevice::RebuildSwapchain()
 void GraphicsDevice::SwapchainInvalidated()
 {
 	Lock();
-	vkDeviceWaitIdle(GraphicsContext::LogicalDevice);
+	vkDeviceWaitIdle( GraphicsContext::LogicalDevice );
 
 	DestroySwapchain();
 	RebuildSwapchain();
 
-	for (size_t i = 0; i < swapchainInvalidatedCallbacks.size(); i++)
+	for ( size_t i = 0; i < swapchainInvalidatedCallbacks.size(); i++ )
 	{
-		swapchainInvalidatedCallbacks[i]();
+		swapchainInvalidatedCallbacks[ i ]();
 	}
-	
 
 	Unlock();
 }
 
-std::shared_ptr<Material> GraphicsDevice::CreateMaterial(const std::string& fileName)
+std::shared_ptr<Material> GraphicsDevice::CreateMaterial( const std::string& fileName )
 {
-	std::shared_ptr<Material> material = std::make_shared<Material>(fileName);
+	std::shared_ptr<Material> material = std::make_shared<Material>( fileName );
 
 	return material;
 }
 
-void GraphicsDevice::OnSwapchainInvalidated(std::function<void()> callback)
+void GraphicsDevice::OnSwapchainInvalidated( std::function<void()> callback )
 {
-	swapchainInvalidatedCallbacks.push_back(callback);
+	swapchainInvalidatedCallbacks.push_back( callback );
 }
 
 void GraphicsDevice::CreateLogicalDevice()
@@ -176,14 +168,14 @@ void GraphicsDevice::CreateLogicalDevice()
 	std::set<int> uniqueQueueFamilies = { GraphicsContext::FamilyIndices.graphicsFamily, GraphicsContext::FamilyIndices.presentFamily };
 
 	float queuePriority = 1.0f;
-	for (int queueFamily : uniqueQueueFamilies)
+	for ( int queueFamily : uniqueQueueFamilies )
 	{
 		VkDeviceQueueCreateInfo queueCreateInfo = {};
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queueCreateInfo.queueFamilyIndex = queueFamily;
 		queueCreateInfo.queueCount = 1;
 		queueCreateInfo.pQueuePriorities = &queuePriority;
-		queueCreateInfos.push_back(queueCreateInfo);
+		queueCreateInfos.push_back( queueCreateInfo );
 	}
 
 	VkPhysicalDeviceFeatures deviceFeatures = {};
@@ -192,107 +184,106 @@ void GraphicsDevice::CreateLogicalDevice()
 	VkDeviceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
-	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+	createInfo.queueCreateInfoCount = static_cast<uint32_t>( queueCreateInfos.size() );
 
 	createInfo.pEnabledFeatures = &deviceFeatures;
 
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+	createInfo.enabledExtensionCount = static_cast<uint32_t>( deviceExtensions.size() );
 	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
 	//Note: logical device validation layers got deprecated see: https://www.khronos.org/registry/vulkan/specs/1.0-extensions/xhtml/vkspec.html 31.1.1 Device Layer Deprecation
 	createInfo.enabledLayerCount = 0;
 
-	if (vkCreateDevice(GraphicsContext::PhysicalDevice, &createInfo, GraphicsContext::LogicalDevice.AllocationCallbacks(), GraphicsContext::LogicalDevice.Replace()) != VK_SUCCESS)
+	if ( vkCreateDevice( GraphicsContext::PhysicalDevice, &createInfo, GraphicsContext::LogicalDevice.AllocationCallbacks(), GraphicsContext::LogicalDevice.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error("failed to create logical device!");
+		throw std::runtime_error( "failed to create logical device!" );
 	}
 }
 
-void GraphicsDevice::CreatePhysicalDevice(const InstanceWrapper<VkSurfaceKHR>&  surface)
+void GraphicsDevice::CreatePhysicalDevice( const InstanceWrapper<VkSurfaceKHR>& surface )
 {
 	uint32_t deviceCount = 0;
-	vkEnumeratePhysicalDevices(GraphicsContext::VulkanInstance->GetNative(), &deviceCount, nullptr);
+	vkEnumeratePhysicalDevices( GraphicsContext::VulkanInstance->GetNative(), &deviceCount, nullptr );
 
-	if (deviceCount == 0)
+	if ( deviceCount == 0 )
 	{
-		throw std::runtime_error("failed to find GPUs with Vulkan support!");
+		throw std::runtime_error( "failed to find GPUs with Vulkan support!" );
 	}
 
-	std::vector<VkPhysicalDevice> devices(deviceCount);
-	vkEnumeratePhysicalDevices(GraphicsContext::VulkanInstance->GetNative(), &deviceCount, devices.data());
+	std::vector<VkPhysicalDevice> devices( deviceCount );
+	vkEnumeratePhysicalDevices( GraphicsContext::VulkanInstance->GetNative(), &deviceCount, devices.data() );
 
 	GraphicsContext::PhysicalDevice = VK_NULL_HANDLE;
 
-	for (const auto& vulkanPhysicalDevice : devices)
+	for ( const auto& vulkanPhysicalDevice : devices )
 	{
 		VkPhysicalDeviceProperties deviceProperties;
 		VkPhysicalDeviceFeatures supportedFeatures;
-		vkGetPhysicalDeviceProperties(vulkanPhysicalDevice, &deviceProperties);
-		vkGetPhysicalDeviceFeatures(vulkanPhysicalDevice, &supportedFeatures);
+		vkGetPhysicalDeviceProperties( vulkanPhysicalDevice, &deviceProperties );
+		vkGetPhysicalDeviceFeatures( vulkanPhysicalDevice, &supportedFeatures );
 
-		std::cout << "Vendor: " << Vulkan::GetVendorName(deviceProperties.vendorID) << " GPU: " << deviceProperties.deviceName << std::endl;
+		std::cout << "Vendor: " << Vulkan::GetVendorName( deviceProperties.vendorID ) << " GPU: " << deviceProperties.deviceName << std::endl;
 
-		bool hasValidExtensions = HasAllRequiredExtensions(vulkanPhysicalDevice);
+		bool hasValidExtensions = HasAllRequiredExtensions( vulkanPhysicalDevice );
 
-		bool hasValidQueues = FindQueueFamilies(vulkanPhysicalDevice, surface).IsComplete();
+		bool hasValidQueues = FindQueueFamilies( vulkanPhysicalDevice, surface ).IsComplete();
 		bool isDiscreteGPU = deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
 		bool hasValidSwapchain = false;
 
-		if (hasValidExtensions)
+		if ( hasValidExtensions )
 		{
 			VulkanSwapChainDetails swapChainDetails;
-			swapChainDetails.Initialize(vulkanPhysicalDevice, surface);
+			swapChainDetails.Initialize( vulkanPhysicalDevice, surface );
 			hasValidSwapchain = swapChainDetails.IsValid();
 		}
-
 
 		std::cout << "hasValidQueues: " << hasValidQueues << " hasValidExtensions: " << hasValidExtensions << " isDiscreteGPU: " << isDiscreteGPU << " hasValidSwapchain: " << hasValidSwapchain << std::endl;
 
 		//TODO: Put the anisotrophy filter inside a feature object
-		if (hasValidQueues && hasValidExtensions && isDiscreteGPU && hasValidSwapchain && supportedFeatures.samplerAnisotropy)
+		if ( hasValidQueues && hasValidExtensions && isDiscreteGPU && hasValidSwapchain && supportedFeatures.samplerAnisotropy )
 		{
 			GraphicsContext::PhysicalDevice = vulkanPhysicalDevice;
 		}
 	}
 
-	if (GraphicsContext::PhysicalDevice == VK_NULL_HANDLE)
+	if ( GraphicsContext::PhysicalDevice == VK_NULL_HANDLE )
 	{
-		throw std::runtime_error("failed to find a suitable GPU!");
+		throw std::runtime_error( "failed to find a suitable GPU!" );
 	}
 }
 
-QueueFamilyIndices GraphicsDevice::FindQueueFamilies(VkPhysicalDevice physicalDevice, const InstanceWrapper<VkSurfaceKHR>& surface)
+QueueFamilyIndices GraphicsDevice::FindQueueFamilies( VkPhysicalDevice physicalDevice, const InstanceWrapper<VkSurfaceKHR>& surface )
 {
 	QueueFamilyIndices indices;
 
 	uint32_t queueFamilyCount = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
+	vkGetPhysicalDeviceQueueFamilyProperties( physicalDevice, &queueFamilyCount, nullptr );
 
-	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
+	std::vector<VkQueueFamilyProperties> queueFamilies( queueFamilyCount );
+	vkGetPhysicalDeviceQueueFamilyProperties( physicalDevice, &queueFamilyCount, queueFamilies.data() );
 
 	int i = 0;
-	for (const auto& queueFamily : queueFamilies)
+	for ( const auto& queueFamily : queueFamilies )
 	{
-		if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+		if ( queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT )
 		{
 			indices.graphicsFamily = i;
 		}
-		
-		if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT)
+
+		if ( queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT )
 		{
 			indices.transportFamily = i;
 		}
 
 		VkBool32 presentSupport = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
+		vkGetPhysicalDeviceSurfaceSupportKHR( physicalDevice, i, surface, &presentSupport );
 
-		if (queueFamily.queueCount > 0 && presentSupport)
+		if ( queueFamily.queueCount > 0 && presentSupport )
 		{
 			indices.presentFamily = i;
 		}
 
-		if (indices.IsComplete())
+		if ( indices.IsComplete() )
 		{
 			break;
 		}
@@ -303,19 +294,19 @@ QueueFamilyIndices GraphicsDevice::FindQueueFamilies(VkPhysicalDevice physicalDe
 	return indices;
 }
 
-bool GraphicsDevice::HasAllRequiredExtensions(VkPhysicalDevice physicalDevice)
+bool GraphicsDevice::HasAllRequiredExtensions( VkPhysicalDevice physicalDevice )
 {
 	uint32_t extensionCount;
-	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+	vkEnumerateDeviceExtensionProperties( physicalDevice, nullptr, &extensionCount, nullptr );
 
-	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
+	std::vector<VkExtensionProperties> availableExtensions( extensionCount );
+	vkEnumerateDeviceExtensionProperties( physicalDevice, nullptr, &extensionCount, availableExtensions.data() );
 
-	std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+	std::set<std::string> requiredExtensions( deviceExtensions.begin(), deviceExtensions.end() );
 
-	for (const auto& extension : availableExtensions)
+	for ( const auto& extension : availableExtensions )
 	{
-		requiredExtensions.erase(extension.extensionName);
+		requiredExtensions.erase( extension.extensionName );
 	}
 
 	return requiredExtensions.empty();

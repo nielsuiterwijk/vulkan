@@ -2,11 +2,10 @@
 #include "graphics/GraphicsContext.h"
 
 FrameBuffer::FrameBuffer() :
-	semaphore(nullptr),
-	imageView(GraphicsContext::LogicalDevice, vkDestroyImageView, GraphicsContext::GlobalAllocator.Get()),
-	framebuffer(GraphicsContext::LogicalDevice, vkDestroyFramebuffer, GraphicsContext::GlobalAllocator.Get())
+	semaphore( nullptr ),
+	imageView( GraphicsContext::LogicalDevice, vkDestroyImageView, GraphicsContext::GlobalAllocator.Get() ),
+	framebuffer( GraphicsContext::LogicalDevice, vkDestroyFramebuffer, GraphicsContext::GlobalAllocator.Get() )
 {
-
 }
 
 FrameBuffer::~FrameBuffer()
@@ -22,7 +21,7 @@ void FrameBuffer::Destroy()
 	semaphore = nullptr;
 }
 
-void FrameBuffer::InitializeImageView(VkFormat imageFormat, VkImage image)
+void FrameBuffer::InitializeImageView( VkFormat imageFormat, VkImage image )
 {
 	format = imageFormat;
 
@@ -42,38 +41,36 @@ void FrameBuffer::InitializeImageView(VkFormat imageFormat, VkImage image)
 	viewInfo.subresourceRange.levelCount = 1;
 	viewInfo.subresourceRange.baseArrayLayer = 0;
 	viewInfo.subresourceRange.layerCount = 1;
-	
-	if (vkCreateImageView(GraphicsContext::LogicalDevice, &viewInfo, imageView.AllocationCallbacks(), imageView.Replace()) != VK_SUCCESS)
+
+	if ( vkCreateImageView( GraphicsContext::LogicalDevice, &viewInfo, imageView.AllocationCallbacks(), imageView.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error("failed to create texture image view!");
+		throw std::runtime_error( "failed to create texture image view!" );
 	}
 }
 
-void FrameBuffer::InitializeFrameBuffer(uint32_t width, uint32_t height, DepthBuffer& depthBuffer)
+void FrameBuffer::InitializeFrameBuffer( uint32_t width, uint32_t height, DepthBuffer& depthBuffer )
 {
 	this->width = width;
 	this->height = height;
 
 	semaphore = std::make_shared<VulkanSemaphore>();
 
-	std::array<VkImageView, 2> attachments =
-	{
+	std::array<VkImageView, 2> attachments = {
 		GetImageView(),
 		depthBuffer.GetImageView()
 	};
-	
+
 	VkFramebufferCreateInfo framebufferInfo = {};
 	framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	framebufferInfo.renderPass = GraphicsContext::RenderPass->GetNative();
-	framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	framebufferInfo.attachmentCount = static_cast<uint32_t>( attachments.size() );
 	framebufferInfo.pAttachments = attachments.data();
 	framebufferInfo.width = width;
 	framebufferInfo.height = height;
 	framebufferInfo.layers = 1;
 
-
-	if (vkCreateFramebuffer(GraphicsContext::LogicalDevice, &framebufferInfo, framebuffer.AllocationCallbacks(), framebuffer.Replace()) != VK_SUCCESS)
+	if ( vkCreateFramebuffer( GraphicsContext::LogicalDevice, &framebufferInfo, framebuffer.AllocationCallbacks(), framebuffer.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error("failed to create framebuffer!");
+		throw std::runtime_error( "failed to create framebuffer!" );
 	}
 }

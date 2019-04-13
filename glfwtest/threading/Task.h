@@ -3,14 +3,12 @@
 #include <functional>
 #include <future>
 
-
 class Task
 {
 public:
-	Task(std::function<void()> callback) :
-		callback(callback)
+	Task( std::function<void()> callback ) :
+		callback( callback )
 	{
-
 	}
 
 	void Run()

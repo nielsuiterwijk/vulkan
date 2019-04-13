@@ -1,8 +1,7 @@
 #pragma once
 
-#include "standard.h"
 #include "MemoryUtils.h"
-
+#include "standard.h"
 
 class Allocator
 {
@@ -10,11 +9,11 @@ public:
 	Allocator();
 	virtual ~Allocator();
 
-	virtual void* Allocate(size_t size, size_t alignment = alignof(std::max_align_t)) = 0;
-	virtual void Deallocate(void* address) = 0;
+	virtual void* Allocate( size_t size, size_t alignment = alignof( std::max_align_t ) ) = 0;
+	virtual void Deallocate( void* address ) = 0;
 
-	virtual size_t GetSizeOf(void* address) = 0;
-	virtual size_t GetAlignmentOf(void* address) = 0;
+	virtual size_t GetSizeOf( void* address ) = 0;
+	virtual size_t GetAlignmentOf( void* address ) = 0;
 
 	void* GetStart() const
 	{
@@ -23,10 +22,10 @@ public:
 
 	void* GetEnd() const
 	{
-		return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(start) + size);
+		return reinterpret_cast<void*>( reinterpret_cast<uintptr_t>( start ) + size );
 	}
 
-	bool HasAddress(void* address)
+	bool HasAddress( void* address )
 	{
 		return address >= GetStart() && address < GetEnd();
 	}
@@ -52,7 +51,7 @@ public:
 	}
 
 protected:
-	void Initialize(size_t size, void* start);
+	void Initialize( size_t size, void* start );
 
 protected:
 	void* start;

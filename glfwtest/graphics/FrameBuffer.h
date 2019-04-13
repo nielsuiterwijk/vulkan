@@ -1,8 +1,8 @@
 #pragma once
 
-#include "textures/Texture2D.h"
-#include "graphics/helpers/VulkanSemaphore.h"
 #include "graphics/DepthBuffer.h"
+#include "graphics/helpers/VulkanSemaphore.h"
+#include "textures/Texture2D.h"
 
 //A specialized Texture2D class, too specialized for inheritance
 class FrameBuffer
@@ -13,8 +13,8 @@ public:
 
 	void Destroy();
 
-	void InitializeImageView(VkFormat imageFormat, VkImage image);
-	void InitializeFrameBuffer(uint32_t width, uint32_t height, DepthBuffer& depthBuffer);
+	void InitializeImageView( VkFormat imageFormat, VkImage image );
+	void InitializeFrameBuffer( uint32_t width, uint32_t height, DepthBuffer& depthBuffer );
 
 	const InstanceWrapper<VkFramebuffer>& GetNative() const { return framebuffer; }
 	const InstanceWrapper<VkSemaphore>& GetLock() const { return semaphore->GetNative(); }
@@ -22,7 +22,6 @@ public:
 	const InstanceWrapper<VkImageView>& GetImageView() const { return imageView; }
 
 private:
-
 	InstanceWrapper<VkImageView> imageView;
 
 	InstanceWrapper<VkFramebuffer> framebuffer;
