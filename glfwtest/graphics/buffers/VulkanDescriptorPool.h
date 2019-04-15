@@ -18,8 +18,6 @@ public:
 
 	void SetupBindings( std::shared_ptr<VertexShader> pVertexShader, std::shared_ptr<FragmentShader> pFragmentShader );
 
-	VkDescriptorPool GetNative() const;
-
 	VkDescriptorSet RetrieveDescriptorSet( std::shared_ptr<Material> material, Texture2D* texture, TextureSampler* sampler );
 	VkPipelineLayout GetPipelineLayout() const { return pipelineLayout; }
 

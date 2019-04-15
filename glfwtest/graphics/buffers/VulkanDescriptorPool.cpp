@@ -8,8 +8,6 @@
 #include "graphics/textures/Texture2D.h"
 #include "graphics/textures/TextureSampler.h"
 
-static constexpr int32_t VULKAN_NUM_DESCRIPTOR_SETS = 4;
-static constexpr int32_t VULKAN_NUM_BINDINGS = 16;
 static constexpr int32_t VULKAN_NUM_SETS_PER_POOL = 16;
 
 VulkanDescriptorPool::VulkanDescriptorPool() :
@@ -27,12 +25,6 @@ VulkanDescriptorPool::~VulkanDescriptorPool()
 	descriptorSetLayout = nullptr;
 }
 
-VkDescriptorPool VulkanDescriptorPool::GetNative() const
-{
-	return descriptorPool;
-}
-
-// TODO: This needs to take in material and generate descriptor set based on the generated .vert.json file
 VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( std::shared_ptr<Material> material, Texture2D* texture, TextureSampler* sampler )
 {
 	assert( material != nullptr );
@@ -103,13 +95,10 @@ void VulkanDescriptorPool::SetupBindings( std::shared_ptr<VertexShader> pVertexS
 	resourceLayouts.insert( resourceLayouts.end(), pFragmentShader->GetResourceLayout().begin(), pFragmentShader->GetResourceLayout().end() );
 
 	std::vector<VkDescriptorSetLayoutBinding> bindings;
-	for ( unsigned i = 0; i < VULKAN_NUM_BINDINGS; i++ )
+	bindings.reserve( resourceLayouts.size() );
+	poolSizes.reserve( resourceLayouts.size() );
+	for ( const ResourceLayout& resourceLayout : resourceLayouts )
 	{
-		if ( i >= resourceLayouts.size() )
-			continue;
-
-		ResourceLayout resourceLayout = resourceLayouts[ i ];
-
 		uint32_t ArraySize = resourceLayout.ArraySize;
 
 		VkSampler sampler = VK_NULL_HANDLE;
