@@ -5,7 +5,7 @@
 
 class Mesh;
 class SkinnedMesh;
-class BoneInfo;
+struct BoneInfo;
 
 namespace tinygltf
 {

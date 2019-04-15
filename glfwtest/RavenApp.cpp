@@ -354,7 +354,7 @@ void RavenApp::Run()
 	std::thread renderThread( RavenApp::RenderThread, this );
 #endif
 
-	float rotation = 310 - 70;
+	static float rotation = 310;
 	float translationY = -1;
 	//float scale = 0.025;
 	float scale = 1;
@@ -364,7 +364,7 @@ void RavenApp::Run()
 		//update
 		glfwPollEvents();
 
-		auto previousTime = std::chrono::high_resolution_clock::now();
+		static auto previousTime = std::chrono::high_resolution_clock::now();
 
 		float statsTimer = 0.0f;
 
@@ -380,10 +380,10 @@ void RavenApp::Run()
 		}
 
 		float delta = std::chrono::duration<float, std::chrono::seconds::period>( std::chrono::high_resolution_clock::now() - previousTime ).count();
-		previousTime = std::chrono::high_resolution_clock::now();
 
 		if ( runUpdate )
 		{
+			previousTime = std::chrono::high_resolution_clock::now();
 			//std::cout << "Start of frame " << app->updateFrameIndex << " update " << std::endl;
 
 			//if (renderobject->standardMaterial != nullptr)
@@ -394,6 +394,11 @@ void RavenApp::Run()
 
 				auto currentTime = std::chrono::high_resolution_clock::now();
 				float time = std::chrono::duration<float, std::chrono::seconds::period>( currentTime - startTime ).count();
+
+				rotation -= delta * 45.0f;
+
+				if ( rotation < 0 )
+					rotation = 360.0f;
 
 				//renderobject->camera->model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 				//renderobject->camera->model = glm::rotate(renderobject->camera->model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));

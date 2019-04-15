@@ -23,22 +23,22 @@ struct Vertex
 		return pos == other.pos && color == other.color && texCoords == other.texCoords && normal == other.normal;
 	}
 
-	static size_t GetOffsetFromLocation( int location )
+	static uint32_t GetOffsetFromLocation( int location )
 	{
 		switch ( location )
 		{
 		case 0:
-			return offsetof( Vertex, pos );
+			return static_cast<uint32_t>( offsetof( Vertex, pos ) );
 		case 1:
-			return offsetof( Vertex, texCoords );
+			return static_cast<uint32_t>( offsetof( Vertex, texCoords ) );
 		case 2:
-			return offsetof( Vertex, color );
+			return static_cast<uint32_t>( offsetof( Vertex, color ) );
 		case 3:
-			return offsetof( Vertex, normal );
+			return static_cast<uint32_t>( offsetof( Vertex, normal ) );
 		case 4:
-			return offsetof( Vertex, joint0 );
+			return static_cast<uint32_t>( offsetof( Vertex, joint0 ) );
 		case 5:
-			return offsetof( Vertex, weight0 );
+			return static_cast<uint32_t>( offsetof( Vertex, weight0 ) );
 		}
 
 		return -1;

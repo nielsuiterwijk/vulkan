@@ -1,4 +1,5 @@
 #include "FileSystem.h"
+#include "threading/ThreadPool.h"
 
 bool FileSystem::stop = false;
 bool FileSystem::threadStarted = false;
@@ -9,17 +10,26 @@ std::queue<FileSystem::AsyncFileLoad> FileSystem::tasks;
 std::mutex FileSystem::queue_mutex;
 std::condition_variable FileSystem::condition;
 
+ThreadPool* FileSystem::threadPool = nullptr;
+
 void FileSystem::Start()
 {
 	assert( !threadStarted );
 
 	std::cout << "[FileSystem] starting thread.." << std::endl;
+
+	threadPool = new ThreadPool( 1 );
+
 	fileLoadingThread = std::thread( LoadAsync );
 }
 
 void FileSystem::Exit()
 {
 	std::cout << "[FileSystem] stopping thread.." << std::endl;
+
+	delete threadPool;
+	threadPool = nullptr;
+
 	stop = true;
 
 	queue_mutex.lock();
@@ -100,6 +110,11 @@ void FileSystem::LoadAsync()
 			tasks.pop();
 		}
 
-		loadTask.callback( ReadFile( loadTask.fileName ) );
+		std::vector<char> fileData = ReadFile( loadTask.fileName );
+
+		threadPool->Enqueue( [=]() {
+			std::cout << "[FileSystem] callback -> " << loadTask.fileName << std::endl;
+			loadTask.callback( fileData );
+		} );
 	}
 }

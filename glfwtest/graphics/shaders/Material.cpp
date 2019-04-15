@@ -77,6 +77,8 @@ const std::vector<VkPipelineShaderStageCreateInfo>& Material::GetShaderStages()
 		std::cout << "Initializing shader stages" << std::endl;
 		shaderStages.push_back( vertex->GetShaderStageCreateInfo() );
 		shaderStages.push_back( fragment->GetShaderStageCreateInfo() );
+
+		descriptorPool.SetupBindings( vertex, fragment );
 	}
 
 	return shaderStages;

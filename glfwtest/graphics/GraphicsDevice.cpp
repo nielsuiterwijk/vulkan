@@ -33,7 +33,6 @@ void GraphicsDevice::Finalize()
 	GraphicsContext::CommandBufferPool = nullptr;
 
 	GraphicsContext::RenderPass = nullptr;
-	GraphicsContext::DescriptorPool = nullptr;
 
 	ShaderCache::Destroy();
 
@@ -99,13 +98,6 @@ void GraphicsDevice::Initialize( const glm::u32vec2& windowSize, std::shared_ptr
 
 	GraphicsContext::RenderPass = std::make_shared<RenderPass>( GraphicsContext::SwapChain->GetSurfaceFormat().format, GraphicsContext::SwapChain->GetDepthBuffer().GetFormat() );
 	GraphicsContext::SwapChain->SetupFrameBuffers();
-
-	CreateDescriptorPool();
-}
-
-void GraphicsDevice::CreateDescriptorPool()
-{
-	GraphicsContext::DescriptorPool = std::make_shared<VulkanDescriptorPool>( 70 );
 }
 
 void GraphicsDevice::DestroySwapchain()

@@ -4,6 +4,7 @@
 #include "shaders\Material.h"
 
 class GraphicsDevice;
+class Material;
 
 class PipelineStateObject
 {
@@ -22,7 +23,7 @@ public:
 
 	const InstanceWrapper<VkPipeline>& GetPipeLine() const;
 
-	void Build();
+	void Build( std::shared_ptr<Material> pMaterial );
 
 	bool IsDirty() const { return isDirty; }
 

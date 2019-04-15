@@ -8,11 +8,12 @@ public:
 	FragmentShader( const std::string& fileName );
 	virtual ~FragmentShader();
 
-	virtual bool IsLoaded() const override { return isLoaded; }
+	virtual bool IsLoaded() const override { return filesLeft.load( std::memory_order_relaxed ) == 0; }
 
 private:
-	void FileLoaded( std::vector<char> fileData );
+	void ShaderLoaded( std::vector<char> fileData );
+	void MetaLoaded( std::vector<char> fileData );
 
 private:
-	bool isLoaded = false;
+	std::atomic_int32_t filesLeft = 0;
 };

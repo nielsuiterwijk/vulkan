@@ -5,6 +5,8 @@
 #include <fstream>
 #include <queue>
 
+class ThreadPool;
+
 template <typename CharT, typename TraitsT = std::char_traits<CharT>>
 class VectorBuffer : public std::basic_streambuf<CharT, TraitsT>
 {
@@ -67,6 +69,8 @@ private:
 
 	static std::mutex queue_mutex;
 	static std::condition_variable condition;
+
+	static ThreadPool* threadPool;
 
 	static bool threadStarted;
 	static bool stop;

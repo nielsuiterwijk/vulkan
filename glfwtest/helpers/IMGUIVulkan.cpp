@@ -179,7 +179,7 @@ void IMGUIVulkan::NewFrame( float deltaTime )
 
 		psoBasic2D.SetShader( shaderStages );
 		psoBasic2D.SetVertexLayout( binding_desc, attribute_desc );
-		psoBasic2D.Build();
+		psoBasic2D.Build( material );
 	}
 	else if ( psoBasic2D.IsDirty() )
 	{
@@ -326,8 +326,8 @@ void IMGUIVulkan::Render( std::shared_ptr<CommandBuffer> commandBuffer )
 	// Bind pipeline and descriptor sets:
 	{
 		vkCmdBindPipeline( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, psoBasic2D.GetPipeLine() );
-		VkDescriptorSet set = GraphicsContext::DescriptorPool->GetDescriptorSet( material, imguiFont, sampler );
-		vkCmdBindDescriptorSets( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsContext::PipelineLayout, 0, 1, &set, 0, NULL );
+		VkDescriptorSet set = material->AccessDescriptorPool().RetrieveDescriptorSet( material, imguiFont, sampler );
+		vkCmdBindDescriptorSets( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, NULL );
 	}
 
 	// Bind Vertex And Index Buffer:

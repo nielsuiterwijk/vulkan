@@ -69,7 +69,7 @@ void Model::WindowResized( int w, int h )
 	if ( !pso.IsDirty() )
 	{
 		pso.SetViewPort( w, h );
-		pso.Build();
+		pso.Build( material );
 	}
 }
 
@@ -108,7 +108,7 @@ void Model::Draw( std::shared_ptr<CommandBuffer> commandBuffer )
 		material->GetSampler()->Initialize( VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, textures[ 0 ]->GetMipLevels() );
 		pso.Create( material, std::vector<VkDynamicState>(), true );
 		pso.SetVertexLayout( mesh->GetBindingDescription(), mesh->GetAttributeDescriptions() );
-		pso.Build();
+		pso.Build( material );
 	}
 
 	vkCmdBindPipeline( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine() );
@@ -116,8 +116,8 @@ void Model::Draw( std::shared_ptr<CommandBuffer> commandBuffer )
 	const std::vector<SubMesh*>& meshes = mesh->GetSubMeshes();
 	for ( int i = 0; i < meshes.size(); i++ )
 	{
-		VkDescriptorSet set = GraphicsContext::DescriptorPool->GetDescriptorSet( material, textures[ i ].get(), material->GetSampler().get() );
-		vkCmdBindDescriptorSets( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsContext::PipelineLayout, 0, 1, &set, 0, nullptr );
+		VkDescriptorSet set = material->AccessDescriptorPool().RetrieveDescriptorSet( material, textures[ i ].get(), material->GetSampler().get() );
+		vkCmdBindDescriptorSets( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, material->AccessDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, nullptr );
 
 		meshes[ i ]->Draw( commandBuffer );
 	}

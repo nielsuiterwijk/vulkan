@@ -10,9 +10,7 @@ std::shared_ptr<CommandBufferPool> GraphicsContext::CommandBufferPool = nullptr;
 std::shared_ptr<RenderPass> GraphicsContext::RenderPass = nullptr;
 std::shared_ptr<VulkanSwapChain> GraphicsContext::SwapChain = nullptr;
 std::shared_ptr<VulkanInstance> GraphicsContext::VulkanInstance = nullptr;
-std::shared_ptr<VulkanDescriptorPool> GraphicsContext::DescriptorPool = nullptr;
 
-InstanceWrapper<VkPipelineLayout> GraphicsContext::PipelineLayout = { GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::GlobalAllocator.Get() };
 InstanceWrapper<VkDevice> GraphicsContext::LogicalDevice = { vkDestroyDevice, GraphicsContext::GlobalAllocator.Get() };
 
 QueueFamilyIndices GraphicsContext::FamilyIndices = {};

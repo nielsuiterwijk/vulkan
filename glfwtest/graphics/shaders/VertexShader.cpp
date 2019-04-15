@@ -59,10 +59,11 @@ void VertexShader::MetaLoaded( std::vector<char> fileData )
 
 	auto ubos = jsonObject[ "ubos" ];
 	bufferDescriptors.reserve( ubos.size() );
+	resourceLayouts.reserve( ubos.size() );
 	for ( int i = 0; i < ubos.size(); i++ )
 	{
-		VkDescriptorBufferInfo bufferInfo;
-		bufferDescriptors.emplace_back( bufferInfo );
+		bufferDescriptors.emplace_back();
+		resourceLayouts.emplace_back();
 	}
 
 	for ( int i = 0; i < ubos.size(); i++ )
@@ -74,12 +75,19 @@ void VertexShader::MetaLoaded( std::vector<char> fileData )
 			"set" : 0,
 			"binding" : 1	*/
 
-		VkDescriptorBufferInfo& bufferInfo = bufferDescriptors[ object[ "binding" ] ];
+		int32_t bindingSlot = object[ "binding" ];
+
+		VkDescriptorBufferInfo& bufferInfo = bufferDescriptors[ bindingSlot ];
 		bufferInfo.buffer = nullptr;
 		bufferInfo.offset = 0;
 		bufferInfo.range = static_cast<VkDeviceSize>( object[ "block_size" ] );
+
+		resourceLayouts[ i ].BindingSlot = bindingSlot;
+		resourceLayouts[ i ].Type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		resourceLayouts[ i ].ShaderStage = VK_SHADER_STAGE_VERTEX_BIT;
 	}
 
+	std::sort( resourceLayouts.begin(), resourceLayouts.end(), []( const ResourceLayout& a, const ResourceLayout& b ) { return a.BindingSlot < b.BindingSlot; } );
 	std::sort( std::begin( inputs ), std::end( inputs ), []( const ShaderInput& a, const ShaderInput& b ) { return a.location < b.location; } );
 
 	filesLeft.fetch_sub( 1, std::memory_order_relaxed );

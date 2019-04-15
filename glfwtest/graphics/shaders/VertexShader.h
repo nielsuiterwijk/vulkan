@@ -13,7 +13,7 @@ struct ShaderInput
 	int location;
 
 	VkFormat typeFormat;
-	size_t offset;
+	uint32_t offset;
 };
 
 class VertexShader : public Shader

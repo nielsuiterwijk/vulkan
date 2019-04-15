@@ -30,6 +30,9 @@ public:
 	std::shared_ptr<VertexShader> GetVertex() const { return vertex; }
 	std::shared_ptr<FragmentShader> GetFragment() const { return fragment; }
 
+	const VulkanDescriptorPool& GetDescriptorPool() const { return descriptorPool; }
+	VulkanDescriptorPool& AccessDescriptorPool() { return descriptorPool; }
+
 	bool IsLoaded() const;
 
 private:
@@ -38,6 +41,8 @@ private:
 private:
 	std::shared_ptr<VertexShader> vertex;
 	std::shared_ptr<FragmentShader> fragment;
+
+	VulkanDescriptorPool descriptorPool;
 
 	std::shared_ptr<Texture2D> texture;
 	std::shared_ptr<TextureSampler> sampler;

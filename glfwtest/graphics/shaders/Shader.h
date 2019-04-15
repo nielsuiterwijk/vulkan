@@ -4,6 +4,14 @@
 
 #include <queue>
 
+struct ResourceLayout
+{
+	VkDescriptorType Type = VK_DESCRIPTOR_TYPE_MAX_ENUM;
+	VkShaderStageFlags ShaderStage = VK_SHADER_STAGE_ALL;
+	uint32_t BindingSlot = -1;
+	uint32_t ArraySize = 1;
+};
+
 //TODO: Add ref counting
 class Shader
 {
@@ -27,7 +35,11 @@ public:
 
 	virtual bool IsLoaded() const = 0;
 
+	const std::vector<ResourceLayout>& GetResourceLayout() { return resourceLayouts; }
+
 protected:
 	VkPipelineShaderStageCreateInfo shaderInfo = {};
 	InstanceWrapper<VkShaderModule> shaderModule;
+
+	std::vector<ResourceLayout> resourceLayouts;
 };

@@ -233,7 +233,7 @@ const InstanceWrapper<VkPipeline>& PipelineStateObject::GetPipeLine() const
 	return graphicsPipeline;
 }
 
-void PipelineStateObject::Build()
+void PipelineStateObject::Build( std::shared_ptr<Material> pMaterial )
 {
 	assert( isDirty );
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -252,7 +252,7 @@ void PipelineStateObject::Build()
 	{
 		pipelineInfo.pDynamicState = &dynamicState;
 	}
-	pipelineInfo.layout = GraphicsContext::PipelineLayout;
+	pipelineInfo.layout = pMaterial->GetDescriptorPool().GetPipelineLayout();
 	pipelineInfo.renderPass = GraphicsContext::RenderPass->GetNative();
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
