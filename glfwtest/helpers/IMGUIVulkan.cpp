@@ -104,9 +104,6 @@ bool IMGUIVulkan::Init( GLFWwindow* window, bool installCallbacks )
 	material = std::make_shared<Material>( "imgui" );
 	material->AddUniformBuffer( new UniformBuffer( { static_cast<void*>( &ubo ), sizeof( ScaleTranslateUBO ) } ) );
 
-	std::vector<VkDynamicState> states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
-	psoBasic2D.Create( nullptr, states, false );
-
 	binding_desc = {};
 	binding_desc.stride = sizeof( ImDrawVert );
 	binding_desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -177,6 +174,8 @@ void IMGUIVulkan::NewFrame( float deltaTime )
 		shaderStages.push_back( material->GetVertex()->GetShaderStageCreateInfo() );
 		shaderStages.push_back( material->GetFragment()->GetShaderStageCreateInfo() );
 
+		std::vector<VkDynamicState> states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+		psoBasic2D.Create( material, states, false );
 		psoBasic2D.SetShader( shaderStages );
 		psoBasic2D.SetVertexLayout( binding_desc, attribute_desc );
 		psoBasic2D.Build( material );

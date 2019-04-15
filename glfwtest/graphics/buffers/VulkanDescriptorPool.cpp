@@ -14,6 +14,7 @@ static constexpr int32_t VULKAN_NUM_SETS_PER_POOL = 16;
 
 VulkanDescriptorPool::VulkanDescriptorPool() :
 	descriptorPool( GraphicsContext::LogicalDevice, vkDestroyDescriptorPool, GraphicsContext::GlobalAllocator.Get() ),
+	descriptorSetLayout( GraphicsContext::LogicalDevice, vkDestroyDescriptorSetLayout, GraphicsContext::GlobalAllocator.Get() ),
 	pipelineLayout( GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::GlobalAllocator.Get() ),
 	currentIndex( 0 )
 {
@@ -23,6 +24,7 @@ VulkanDescriptorPool::~VulkanDescriptorPool()
 {
 	descriptorPool = nullptr;
 	pipelineLayout = nullptr;
+	descriptorSetLayout = nullptr;
 }
 
 VkDescriptorPool VulkanDescriptorPool::GetNative() const

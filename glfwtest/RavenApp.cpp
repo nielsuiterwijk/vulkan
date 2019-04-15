@@ -240,7 +240,7 @@ void RavenApp::Render( RavenApp* app )
 			//app->renderobject->PrepareDraw(commandBuffer);
 			app->model->Draw( commandBuffer );
 
-			//app->imguiVulkan->Render(commandBuffer);
+			app->imguiVulkan->Render( commandBuffer );
 
 			{
 				vkCmdEndRenderPass( commandBuffer->GetNative() );
@@ -414,18 +414,18 @@ void RavenApp::Run()
 				camera.proj[ 1 ][ 1 ] *= -1;
 			}
 
-			/*imguiVulkan->NewFrame(delta);
+			imguiVulkan->NewFrame( delta );
 
-			if (imguiVulkan->IsReady())
+			if ( imguiVulkan->IsReady() )
 			{
-				ImGui::Begin("Model");
+				ImGui::Begin( "Model" );
 
-				ImGui::DragFloat("Object Rotation", &rotation, 0.1f);
-				ImGui::DragFloat("Object Translation Y", &translationY, 0.01f);
-				ImGui::DragFloat("Scale", &scale, 0.0001f);
+				ImGui::DragFloat( "Object Rotation", &rotation, 0.1f );
+				ImGui::DragFloat( "Object Translation Y", &translationY, 0.01f );
+				ImGui::DragFloat( "Scale", &scale, 0.0001f );
 
 				ImGui::End();
-			}*/
+			}
 
 			statsTimer += delta;
 

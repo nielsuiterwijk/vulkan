@@ -18,7 +18,7 @@ void FileSystem::Start()
 
 	std::cout << "[FileSystem] starting thread.." << std::endl;
 
-	threadPool = new ThreadPool( 1 );
+	threadPool = new ThreadPool( 4 );
 
 	fileLoadingThread = std::thread( LoadAsync );
 }

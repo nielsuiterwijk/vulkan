@@ -8,7 +8,8 @@ SkinnedMesh::SkinnedMesh()
 
 SkinnedMesh::~SkinnedMesh()
 {
-	delete localMeshUniformBuffer;
+	//Done now somewhere else (material)
+	//delete localMeshUniformBuffer;
 }
 
 glm::mat4 SkinnedMesh::localMatrix( const BoneInfo& bone )
