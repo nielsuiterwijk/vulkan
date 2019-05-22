@@ -8,7 +8,7 @@ void Animation::ReadNodeHierarchy( float AnimationTime, int32_t targetBone, std:
 {
 	BoneInfo& boneInfo = bones[ targetBone ];
 
-	const BoneAnimation& boneAnimation = FindIf( boneAnimationFrames, [targetBone]( const BoneAnimation& boneAnimation ) { return boneAnimation.targetBone == targetBone; } );
+	const BoneAnimation& boneAnimation = Utility::FindIf( boneAnimationFrames, [targetBone]( const BoneAnimation& boneAnimation ) { return boneAnimation.targetBone == targetBone; } );
 
 	boneInfo.scale = interpolateScale( AnimationTime, boneAnimation );
 	boneInfo.rotation = interpolateRotation( AnimationTime, boneAnimation );

@@ -42,7 +42,7 @@ void TextureLoader::FileLoaded( std::vector<char> fileData, std::shared_ptr<Text
 		throw std::runtime_error( "failed to load texture image!" );
 	}
 
-	uint32_t imageSizeWithMipMaps = imageSize * 1.33f;
+	uint32_t imageSizeWithMipMaps = static_cast<uint32_t>( imageSize * 1.33334f );
 
 	//VkBufferUsageFlags flags, BufferType::Enum bufferType, void* data, size_t size);
 	VulkanBuffer buffer( VK_BUFFER_USAGE_TRANSFER_SRC_BIT, BufferType::Staging, pixels, imageSize );

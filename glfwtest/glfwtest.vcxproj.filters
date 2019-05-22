@@ -48,6 +48,8 @@
     <ClCompile Include="graphics\memory\VulkanAllocator.cpp" />
     <ClCompile Include="graphics\models\SkinnedMesh.cpp" />
     <ClCompile Include="graphics\animations\Animation.cpp" />
+    <ClCompile Include="io\FileUtility.cpp" />
+    <ClCompile Include="helpers\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -100,9 +102,6 @@
       <Filter>helpers</Filter>
     </ClInclude>
     <ClInclude Include="helpers\Helpers.h">
-      <Filter>helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="helpers\Integer.h">
       <Filter>helpers</Filter>
     </ClInclude>
     <ClInclude Include="helpers\Timer.h">
@@ -165,5 +164,6 @@
     <ClInclude Include="misc\cache_binary.h" />
     <ClInclude Include="graphics\buffers\UniformBufferDefinition.h" />
     <ClInclude Include="helpers\Utility.h" />
+    <ClInclude Include="io\FileUtility.h" />
   </ItemGroup>
 </Project>

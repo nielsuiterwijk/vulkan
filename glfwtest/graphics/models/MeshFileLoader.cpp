@@ -596,11 +596,11 @@ void MeshFileLoader::LoadOBJ( std::vector<char>& fileData, std::shared_ptr<Mesh>
 		colorIndex = ( colorIndex + 1 ) % colors.size();
 		std::cout << "Skipped " << skippedVertices << " vertices." << std::endl;
 
-		uint32_t memorySize = sizeof( Vertex ) * vertices.size();
+		size_t memorySize = sizeof( Vertex ) * vertices.size();
 		uint8_t* vertexData = new uint8_t[ memorySize ];
 		memcpy( vertexData, vertices.data(), memorySize );
 
-		uint32_t memorySizeIndices = sizeof( uint32_t ) * indices.size();
+		size_t memorySizeIndices = sizeof( uint32_t ) * indices.size();
 		uint8_t* indexData = new uint8_t[ memorySizeIndices ];
 		memcpy( indexData, indices.data(), memorySizeIndices );
 
@@ -656,11 +656,11 @@ void MeshFileLoader::LoadSTL( const std::vector<char>& fileData, std::shared_ptr
 	//Vertex3D::GetBindingDescription(meshDestination->bindingDescription);
 	//Vertex3D::GetAttributeDescriptions(meshDestination->attributeDescriptions);
 
-	uint32_t memorySize = sizeof( Vertex ) * vertices.size();
+	size_t memorySize = sizeof( Vertex ) * vertices.size();
 	uint8_t* vertexData = new uint8_t[ memorySize ];
 	memcpy( vertexData, vertices.data(), memorySize );
 
-	uint32_t memorySizeIndices = sizeof( uint32_t ) * indices.size();
+	size_t memorySizeIndices = sizeof( uint32_t ) * indices.size();
 	uint8_t* indexData = new uint8_t[ memorySizeIndices ];
 	memcpy( indexData, indices.data(), memorySizeIndices );
 

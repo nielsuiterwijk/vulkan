@@ -41,7 +41,8 @@ RavenApp::RavenApp() :
 
 RavenApp::~RavenApp()
 {
-	delete model;
+	models.clear();
+
 	delete renderSemaphore;
 	delete imguiVulkan;
 
@@ -141,7 +142,8 @@ bool RavenApp::Initialize()
 	result = vkCreateFence( GraphicsContext::LogicalDevice, &fenceInfo, GraphicsContext::GlobalAllocator.Get(), &renderFence );
 	assert( result == VK_SUCCESS );
 
-	model = new Model( "cesiumman" );
+	std::shared_ptr<Model> model = std::make_shared<Model>( "cesiumman" );
+	models.push_back( model );
 
 	renderSemaphore = new VulkanSemaphore();
 
@@ -238,7 +240,10 @@ void RavenApp::Render( RavenApp* app )
 			//TODO: Make the prepare threadsafe by doing a copy?
 			//TODO: dont pass the mesh, it should be owned / held by the renderObject
 			//app->renderobject->PrepareDraw(commandBuffer);
-			app->model->Draw( commandBuffer );
+			for ( std::shared_ptr<Model> pModel : app->models )
+			{
+				pModel->Draw( commandBuffer );
+			}
 
 			app->imguiVulkan->Render( commandBuffer );
 
@@ -390,7 +395,7 @@ void RavenApp::Run()
 			{
 				static auto startTime = std::chrono::high_resolution_clock::now();
 
-				CameraUBO& camera = model->AccessUBO();
+				CameraUBO& camera = models[ 0 ]->AccessUBO();
 
 				auto currentTime = std::chrono::high_resolution_clock::now();
 				float time = std::chrono::duration<float, std::chrono::seconds::period>( currentTime - startTime ).count();
@@ -486,7 +491,10 @@ void RavenApp::WindowResizedCallback( GLFWwindow* window, int width, int height 
 
 	RavenApp* app = reinterpret_cast<RavenApp*>( glfwGetWindowUserPointer( window ) );
 
-	app->model->WindowResized( width, height );
+	for ( std::shared_ptr<Model> pModel : app->models )
+	{
+		pModel->WindowResized( width, height );
+	}
 }
 
 void RavenApp::MouseButtonCallback( GLFWwindow* window, int button, int action, int mods )

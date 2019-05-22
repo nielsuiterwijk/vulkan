@@ -18,7 +18,7 @@ void FileSystem::Start()
 
 	std::cout << "[FileSystem] starting thread.." << std::endl;
 
-	threadPool = new ThreadPool( 4 );
+	threadPool = new ThreadPool( std::min( Utility::AvailableHardwareThreads(), 3 ) );
 
 	fileLoadingThread = std::thread( LoadAsync );
 }
@@ -27,9 +27,6 @@ void FileSystem::Exit()
 {
 	std::cout << "[FileSystem] stopping thread.." << std::endl;
 
-	delete threadPool;
-	threadPool = nullptr;
-
 	stop = true;
 
 	queue_mutex.lock();
@@ -37,11 +34,14 @@ void FileSystem::Exit()
 	queue_mutex.unlock();
 
 	fileLoadingThread.join();
+
+	delete threadPool;
+	threadPool = nullptr;
 }
 
 std::vector<char> FileSystem::ReadFile( const std::string& filename )
 {
-	std::ifstream file( filename, std::ios::ate | std::ios::binary );
+	std::ifstream file( "../../assets/" + filename, std::ios::ate | std::ios::binary );
 
 	if ( !file.is_open() )
 	{
