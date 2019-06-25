@@ -1,9 +1,11 @@
 #include "FileUtility.h"
 
-using namespace IO;
-
-void ListFiles( std::string Directory, std::vector<std::string>& FilesOut )
+void IO::ListFiles( const std::string& Directory, std::vector<std::string>& FilesOut )
 {
+	if ( std::filesystem::exists( Directory ) == false || std::filesystem::is_directory( Directory ) == false )
+	{
+		return;
+	}
 	//namespace fs = std::filesystem;
 	//
 	////https://www.codingame.com/playgrounds/5659/c17-filesystem
@@ -18,35 +20,21 @@ void ListFiles( std::string Directory, std::vector<std::string>& FilesOut )
 	//		  << "extension() = " << pathToShow.extension() << "\n";
 	//
 	//int i = 0;
-	//for ( const auto& part : pathToShow )
-	//	std::cout << "path part: " << i++ << " = " << part << "\n";
-	//
-	//if ( fs::exists( pathToShow ) && fs::is_directory( pathToShow ) )
-	//{
-	//	for ( const auto& entry : fs::directory_iterator( pathToShow ) )
-	//	{
-	//		auto filename = entry.path().filename();
-	//		if ( fs::is_directory( entry.status() ) )
-	//		{
-	//			std::cout << "[+] " << filename << "\n";
-	//		}
-	//		else if ( fs::is_regular_file( entry.status() ) )
-	//		{
-	//			//not supported:
-	//			//std::time_t cftime = decltype( fs::last_write_time( entry ) )::clock::to_time_t( fs::last_write_time( entry ) );
-	//
-	//			std::cout << filename << ", time:";
-	//			auto filetime = entry.last_write_time();
-	//			SYSTEMTIME stSystemTime;
-	//			if ( FileTimeToSystemTime( (const FILETIME*)&filetime, &stSystemTime ) )
-	//			{
-	//				std::cout << stSystemTime.wYear << "." << stSystemTime.wMonth << "." << stSystemTime.wDay << " " << stSystemTime.wHour << ":" << stSystemTime.wMinute << std::endl;
-	//			}
-	//		}
-	//		else
-	//		{
-	//			std::cout << "[?]" << filename << "\n";
-	//		}
-	//	}
-	//}
+
+	for ( const auto& entry : std::filesystem::directory_iterator( Directory ) )
+	{
+		std::filesystem::path filename = entry.path().filename();
+		if ( std::filesystem::is_directory( entry.status() ) )
+		{
+			std::cout << "[+] " << filename << "\n";
+		}
+		else if ( std::filesystem::is_regular_file( entry.status() ) )
+		{
+			FilesOut.emplace_back( filename.string() );
+		}
+		else
+		{
+			assert( false && "invalid file" );
+		}
+	}
 }

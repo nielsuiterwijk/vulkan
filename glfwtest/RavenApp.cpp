@@ -395,8 +395,6 @@ void RavenApp::Run()
 			{
 				static auto startTime = std::chrono::high_resolution_clock::now();
 
-				CameraUBO& camera = models[ 0 ]->AccessUBO();
-
 				auto currentTime = std::chrono::high_resolution_clock::now();
 				float time = std::chrono::duration<float, std::chrono::seconds::period>( currentTime - startTime ).count();
 
@@ -405,18 +403,22 @@ void RavenApp::Run()
 				if ( rotation < 0 )
 					rotation = 360.0f;
 
-				//renderobject->camera->model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-				//renderobject->camera->model = glm::rotate(renderobject->camera->model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+				for ( std::shared_ptr<Model>& pModel : models )
+				{
+					CameraUBO& camera = pModel->AccessUBO();
+					//renderobject->camera->model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+					//renderobject->camera->model = glm::rotate(renderobject->camera->model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 
-				camera.model = glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, translationY, 0.0f ) );
-				camera.model = glm::rotate( camera.model, glm::radians( rotation ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
-				camera.model = glm::scale( camera.model, glm::vec3( scale, scale, scale ) );
+					camera.model = glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, translationY, 0.0f ) );
+					camera.model = glm::rotate( camera.model, glm::radians( rotation ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+					camera.model = glm::scale( camera.model, glm::vec3( scale, scale, scale ) );
 
-				camera.view = glm::lookAt( glm::vec3( 2, 1, 2 ), glm::vec3( 0.0f, 0, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
-				//renderobject->camera->view = glm::lookAt(glm::vec3(40.0f, 40.0f, 40.0f), glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+					camera.view = glm::lookAt( glm::vec3( 2, 1, 2 ), glm::vec3( 0.0f, 0, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+					//renderobject->camera->view = glm::lookAt(glm::vec3(40.0f, 40.0f, 40.0f), glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-				camera.proj = glm::perspective( glm::radians( 45.0f ), 16.0f / 9.0f, 0.01f, 100.0f );
-				camera.proj[ 1 ][ 1 ] *= -1;
+					camera.proj = glm::perspective( glm::radians( 45.0f ), 16.0f / 9.0f, 0.01f, 100.0f );
+					camera.proj[ 1 ][ 1 ] *= -1;
+				}
 			}
 
 			imguiVulkan->NewFrame( delta );
@@ -429,6 +431,33 @@ void RavenApp::Run()
 				ImGui::DragFloat( "Object Translation Y", &translationY, 0.01f );
 				ImGui::DragFloat( "Scale", &scale, 0.0001f );
 
+				ImGui::End();
+				//E:\Code\C++\glfwtest\vulkan\assets\gameobjects
+				//E:\\Code\\C++\\glfwtest\\vulkan\\bin\\x64
+				std::filesystem::path pathToShow( std::filesystem::current_path() );
+				std::vector<std::string> filesInDirectory;
+				IO::ListFiles( "E:\\Code\\C++\\glfwtest\\vulkan\\assets\\gameobjects", filesInDirectory );
+
+				static auto vector_getter = []( void* vec, int idx, const char** out_text ) {
+					auto& vector = *static_cast<std::vector<std::string>*>( vec );
+					if ( idx < 0 || idx >= static_cast<int>( vector.size() ) )
+					{
+						return false;
+					}
+					*out_text = vector.at( idx ).c_str();
+					return true;
+				};
+
+				static int32_t index = 0;
+
+				ImGui::Begin( "Entities" );
+				ImGui::ListBox( "files", &index, vector_getter, static_cast<void*>( &filesInDirectory ), filesInDirectory.size() );
+				if ( ImGui::Button( "Spawn" ) )
+				{
+					std::shared_ptr<Model> model = std::make_shared<Model>( "cesiumman" );
+					models.push_back( model );
+					std::cout << "Spawned " << filesInDirectory[ index ] << std::endl;
+				}
 				ImGui::End();
 			}
 
