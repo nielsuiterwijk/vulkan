@@ -46,5 +46,6 @@
 #include <json/json.hpp>
 using json = nlohmann::json;
 
+#include "helpers/DebugAssert.h"
 #include "helpers/Utility.h"
 #include "io/FileUtility.h"

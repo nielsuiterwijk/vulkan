@@ -50,6 +50,8 @@
     <ClCompile Include="graphics\animations\Animation.cpp" />
     <ClCompile Include="io\FileUtility.cpp" />
     <ClCompile Include="helpers\Utility.cpp" />
+    <ClCompile Include="raven\DebugUI.cpp" />
+    <ClCompile Include="events\EventSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -165,5 +167,7 @@
     <ClInclude Include="graphics\buffers\UniformBufferDefinition.h" />
     <ClInclude Include="helpers\Utility.h" />
     <ClInclude Include="io\FileUtility.h" />
+    <ClInclude Include="raven\DebugUI.h" />
+    <ClInclude Include="events\EventSystem.h" />
   </ItemGroup>
 </Project>

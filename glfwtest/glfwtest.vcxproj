@@ -271,6 +271,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="events\EventSystem.cpp" />
     <ClCompile Include="graphics\animations\Animation.cpp" />
     <ClCompile Include="graphics\buffers\CommandBuffer.cpp" />
     <ClCompile Include="graphics\buffers\CommandBufferPool.cpp" />
@@ -313,9 +314,11 @@
     <ClCompile Include="RavenApp.cpp" />
     <ClCompile Include="helpers\Timer.cpp" />
     <ClCompile Include="graphics\VulkanInstance.cpp" />
+    <ClCompile Include="raven\DebugUI.cpp" />
     <ClCompile Include="raven\model.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="events\EventSystem.h" />
     <ClInclude Include="graphics\animations\Animation.h" />
     <ClInclude Include="graphics\buffers\CommandBuffer.h" />
     <ClInclude Include="graphics\buffers\CommandBufferPool.h" />
@@ -369,6 +372,7 @@
     <ClInclude Include="misc\cache_binary.h" />
     <ClInclude Include="physics\aabb.h" />
     <ClInclude Include="RavenApp.h" />
+    <ClInclude Include="raven\DebugUI.h" />
     <ClInclude Include="raven\model.h" />
     <ClInclude Include="threading\Task.h" />
     <ClInclude Include="threading\ThreadPool.h" />
