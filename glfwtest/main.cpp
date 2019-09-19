@@ -49,7 +49,43 @@ int main()
 
 	//SearchTest::Run();
 
-	std::vector<int> test = { 0, 5, 10, 15 };
+	int8_t a = 0;
+	int16_t b = 0;
+	int32_t c = 0;
+	int64_t d = 0;
+
+	std::vector<int32_t> test1 = { 0, 5, 10, 15 };
+	std::vector<int32_t> test2 = { 0, 5, 10, 15 };
+
+	typedef std::pair<std::string, int32_t> KeyValue;
+
+	std::vector<KeyValue> test3 = { { "doortje", 20 }, { "niels", 10 }, { "dikkie", 11 } };
+
+	std::sort( std::begin( test3 ), std::end( test3 ), std::less<KeyValue>() );
+	std::sort( std::begin( test3 ), std::end( test3 ), std::greater<KeyValue>() );
+
+	auto SortOnValueGreater = []( const KeyValue& left, const KeyValue& right ) {
+		return left.second > right.second;
+	};
+
+	auto SortOnValueLess = []( const KeyValue& left, const KeyValue& right ) {
+		return left.second < right.second;
+	};
+
+	std::sort( std::begin( test3 ), std::end( test3 ), SortOnValueGreater );
+	std::sort( std::begin( test3 ), std::end( test3 ), SortOnValueLess );
+
+	bool isSame = test1 == test2;
+
+	std::sort( std::begin( test1 ), std::end( test1 ), std::greater<int32_t>() );
+
+	auto greaterLamda = []( int32_t left, int32_t right ) {
+		return left > right;
+	};
+
+	std::sort( std::begin( test1 ), std::end( test1 ), std::less<int32_t>() );
+
+	bool isSame2 = test1 == test2;
 
 	auto Filter = [=]( const int& Offer ) -> bool { return Offer == 10; };
 

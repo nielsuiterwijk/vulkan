@@ -1,6 +1,11 @@
 #include "DebugUI.h"
 
+#include "io/FileUtility.h"
+
 #include "imgui/imgui.h"
+
+#include <filesystem>
+#include <iostream>
 
 void DebugUI::ListGameObjects()
 {

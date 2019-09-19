@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="graphics\GraphicsDevice.cpp" />
+    <ClCompile Include="helpers\DebugAssert.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\Timer.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\VulkanSwapChain.cpp" />
+    <ClCompile Include="graphics\VulkanInstance.cpp">
+      <Filter>renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\shaders\Material.cpp" />
+    <ClCompile Include="graphics\PipelineStateObject.cpp" />
+    <ClCompile Include="graphics\shaders\VertexShader.cpp" />
+    <ClCompile Include="graphics\shaders\FragmentShader.cpp" />
+    <ClCompile Include="graphics\shaders\ShaderCache.cpp" />
+    <ClCompile Include="graphics\RenderPass.cpp" />
+    <ClCompile Include="graphics\buffers\CommandBufferPool.cpp" />
+    <ClCompile Include="graphics\buffers\CommandBuffer.cpp" />
+    <ClCompile Include="graphics\models\Mesh.cpp" />
+    <ClCompile Include="graphics\buffers\VulkanBuffer.cpp" />
+    <ClCompile Include="graphics\memory\GPUAllocator.cpp" />
+    <ClCompile Include="graphics\buffers\UniformBuffer.cpp" />
+    <ClCompile Include="graphics\helpers\VulkanSemaphore.cpp" />
+    <ClCompile Include="graphics\buffers\VulkanDescriptorPool.cpp" />
+    <ClCompile Include="graphics\DepthBuffer.cpp" />
+    <ClCompile Include="graphics\textures\Texture2D.cpp" />
+    <ClCompile Include="graphics\FrameBuffer.cpp" />
+    <ClCompile Include="io\FileSystem.cpp" />
+    <ClCompile Include="graphics\textures\TextureLoader.cpp" />
+    <ClCompile Include="graphics\textures\TextureSampler.cpp" />
+    <ClCompile Include="helpers\IMGUIVulkan.cpp" />
+    <ClCompile Include="graphics\GraphicsContext.cpp" />
+    <ClCompile Include="graphics\models\MeshFileLoader.cpp" />
+    <ClCompile Include="graphics\models\importers\stl_loader.cpp" />
+    <ClCompile Include="graphics\models\SubMesh.cpp" />
+    <ClCompile Include="graphics\helpers\Color.cpp" />
+    <ClCompile Include="memory\Allocator.cpp" />
+    <ClCompile Include="memory\FreeListAllocator.cpp" />
+    <ClCompile Include="memory\PoolAllocator.cpp" />
+    <ClCompile Include="memory\MemoryUtils.cpp" />
+    <ClCompile Include="graphics\memory\VulkanAllocator.cpp" />
+    <ClCompile Include="graphics\models\SkinnedMesh.cpp" />
+    <ClCompile Include="graphics\animations\Animation.cpp" />
+    <ClCompile Include="io\FileUtility.cpp" />
+    <ClCompile Include="helpers\Utility.cpp" />
+    <ClCompile Include="events\EventSystem.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="includes">
+      <UniqueIdentifier>{bc683fd0-55fa-47ef-a964-03a5aa26bf60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="includes\glm">
+      <UniqueIdentifier>{721112e3-b1aa-4d4b-800d-eed171d3d361}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="includes\glm\detail">
+      <UniqueIdentifier>{64583641-bc41-4731-a1c0-7815cfdf8318}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="includes\glm\gtc">
+      <UniqueIdentifier>{56cbb43c-23ee-4e09-8403-1a2eb1254353}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="includes\glm\gtx">
+      <UniqueIdentifier>{b7b116bb-7cb7-4d1c-88b7-2339838abe66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="includes\glm\simd">
+      <UniqueIdentifier>{7389bc55-7981-450f-bf40-c886b1e16397}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="helpers">
+      <UniqueIdentifier>{390904d6-e025-42ba-a281-dd3ef4e19fbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base">
+      <UniqueIdentifier>{97537fb6-3577-453e-9365-71bf0dbbcbe6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vulkan">
+      <UniqueIdentifier>{32c43e2c-15f6-4f65-a253-84d8c8180024}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="threading">
+      <UniqueIdentifier>{52d6df23-77e3-4eeb-b6cf-67074eab8135}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="renderers">
+      <UniqueIdentifier>{851ac35d-fad4-4c4d-8736-83a629c405ce}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="includes\standard.h">
+      <Filter>includes</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\GraphicsDevice.h" />
+    <ClInclude Include="threading\ThreadPool.h">
+      <Filter>threading</Filter>
+    </ClInclude>
+    <ClInclude Include="threading\Task.h">
+      <Filter>threading</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\DebugAssert.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\Helpers.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\Timer.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\helpers\InstanceWrapper.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\helpers\VulkanDebugHook.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\helpers\VulkanHelpers.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\VulkanSwapChain.h" />
+    <ClInclude Include="graphics\VulkanInstance.h">
+      <Filter>renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\Singleton.h" />
+    <ClInclude Include="io\FileSystem.h" />
+    <ClInclude Include="graphics\shaders\Material.h" />
+    <ClInclude Include="graphics\shaders\VertexShader.h" />
+    <ClInclude Include="graphics\shaders\FragmentShader.h" />
+    <ClInclude Include="graphics\PipelineStateObject.h" />
+    <ClInclude Include="graphics\shaders\Shader.h" />
+    <ClInclude Include="graphics\shaders\ShaderCache.h" />
+    <ClInclude Include="graphics\RenderPass.h" />
+    <ClInclude Include="graphics\buffers\CommandBuffer.h" />
+    <ClInclude Include="graphics\buffers\CommandBufferPool.h" />
+    <ClInclude Include="graphics\models\Mesh.h" />
+    <ClInclude Include="graphics\helpers\VulkanSemaphore.h" />
+    <ClInclude Include="graphics\buffers\VulkanBuffer.h" />
+    <ClInclude Include="graphics\memory\GPUAllocator.h" />
+    <ClInclude Include="graphics\buffers\UniformBuffer.h" />
+    <ClInclude Include="graphics\buffers\VulkanDescriptorPool.h" />
+    <ClInclude Include="graphics\GraphicsContext.h" />
+    <ClInclude Include="graphics\DepthBuffer.h" />
+    <ClInclude Include="graphics\textures\Texture2D.h" />
+    <ClInclude Include="graphics\FrameBuffer.h" />
+    <ClInclude Include="graphics\textures\TextureLoader.h" />
+    <ClInclude Include="graphics\textures\TextureSampler.h" />
+    <ClInclude Include="helpers\IMGUIVulkan.h" />
+    <ClInclude Include="graphics\models\MeshFileLoader.h" />
+    <ClInclude Include="graphics\models\importers\stl_loader.h" />
+    <ClInclude Include="graphics\models\SubMesh.h" />
+    <ClInclude Include="graphics\helpers\color.h" />
+    <ClInclude Include="physics\aabb.h" />
+    <ClInclude Include="memory\Allocator.h" />
+    <ClInclude Include="memory\FreeListAllocator.h" />
+    <ClInclude Include="memory\PoolAllocator.h" />
+    <ClInclude Include="memory\MemoryUtils.h" />
+    <ClInclude Include="graphics\memory\VulkanAllocator.h" />
+    <ClInclude Include="helpers\Defensive.hpp" />
+    <ClInclude Include="include\standard.h" />
+    <ClInclude Include="helpers\JsonParsers.h" />
+    <ClInclude Include="graphics\models\SkinnedMesh.h" />
+    <ClInclude Include="graphics\animations\Animation.h" />
+    <ClInclude Include="helpers\measure\Measure.h" />
+    <ClInclude Include="graphics\buffers\UniformBufferDefinition.h" />
+    <ClInclude Include="helpers\Utility.h" />
+    <ClInclude Include="io\FileUtility.h" />
+    <ClInclude Include="events\EventSystem.h" />
+  </ItemGroup>
+</Project>
