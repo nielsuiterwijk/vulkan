@@ -41,16 +41,18 @@ void FileSystem::Exit()
 
 std::vector<char> FileSystem::ReadFile( const std::string& filename )
 {
+	std::vector<char> buffer;
 	std::ifstream file( "../../assets/" + filename, std::ios::ate | std::ios::binary );
 
 	if ( !file.is_open() )
 	{
 		std::cout << "[FileSystem] Failed loading " << filename.c_str() << std::endl;
 		throw std::runtime_error( "failed to open file!" );
+		return buffer;
 	}
 
 	size_t fileSize = (size_t)file.tellg();
-	std::vector<char> buffer( fileSize );
+	buffer.reserve( fileSize );
 
 	file.seekg( 0 );
 	file.read( buffer.data(), fileSize );
