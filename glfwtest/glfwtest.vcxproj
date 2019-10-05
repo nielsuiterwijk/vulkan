@@ -285,6 +285,7 @@
   <ItemGroup>
     <ClInclude Include="includes\standard.h" />
     <ClInclude Include="misc\cache_binary.h" />
+    <ClInclude Include="random_generator.h" />
     <ClInclude Include="RavenApp.h" />
     <ClInclude Include="raven\DebugUI.h" />
     <ClInclude Include="raven\model.h" />

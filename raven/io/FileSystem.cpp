@@ -42,7 +42,7 @@ void FileSystem::Exit()
 std::vector<char> FileSystem::ReadFile( const std::string& filename )
 {
 	std::vector<char> buffer;
-	std::ifstream file( "../../assets/" + filename, std::ios::ate | std::ios::binary );
+	std::ifstream file( "../assets/" + filename, std::ios::binary | std::ios::ate);
 
 	if ( !file.is_open() )
 	{
@@ -51,11 +51,16 @@ std::vector<char> FileSystem::ReadFile( const std::string& filename )
 		return buffer;
 	}
 
-	size_t fileSize = (size_t)file.tellg();
-	buffer.reserve( fileSize );
+	file.seekg(0, file.end);
 
-	file.seekg( 0 );
+	size_t fileSize = file.tellg();
+	buffer.resize(fileSize);
+
+	file.seekg(0, file.beg);
+
+
 	file.read( buffer.data(), fileSize );
+
 
 	file.close();
 

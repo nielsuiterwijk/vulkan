@@ -49,5 +49,6 @@
     <ClInclude Include="raven\model.h" />
     <ClInclude Include="misc\cache_binary.h" />
     <ClInclude Include="raven\DebugUI.h" />
+    <ClInclude Include="random_generator.h" />
   </ItemGroup>
 </Project>

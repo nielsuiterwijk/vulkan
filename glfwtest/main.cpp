@@ -9,6 +9,21 @@
 #include "standard.h"
 #include <filesystem>
 
+#include "helpers/measure/measure.h"
+
+#include "random_generator.h"
+
+namespace NPdxUtils
+{
+	template <class T>
+	void PdxMerge(std::vector<T> a, std::vector<T> b)
+	{
+		std::vector<T> d;
+		d.resize(a.size() + b.size());
+		std::merge(a.begin(), a.end(), b.begin(), b.end(), d.begin());
+	}
+}
+
 int ThreadedCall( int a, int b )
 {
 	::Sleep( 10 );
@@ -24,6 +39,9 @@ void AsyncCallback( std::vector<char> fileData )
 
 int main()
 {
+
+	
+
 #if DEBUG
 	_CrtSetDbgFlag( _CRTDBG_CHECK_ALWAYS_DF );
 #endif
@@ -47,6 +65,64 @@ int main()
 	std::vector<std::string> filesInDirectory;
 	IO::ListFiles( pathToShow.string(), filesInDirectory );
 
+	fast_srand(42);
+	srand_sse(42);
+
+	unsigned int* buffer = new unsigned int[4];
+
+
+	std::vector<int32_t> largeArray;
+	std::vector<int32_t> smallArray;
+	std::vector<int32_t> verySmallArray;
+
+	for (int i = 0; i < 1000000; i++)
+	{
+		largeArray.emplace_back(fastrand());
+	}
+
+	for (int i = 0; i < 10000; i++)
+	{
+		smallArray.emplace_back(fastrand());
+	}
+
+	for (int i = 0; i < 100; i++)
+	{
+		verySmallArray.emplace_back(fastrand());
+	}
+
+	/*Measures::Print(Measures::MeasureShort([]() { return 8 * 8; }), "test");
+
+	Measures::Print(Measures::MeasureLong([largeArray]() {
+		std::vector<int32_t> largeArrayCopy = largeArray;
+		std::sort(std::begin(largeArrayCopy), std::end(largeArrayCopy), std::less<int32_t>());
+		return largeArrayCopy[3] == largeArray[3];
+		}), "large array");
+
+	Measures::Print(Measures::MeasureLong([smallArray]() {
+		std::vector<int32_t> copy = smallArray;
+		std::sort(std::begin(copy), std::end(copy), std::less<int32_t>());
+		return copy[3] == smallArray[3];
+		}), "small array");
+
+	Measures::Print(Measures::MeasureLong([verySmallArray]() {
+		std::vector<int32_t> copy = verySmallArray;
+		std::sort(std::begin(copy), std::end(copy), std::less<int32_t>());
+		return copy[3] == verySmallArray[3];
+		}), "v small array");
+
+	
+
+	Measures::Print(Measures::MeasureShort([]() {
+		return fastrand() + fastrand() + fastrand() + fastrand();
+		}), "sse");
+
+	Measures::Print(Measures::MeasureShort([buffer]() {
+		rand_sse(buffer);
+		return buffer[0] + buffer[1] + buffer[2] + buffer[3];
+		}), "fast_c");
+		*/
+
+	
 	//SearchTest::Run();
 
 	int8_t a = 0;
