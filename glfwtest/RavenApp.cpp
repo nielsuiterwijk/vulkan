@@ -406,6 +406,8 @@ void RavenApp::Run()
 
 				for ( std::shared_ptr<Model>& pModel : models )
 				{
+					pModel->Update(delta);
+
 					CameraUBO& camera = pModel->AccessUBO();
 					//renderobject->camera->model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 					//renderobject->camera->model = glm::rotate(renderobject->camera->model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));

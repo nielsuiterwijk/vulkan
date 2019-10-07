@@ -84,6 +84,17 @@ bool Model::TexturesLoaded() const
 	return true;
 }
 
+void Model::Update(float delta)
+{
+	if (material == nullptr)
+		return;
+
+	if (!material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded())
+		return;
+
+	mesh->Update(delta);
+}
+
 void Model::Draw( std::shared_ptr<CommandBuffer> commandBuffer )
 {
 	if ( material == nullptr )
@@ -92,7 +103,6 @@ void Model::Draw( std::shared_ptr<CommandBuffer> commandBuffer )
 	if ( !material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded() )
 		return;
 
-	mesh->Update( 0.0008f );
 
 	if ( material->GetUniformBuffers().size() != 2 )
 	{

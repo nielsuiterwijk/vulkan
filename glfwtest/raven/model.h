@@ -16,6 +16,9 @@ public:
 	~Model();
 
 	void WindowResized( int w, int h );
+
+	void Update(float delta);
+
 	void Draw( std::shared_ptr<CommandBuffer> commandBuffer );
 
 	const CameraUBO& GetUBO() const { return camera; }

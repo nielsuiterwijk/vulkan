@@ -38,16 +38,21 @@ void SkinnedMesh::Update( float delta )
 {
 	if ( animations.size() == 0 || skins.size() == 0 )
 		return;
+	
+	constexpr float TicksPerSecond = 25.0f; //todo read from gltf
+	constexpr float Duration = 2.0f; //todo read from gltf
 
 	const Animation& animation = animations[ 0 ];
 	const SkinInfo& skin = skins[ 0 ];
 
 	time += delta;
 
-	constexpr float TicksPerSecond = 25.0f; //todo read from gltf
-	constexpr float Duration = 2.0f; //todo read from gltf
-	float TimeInTicks = time * TicksPerSecond;
-	float AnimationTime = fmod( TimeInTicks, Duration ); //todo read from gltf
+	while (time > Duration)
+	{
+		time -= Duration;
+	}
+
+	float AnimationTime = time;// (time / Duration)* TicksPerSecond;
 
 	//Run animation
 	animation.ReadNodeHierarchy( AnimationTime, skin.rootBone, bones );
