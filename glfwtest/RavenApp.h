@@ -63,14 +63,6 @@ private:
 	VkFence renderFence;
 	VulkanSemaphore* renderSemaphore;
 
-	static std::mutex queue_mutex;
-	static std::condition_variable renderThreadWait;
-	static std::condition_variable updateThreadWait;
+	std::condition_variable updateThreadWait;
 
-	float accumelatedTime;
-	Timer timer;
-	Timer acquireTimer;
-	Timer drawCallTimer;
-	Timer renderQueuTimer;
-	Timer presentTimer;
 };

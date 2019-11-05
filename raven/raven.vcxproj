@@ -115,7 +115,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(VULKAN_SDK)\include;..\external_libs\include;include;.;..\raven\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VULKAN_SDK)\Lib;..\external_libs\lib\glfw-3.2.1\x64;..\external_libs\lib\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Lib;..\external_libs\lib\glfw-3.2.1\x64;..\external_libs\lib\x64;..\external_libs\lib\zstd\x64;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)lib\$(Platform)\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
@@ -185,7 +185,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG=1</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG=1;_ITERATOR_DEBUG_LEVEL=0</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)external_libs\include\;$(SolutionDir)external_libs\include\glm\;$(SolutionDir)vulkan\include\</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -195,7 +195,7 @@
       <PrecompiledHeaderFile>standard.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ForcedIncludeFiles>standard.h</ForcedIncludeFiles>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -220,7 +220,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
       <PrecompiledHeaderFile>standard.h</PrecompiledHeaderFile>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -266,7 +266,7 @@
       <ForcedIncludeFiles>standard.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>standard.h</PrecompiledHeaderFile>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -374,9 +374,13 @@
     <ClInclude Include="memory\PoolAllocator.h" />
     <ClInclude Include="physics\aabb.h" />
     <ClInclude Include="threading\Task.h" />
+    <ClInclude Include="threading\TaskSystem.h" />
     <ClInclude Include="threading\ThreadPool.h" />
     <ClInclude Include="helpers\Timer.h" />
     <ClInclude Include="graphics\VulkanInstance.h" />
+    <ClInclude Include="threading\ThreadPool_OldStyle.h" />
+    <ClInclude Include="threading\ThreadPool_PerThreadQueue.h" />
+    <ClInclude Include="threading\ThreadPool_Serial.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

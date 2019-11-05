@@ -17,7 +17,7 @@ glm::mat4 SkinnedMesh::localMatrix( const BoneInfo& bone )
 	return glm::translate( glm::mat4( 1.0f ), bone.translation ) * glm::toMat4( bone.rotation ) * glm::scale( glm::mat4( 1.0f ), bone.scale ) * bone.localTransform;
 }
 
-glm::mat4 SkinnedMesh::getMatrix( const BoneInfo& bone )
+glm::mat4 SkinnedMesh::getMatrix( const BoneInfo& bone ) //Note: very efficient calculation of the bones over and over again
 {
 	glm::mat4 returnValue = localMatrix( bone );
 

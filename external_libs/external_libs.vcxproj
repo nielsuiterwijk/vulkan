@@ -105,6 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -312,6 +313,9 @@
     <ClInclude Include="include\stb\stb_truetype.h" />
     <ClInclude Include="include\tinygltf\tiny_gltf.h" />
     <ClInclude Include="include\tinyobj\tiny_obj_loader.h" />
+    <ClInclude Include="include\zstd\zdict.h" />
+    <ClInclude Include="include\zstd\zstd.h" />
+    <ClInclude Include="include\zstd\zstd_errors.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="code\glm.cpp" />

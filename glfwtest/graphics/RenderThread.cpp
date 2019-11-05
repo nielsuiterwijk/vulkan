@@ -1,0 +1,207 @@
+#include "RenderThread.h"
+#include "graphics/GraphicsContext.h"
+
+
+void CRenderThread::Start()
+{
+
+}
+
+void CRenderThread::Stop()
+{
+	_ShouldRun = false;
+}
+
+void CRenderThread::DoFrame()
+{
+	VkResult result;
+	{
+		std::unique_lock<std::mutex> Lock(_NotificationMutex);
+		// Wait until update thread is done with the next frame
+		_RenderRunCondition.wait(Lock);
+	}
+
+	if (!_ShouldRun)
+		return;
+
+	//std::cout << "Start of frame " << app->renderFrameIndex << " render " << std::endl;
+
+	_TotalTimer.Start();
+
+	bool recreateSwapChain = false;
+
+	GraphicsDevice& GraphicsDevice = GraphicsDevice::Instance();
+
+	GraphicsDevice.Lock();
+
+	//draw
+	{
+		_AcquireTimer.Start();
+
+		//Prepare
+		uint32_t imageIndex = -1;
+		do
+		{
+			imageIndex = GraphicsContext::SwapChain->PrepareBackBuffer();
+
+			if (imageIndex == -1)
+			{
+				GraphicsDevice.Unlock();
+				GraphicsDevice.SwapchainInvalidated();
+				GraphicsDevice.Lock();
+			}
+
+		} while (imageIndex == -1);
+
+		const FrameBuffer& frameBuffer = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex);
+		const InstanceWrapper<VkSemaphore>& backBufferSemaphore = frameBuffer.GetLock();
+
+		VkSemaphore renderSemaphore[] = { app->renderSemaphore->GetNative() }; //This semaphore will be signaled when done with rendering the queue
+
+		//Sleep(4);
+		_AcquireTimer.Stop();
+		_DrawCallTimer.Start();
+
+		std::shared_ptr<CommandBuffer> commandBuffer = app->commandBuffers[imageIndex];
+		{
+
+			//std::cout << "current index: " << GraphicsContext::DescriptorPool->GetCurrentIndex() << std::endl;
+
+			{
+				commandBuffer->StartRecording(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+
+				VkRenderPassBeginInfo renderPassInfo = {};
+				renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+				renderPassInfo.renderPass = GraphicsContext::RenderPass->GetNative();
+				renderPassInfo.framebuffer = frameBuffer.GetNative();
+				renderPassInfo.renderArea.offset = { 0, 0 };
+				renderPassInfo.renderArea.extent = GraphicsContext::SwapChain->GetExtent();
+
+				std::array<VkClearValue, 2> clearValues = {};
+				clearValues[0].color = { 100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1.0f }; // = cornflower blue :)
+				clearValues[1].depthStencil = { 1.0f, 0 }; //1.0 means pixel is furthest away, so stuff can be rendered on top of it.
+
+				renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+				renderPassInfo.pClearValues = clearValues.data();
+
+				vkCmdBeginRenderPass(commandBuffer->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+			}
+
+			//TODO: Make the prepare threadsafe by doing a copy?
+			//TODO: dont pass the mesh, it should be owned / held by the renderObject
+			//app->renderobject->PrepareDraw(commandBuffer);
+			for (std::shared_ptr<Model> pModel : app->models)
+			{
+				pModel->Draw(commandBuffer);
+			}
+
+			app->imguiVulkan->Render(commandBuffer);
+
+			{
+				vkCmdEndRenderPass(commandBuffer->GetNative());
+				commandBuffer->StopRecording();
+			}
+		}
+		_DrawCallTimer.Stop();
+
+		{
+			//As soon as we're done creating our command buffers, let the update thread know it can continue processing its next frame
+			++_RenderFrame;
+
+			_UpdateRunCondition.notify_one();
+		}
+
+		//At this point, make sure to wait that the previous render submit was done.
+		{
+			do 
+			{
+				result = vkWaitForFences(GraphicsContext::LogicalDevice, 1, &app->renderFence, true, UINT64_MAX);
+
+				if (result != VK_SUCCESS)
+				{
+					std::cout << "vkWaitForFences error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+				}
+
+			} while (result != VK_SUCCESS);
+			
+			vkResetFences(GraphicsContext::LogicalDevice, 1, &app->renderFence);
+		}
+
+		_RenderQueuTimer.Start();
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = &backBufferSemaphore; //Wait until this semaphore is signaled to continue with executing the command buffers
+		submitInfo.pWaitDstStageMask = waitStages;
+
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer->GetNative();
+
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = renderSemaphore;
+		GraphicsContext::QueueLock.lock();
+		{
+			//Draw (wait until surface is available)
+			result = vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, app->renderFence);
+			if (result != VK_SUCCESS)
+			{
+				std::cout << "vkQueueSubmit error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+				assert(false && "failed to submit draw command buffer!");
+			}
+		}
+		GraphicsContext::QueueLock.unlock();
+
+		//Sleep(4);
+		_RenderQueuTimer.Stop();
+		_PresentTimer.Start();
+
+		VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = renderSemaphore;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &GraphicsContext::SwapChain->GetNative();
+		presentInfo.pImageIndices = &imageIndex;
+
+		GraphicsContext::QueueLock.lock();
+		{
+			//Present (wait until drawing is done)
+			result = vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
+
+			if (result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR)
+			{
+				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+				recreateSwapChain = true;
+			}
+			else if (result != VK_SUCCESS)
+			{
+				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+				assert(false && "failed to present!");
+			}
+		}
+		GraphicsContext::QueueLock.unlock();
+		_PresentTimer.Stop();
+	}
+	GraphicsDevice.Unlock();
+
+	if (recreateSwapChain)
+	{
+		RavenApp::WindowResizedCallback(app->window, GraphicsContext::WindowSize.x, GraphicsContext::WindowSize.y);
+	}
+
+	//Sleep(16);
+	_TotalTimer.Stop();
+	_AccumelatedTime += _TotalTimer.GetTimeInSeconds();
+
+	{
+		if (_AccumelatedTime > 2.0f)
+		{
+			std::cout << "a: " << _AcquireTimer.GetTimeInSeconds() << " d: " << _DrawCallTimer.GetTimeInSeconds() << " q: " << _RenderQueuTimer.GetTimeInSeconds() << " p: " << _PresentTimer.GetTimeInSeconds() << std::endl;
+			_AccumelatedTime -= 2.0f;
+		}
+		//std::cout << "End of frame " << app->renderFrameIndex - 1 << " render " << std::endl;
+	}
+}

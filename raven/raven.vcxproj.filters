@@ -161,5 +161,17 @@
     <ClInclude Include="helpers\Utility.h" />
     <ClInclude Include="io\FileUtility.h" />
     <ClInclude Include="events\EventSystem.h" />
+    <ClInclude Include="threading\ThreadPool_PerThreadQueue.h">
+      <Filter>threading</Filter>
+    </ClInclude>
+    <ClInclude Include="threading\ThreadPool_OldStyle.h">
+      <Filter>threading</Filter>
+    </ClInclude>
+    <ClInclude Include="threading\ThreadPool_Serial.h">
+      <Filter>threading</Filter>
+    </ClInclude>
+    <ClInclude Include="threading\TaskSystem.h">
+      <Filter>threading</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

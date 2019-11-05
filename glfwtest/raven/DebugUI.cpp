@@ -13,7 +13,7 @@ void DebugUI::ListGameObjects()
 	//E:\\Code\\C++\\glfwtest\\vulkan\\bin\\x64
 	std::filesystem::path pathToShow( std::filesystem::current_path() );
 	std::vector<std::string> filesInDirectory;
-	IO::ListFiles( "E:\\Code\\C++\\glfwtest\\vulkan\\assets\\gameobjects", filesInDirectory );
+	IO::ListFiles( "C:\\projects\\cpp\\vulkan\\assets\\gameobjects", filesInDirectory );
 
 	static auto vector_getter = []( void* vec, int idx, const char** out_text ) {
 		auto& vector = *static_cast<std::vector<std::string>*>( vec );
@@ -28,7 +28,7 @@ void DebugUI::ListGameObjects()
 	static int32_t index = 0;
 
 	ImGui::Begin( "Entities" );
-	ImGui::ListBox( "files", &index, vector_getter, static_cast<void*>( &filesInDirectory ), filesInDirectory.size() );
+	ImGui::ListBox( "files", &index, vector_getter, static_cast<void*>( &filesInDirectory ), filesInDirectory.size(), 4 );
 	if ( ImGui::Button( "Spawn" ) )
 	{
 		//std::shared_ptr<Model> model = std::make_shared<Model>( "cesiumman" );

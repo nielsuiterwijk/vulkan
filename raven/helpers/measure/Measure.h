@@ -59,7 +59,7 @@ namespace Measures
 			std::sort(Trials.begin(), Trials.end());
 			std::sort(Runs.begin(), Runs.end());
 
-			int64_t AverageRuns = std::accumulate(Runs.begin() + 1, Runs.end() - 1, 0) / (Runs.size() - 2);
+			int64_t AverageRuns = (int64_t)std::accumulate(Runs.begin() + 1, Runs.end() - 1, 0) / (Runs.size() - 2);
 			double AverageTime = std::accumulate(Trials.begin() + 1, Trials.end() - 1, 0.0) / (Trials.size() - 2);
 
 			return { AverageTime, AverageRuns };
@@ -84,7 +84,7 @@ namespace Measures
 
 	void Print(Details::SMeasureResult Result, const char* pLabel)
 	{
-		printf("%s: average time per run: %.6fs | %llu average runs \n", pLabel, Result.AverageTimePerCall, Result.NumberOfRuns);
+		printf("%s: average time per run: %.9fs | %llu average runs \n", pLabel, Result.AverageTimePerCall, Result.NumberOfRuns);
 	}
 	
 

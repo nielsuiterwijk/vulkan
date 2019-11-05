@@ -114,7 +114,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(VULKAN_SDK)\include;..\external_libs\include;include;.;..\raven\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VULKAN_SDK)\Lib;..\external_libs\lib\glfw-3.2.1\x64;..\external_libs\lib\x64;..\raven\lib\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Lib;..\external_libs\lib\glfw-3.2.1\x64;..\external_libs\lib\x64;..\raven\lib\x64;..\external_libs\lib\zstd\x64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
@@ -184,7 +184,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG=1</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG=1;_ITERATOR_DEBUG_LEVEL=0</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)external_libs\include\;$(SolutionDir)external_libs\include\glm\;$(SolutionDir)vulkan\include\</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -200,7 +200,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;external_libs_d.lib;raven_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;external_libs_d.lib;raven_d.lib;zstd_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
@@ -284,6 +284,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="includes\standard.h" />
+    <ClInclude Include="misc\avx.h" />
     <ClInclude Include="misc\cache_binary.h" />
     <ClInclude Include="random_generator.h" />
     <ClInclude Include="RavenApp.h" />

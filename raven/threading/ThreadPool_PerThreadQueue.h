@@ -2,37 +2,45 @@
 
 #include <queue>
 #include <vector>
+#include <memory>
 
 #include "Task.h"
 
-class ThreadPool
+class ThreadPoolPerQueue
 {
 public:
-	ThreadPool( size_t numberOfThreads ) :
+	ThreadPoolPerQueue( size_t numberOfThreads ) :
 		stop( false )
 	{
+		numberOfThreads = std::min(numberOfThreads, threadInfo.size());
+		workers.reserve(numberOfThreads);
+
 		for ( size_t i = 0; i < numberOfThreads; ++i )
 		{
 			workers.emplace_back( [this, i] {
 				for ( ;; )
 				{
+					ThreadInfo& Info = threadInfo[i];
 					std::function<void()> task = nullptr;
 
 					{
-						std::unique_lock<std::mutex> lock( this->queue_mutex );
+						std::unique_lock<std::mutex> lock( Info.queue_mutex );
 
 						//The condition will take the lock and will wait for to be notified and will continue
 						//only if were stopping (stop == true) or if there are tasks to do, else it will keep waiting.
-						this->condition.wait( lock, [this] { return this->stop || !this->tasks.empty(); } );
+						Info.condition.wait( lock, [this, i]
+							{
+								return this->stop || !this->threadInfo[i].tasks.empty(); 
+							} );
 
 						//Once we passed the condition we have the lock, and as soon we leave the scope, the lock will be given up
-						if ( this->stop && this->tasks.empty() )
+						if ( this->stop && Info.tasks.empty() )
 						{
 							return;
 						}
 
-						task = std::move( this->tasks.front() );
-						this->tasks.pop();
+						task = std::move(Info.tasks.front() );
+						Info.tasks.pop();
 					}
 					//printf("Thread %d executing task.. \n", (int32_t)i);
 					task();
@@ -41,13 +49,14 @@ public:
 		}
 	}
 
-	~ThreadPool()
+	~ThreadPoolPerQueue()
 	{
+		stop = true;
+		for (size_t i = 0; i < threadInfo.size(); ++i)
 		{
-			std::unique_lock<std::mutex> lock( queue_mutex );
-			stop = true;
+			threadInfo[i].condition.notify_one();
 		}
-		condition.notify_all();
+
 		for ( std::thread& worker : workers )
 			worker.join();
 	}
@@ -63,29 +72,41 @@ public:
 		//We get the return result back from the object, which will be set at some point in the future.
 		std::future<return_type> res = task->get_future();
 
+		int32_t CurrentThread = taskQueue.fetch_add(1);
+		CurrentThread = CurrentThread % workers.size();
+		ThreadInfo& info = threadInfo[CurrentThread];
+		//printf("Thread %d enqueued task.. \n", (int32_t)CurrentThread);
+		
 		{
 			//Take the lock, and it will be auto cleared at the end of the scope.
-			std::unique_lock<std::mutex> lock( queue_mutex );
+			std::unique_lock<std::mutex> lock( info.queue_mutex );
 
 			// don't allow enqueueing after stopping the pool
 			if (stop)
 				return std::future<return_type>();
 
-			tasks.emplace( [task]() {
+			info.tasks.emplace( [task]() {
 				( *task )();
 			} );
 		}
-		condition.notify_one();
+		info.condition.notify_one();
 
 		return res;
 	}
 
 private:
-	std::vector<std::thread> workers;
-	std::queue<std::function<void()>> tasks;
 
-	std::mutex queue_mutex; //TODO: At some point a lockless queue would be a nice addition
-	std::condition_variable condition;
+	struct ThreadInfo
+	{
+		std::queue<std::function<void()>> tasks = {};
+		std::mutex queue_mutex = {};
+		std::condition_variable condition = {};
+	};
+
+	std::array<ThreadInfo, 12> threadInfo;
+	std::vector<std::thread> workers;
+	
+	std::atomic_int taskQueue = 0;
 
 	bool stop;
 };
