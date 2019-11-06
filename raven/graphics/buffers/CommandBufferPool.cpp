@@ -50,7 +50,7 @@ void CommandBufferPool::Create( std::vector<std::shared_ptr<CommandBuffer>>& res
 std::shared_ptr<CommandBuffer> CommandBufferPool::Create()
 {
 	//Note: needs to be synchronized as it can be called from multiple threads.
-	std::shared_ptr<CommandBuffer> commandBuffer = std::make_shared<CommandBuffer>( shared_from_this() );
+	std::shared_ptr<CommandBuffer> commandBuffer = std::make_shared<CommandBuffer>( shared_from_this() ); //todo.. this is all sorts of weird
 
 	commandBuffers.push_back( commandBuffer );
 

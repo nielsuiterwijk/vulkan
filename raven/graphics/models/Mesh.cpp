@@ -25,7 +25,7 @@ Mesh::~Mesh()
 	subMeshes.clear();
 }
 
-SubMesh* Mesh::AllocateBuffers( void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t triangles )
+SubMesh* Mesh::AllocateBuffers( void* vertexData, const uint64_t& vertexDataSize, void* indexData, const uint64_t& indexDataSize, uint32_t triangles )
 {
 	SubMesh* subMesh = new SubMesh( triangles );
 

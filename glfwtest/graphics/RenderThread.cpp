@@ -1,34 +1,67 @@
 #include "RenderThread.h"
 #include "graphics/GraphicsContext.h"
 
-
 void CRenderThread::Start()
 {
+	_Thread = std::thread( &CRenderThread::ThreadRunner, this );
+}
 
+void CRenderThread::Initialize()
+{
+
+	VkFenceCreateInfo FenceInfo = {};
+	FenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	FenceInfo.pNext = VK_NULL_HANDLE;
+	FenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	VkResult result = vkCreateFence( GraphicsContext::LogicalDevice, &FenceInfo, GraphicsContext::GlobalAllocator.Get(), &_RenderFence );
+	assert( result == VK_SUCCESS );
+
+	_pRenderSemaphore.reset( new VulkanSemaphore() );
 }
 
 void CRenderThread::Stop()
 {
 	_ShouldRun = false;
+	_RenderRunCondition.notify_one();
+	_Thread.join();
+}
+
+void CRenderThread::Destroy()
+{
+	_pRenderSemaphore = nullptr;
+	vkDestroyFence( GraphicsContext::LogicalDevice, _RenderFence, GraphicsContext::GlobalAllocator.Get() );
+}
+
+void CRenderThread::ThreadRunner()
+{
+	while ( _ShouldRun )
+	{
+		if ( GraphicsContext::LogicalDevice == nullptr )
+			Sleep( 50 );
+
+		DoFrame();
+	}
 }
 
 void CRenderThread::DoFrame()
 {
 	VkResult result;
 	{
-		std::unique_lock<std::mutex> Lock(_NotificationMutex);
+		std::unique_lock<std::mutex> Lock( AccessNotificationMutex() );
 		// Wait until update thread is done with the next frame
-		_RenderRunCondition.wait(Lock);
+		//RavenApp::renderThreadWait.wait( lock, [=] { return app->updateFrameIndex > app->renderFrameIndex || !app->run; } );
+		_RenderRunCondition.wait( Lock );
 	}
 
-	if (!_ShouldRun)
+	if ( !_ShouldRun )
 		return;
 
 	//std::cout << "Start of frame " << app->renderFrameIndex << " render " << std::endl;
 
 	_TotalTimer.Start();
 
-	bool recreateSwapChain = false;
+	bool RecreateSwapChain = false;
 
 	GraphicsDevice& GraphicsDevice = GraphicsDevice::Instance();
 
@@ -44,31 +77,31 @@ void CRenderThread::DoFrame()
 		{
 			imageIndex = GraphicsContext::SwapChain->PrepareBackBuffer();
 
-			if (imageIndex == -1)
+			if ( imageIndex == -1 )
 			{
 				GraphicsDevice.Unlock();
 				GraphicsDevice.SwapchainInvalidated();
 				GraphicsDevice.Lock();
 			}
 
-		} while (imageIndex == -1);
+		} while ( imageIndex == -1 );
 
-		const FrameBuffer& frameBuffer = GraphicsContext::SwapChain->GetFrameBuffer(imageIndex);
+		const FrameBuffer& frameBuffer = GraphicsContext::SwapChain->GetFrameBuffer( imageIndex );
 		const InstanceWrapper<VkSemaphore>& backBufferSemaphore = frameBuffer.GetLock();
 
-		VkSemaphore renderSemaphore[] = { app->renderSemaphore->GetNative() }; //This semaphore will be signaled when done with rendering the queue
+		VkSemaphore RenderSemaphore[] = { _pRenderSemaphore->GetNative() }; //This semaphore will be signaled when done with rendering the queue
 
 		//Sleep(4);
 		_AcquireTimer.Stop();
 		_DrawCallTimer.Start();
 
-		std::shared_ptr<CommandBuffer> commandBuffer = app->commandBuffers[imageIndex];
+		/*std::shared_ptr<CommandBuffer> commandBuffer = app->commandBuffers[ imageIndex ];
 		{
 
 			//std::cout << "current index: " << GraphicsContext::DescriptorPool->GetCurrentIndex() << std::endl;
 
 			{
-				commandBuffer->StartRecording(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+				commandBuffer->StartRecording( VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT );
 
 				VkRenderPassBeginInfo renderPassInfo = {};
 				renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -78,53 +111,51 @@ void CRenderThread::DoFrame()
 				renderPassInfo.renderArea.extent = GraphicsContext::SwapChain->GetExtent();
 
 				std::array<VkClearValue, 2> clearValues = {};
-				clearValues[0].color = { 100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1.0f }; // = cornflower blue :)
-				clearValues[1].depthStencil = { 1.0f, 0 }; //1.0 means pixel is furthest away, so stuff can be rendered on top of it.
+				clearValues[ 0 ].color = { 100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1.0f }; // = cornflower blue :)
+				clearValues[ 1 ].depthStencil = { 1.0f, 0 }; //1.0 means pixel is furthest away, so stuff can be rendered on top of it.
 
-				renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+				renderPassInfo.clearValueCount = static_cast<uint32_t>( clearValues.size() );
 				renderPassInfo.pClearValues = clearValues.data();
 
-				vkCmdBeginRenderPass(commandBuffer->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+				vkCmdBeginRenderPass( commandBuffer->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE );
 			}
 
 			//TODO: Make the prepare threadsafe by doing a copy?
 			//TODO: dont pass the mesh, it should be owned / held by the renderObject
 			//app->renderobject->PrepareDraw(commandBuffer);
-			for (std::shared_ptr<Model> pModel : app->models)
+			for ( std::shared_ptr<Model> pModel : app->models )
 			{
-				pModel->Draw(commandBuffer);
+				pModel->Draw( commandBuffer );
 			}
 
-			app->imguiVulkan->Render(commandBuffer);
+			app->imguiVulkan->Render( commandBuffer );
 
 			{
-				vkCmdEndRenderPass(commandBuffer->GetNative());
+				vkCmdEndRenderPass( commandBuffer->GetNative() );
 				commandBuffer->StopRecording();
 			}
-		}
+		}*/
 		_DrawCallTimer.Stop();
 
 		{
 			//As soon as we're done creating our command buffers, let the update thread know it can continue processing its next frame
 			++_RenderFrame;
-
-			_UpdateRunCondition.notify_one();
 		}
 
 		//At this point, make sure to wait that the previous render submit was done.
 		{
-			do 
+			do
 			{
-				result = vkWaitForFences(GraphicsContext::LogicalDevice, 1, &app->renderFence, true, UINT64_MAX);
+				result = vkWaitForFences( GraphicsContext::LogicalDevice, 1, &_RenderFence, true, UINT64_MAX );
 
-				if (result != VK_SUCCESS)
+				if ( result != VK_SUCCESS )
 				{
-					std::cout << "vkWaitForFences error: " << Vulkan::GetVkResultAsString(result) << std::endl;
+					std::cout << "vkWaitForFences error: " << Vulkan::GetVkResultAsString( result ) << std::endl;
 				}
 
-			} while (result != VK_SUCCESS);
-			
-			vkResetFences(GraphicsContext::LogicalDevice, 1, &app->renderFence);
+			} while ( result != VK_SUCCESS );
+
+			vkResetFences( GraphicsContext::LogicalDevice, 1, &_RenderFence );
 		}
 
 		_RenderQueuTimer.Start();
@@ -137,19 +168,19 @@ void CRenderThread::DoFrame()
 		submitInfo.pWaitSemaphores = &backBufferSemaphore; //Wait until this semaphore is signaled to continue with executing the command buffers
 		submitInfo.pWaitDstStageMask = waitStages;
 
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer->GetNative();
-
+		submitInfo.commandBufferCount = 0;
+		submitInfo.pCommandBuffers = nullptr;//&commandBuffer->GetNative();
+		
 		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = renderSemaphore;
+		submitInfo.pSignalSemaphores = RenderSemaphore;
 		GraphicsContext::QueueLock.lock();
 		{
 			//Draw (wait until surface is available)
-			result = vkQueueSubmit(GraphicsContext::GraphicsQueue, 1, &submitInfo, app->renderFence);
-			if (result != VK_SUCCESS)
+			result = vkQueueSubmit( GraphicsContext::GraphicsQueue, 1, &submitInfo, _RenderFence );
+			if ( result != VK_SUCCESS )
 			{
-				std::cout << "vkQueueSubmit error: " << Vulkan::GetVkResultAsString(result) << std::endl;
-				assert(false && "failed to submit draw command buffer!");
+				std::cout << "vkQueueSubmit error: " << Vulkan::GetVkResultAsString( result ) << std::endl;
+				assert( false && "failed to submit draw command buffer!" );
 			}
 		}
 		GraphicsContext::QueueLock.unlock();
@@ -161,7 +192,7 @@ void CRenderThread::DoFrame()
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = renderSemaphore;
+		presentInfo.pWaitSemaphores = RenderSemaphore;
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &GraphicsContext::SwapChain->GetNative();
 		presentInfo.pImageIndices = &imageIndex;
@@ -169,17 +200,17 @@ void CRenderThread::DoFrame()
 		GraphicsContext::QueueLock.lock();
 		{
 			//Present (wait until drawing is done)
-			result = vkQueuePresentKHR(GraphicsContext::PresentQueue, &presentInfo);
+			result = vkQueuePresentKHR( GraphicsContext::PresentQueue, &presentInfo );
 
-			if (result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR)
+			if ( result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR )
 			{
-				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
-				recreateSwapChain = true;
+				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString( result ) << std::endl;
+				RecreateSwapChain = true;
 			}
-			else if (result != VK_SUCCESS)
+			else if ( result != VK_SUCCESS )
 			{
-				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString(result) << std::endl;
-				assert(false && "failed to present!");
+				std::cout << "vkQueuePresentKHR error: " << Vulkan::GetVkResultAsString( result ) << std::endl;
+				assert( false && "failed to present!" );
 			}
 		}
 		GraphicsContext::QueueLock.unlock();
@@ -187,9 +218,9 @@ void CRenderThread::DoFrame()
 	}
 	GraphicsDevice.Unlock();
 
-	if (recreateSwapChain)
+	if ( RecreateSwapChain )
 	{
-		RavenApp::WindowResizedCallback(app->window, GraphicsContext::WindowSize.x, GraphicsContext::WindowSize.y);
+		RavenApp::WindowResizedCallback( app->window, GraphicsContext::WindowSize.x, GraphicsContext::WindowSize.y );
 	}
 
 	//Sleep(16);
@@ -197,9 +228,10 @@ void CRenderThread::DoFrame()
 	_AccumelatedTime += _TotalTimer.GetTimeInSeconds();
 
 	{
-		if (_AccumelatedTime > 2.0f)
+		if ( _AccumelatedTime > 2.0f )
 		{
-			std::cout << "a: " << _AcquireTimer.GetTimeInSeconds() << " d: " << _DrawCallTimer.GetTimeInSeconds() << " q: " << _RenderQueuTimer.GetTimeInSeconds() << " p: " << _PresentTimer.GetTimeInSeconds() << std::endl;
+			std::cout << "a: " << _AcquireTimer.GetTimeInSeconds() << " d: " << _DrawCallTimer.GetTimeInSeconds()
+					  << " q: " << _RenderQueuTimer.GetTimeInSeconds() << " p: " << _PresentTimer.GetTimeInSeconds() << std::endl;
 			_AccumelatedTime -= 2.0f;
 		}
 		//std::cout << "End of frame " << app->renderFrameIndex - 1 << " render " << std::endl;

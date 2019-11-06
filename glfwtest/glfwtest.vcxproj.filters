@@ -5,6 +5,7 @@
     <ClCompile Include="RavenApp.cpp" />
     <ClCompile Include="raven\model.cpp" />
     <ClCompile Include="raven\DebugUI.cpp" />
+    <ClCompile Include="graphics\RenderThread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -51,5 +52,6 @@
     <ClInclude Include="raven\DebugUI.h" />
     <ClInclude Include="random_generator.h" />
     <ClInclude Include="misc\avx.h" />
+    <ClInclude Include="graphics\RenderThread.h" />
   </ItemGroup>
 </Project>

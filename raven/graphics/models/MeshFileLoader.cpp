@@ -20,14 +20,11 @@
 
 namespace std
 {
-template <>
-struct hash<Vertex>
-{
-	size_t operator()( Vertex const& vertex ) const
+	template <>
+	struct hash<Vertex>
 	{
-		return ( ( hash<glm::vec3>()( vertex.pos ) ^ ( hash<glm::vec4>()( vertex.color ) << 1 ) ) >> 1 ) ^ ( hash<glm::vec2>()( vertex.texCoords ) << 1 ) ^ ( hash<glm::vec3>()( vertex.normal ) << 1 );
-	}
-};
+		size_t operator()( Vertex const& vertex ) const { return ( ( hash<glm::vec3>()( vertex.pos ) ^ ( hash<glm::vec4>()( vertex.color ) << 1 ) ) >> 1 ) ^ ( hash<glm::vec2>()( vertex.texCoords ) << 1 ) ^ ( hash<glm::vec3>()( vertex.normal ) << 1 ); }
+	};
 }
 
 std::shared_ptr<Mesh> MeshFileLoader::Static( const std::string& fileName )
@@ -82,32 +79,32 @@ void MeshFileLoader::FileLoaded( std::vector<char> fileData, std::shared_ptr<Mes
 {
 	switch ( fileType )
 	{
-	case MeshFileType::OBJ:
-		LoadOBJ( fileData, meshDestination );
-		break;
-	case MeshFileType::STL:
-		LoadSTL( fileData, meshDestination );
-		break;
-	case MeshFileType::GLTF:
-		LoadGLTF( fileData, meshDestination );
-		break;
-	default:
-		break;
+		case MeshFileType::OBJ:
+			LoadOBJ( fileData, meshDestination );
+			break;
+		case MeshFileType::STL:
+			LoadSTL( fileData, meshDestination );
+			break;
+		case MeshFileType::GLTF:
+			LoadGLTF( fileData, meshDestination );
+			break;
+		default:
+			break;
 	}
 }
 
 namespace
 {
-void TraverseBones( int32_t targetBone, const std::vector<BoneInfo>& bones, std::vector<int32_t>& boneOrder )
-{
-	boneOrder.emplace_back( targetBone );
-	const BoneInfo& boneInfo = bones[ targetBone ];
-
-	for ( int32_t child : boneInfo.children )
+	void TraverseBones( int32_t targetBone, const std::vector<BoneInfo>& bones, std::vector<int32_t>& boneOrder )
 	{
-		TraverseBones( child, bones, boneOrder );
+		boneOrder.emplace_back( targetBone );
+		const BoneInfo& boneInfo = bones[ targetBone ];
+
+		for ( int32_t child : boneInfo.children )
+		{
+			TraverseBones( child, bones, boneOrder );
+		}
 	}
-}
 }
 
 void MeshFileLoader::LoadNode( BoneInfo* parent, uint32_t nodeIndex, const tinygltf::Model& model, std::shared_ptr<SkinnedMesh> skinnedMesh )
@@ -119,11 +116,11 @@ void MeshFileLoader::LoadNode( BoneInfo* parent, uint32_t nodeIndex, const tinyg
 
 	const tinygltf::Node& node = model.nodes[ nodeIndex ];
 
-	glm::vec3 position = node.translation.size() == 0 ? glm::vec3( 0.0f ) : glm::make_vec3( node.translation.data() );
-	glm::vec3 scale = node.scale.size() == 0 ? glm::vec3( 1.0f ) : glm::make_vec3( node.scale.data() );
-	glm::quat rotation = node.rotation.size() == 0 ? glm::quat() : glm::make_quat( node.rotation.data() );
+	const glm::vec3 position = node.translation.size() == 0 ? glm::vec3( 0.0f ) : glm::make_vec3( node.translation.data() );
+	const glm::vec3 scale = node.scale.size() == 0 ? glm::vec3( 1.0f ) : glm::make_vec3( node.scale.data() );
+	const glm::quat rotation = node.rotation.size() == 0 ? glm::quat() : glm::make_quat( node.rotation.data() );
 
-	glm::mat4 transform = node.matrix.size() == 0 ? glm::mat4() : glm::make_mat4x4( node.matrix.data() );
+	const glm::mat4 transform = node.matrix.size() == 0 ? glm::mat4() : glm::make_mat4x4( node.matrix.data() );
 
 	BoneInfo& bone = skinnedMesh->bones[ nodeIndex ];
 	bone.jointIndex = nodeIndex;
@@ -154,7 +151,7 @@ void MeshFileLoader::LoadGLTF( std::vector<char>& fileData, std::shared_ptr<Mesh
 	std::string err;
 	std::string warning;
 
-	bool ret = loader.LoadBinaryFromMemory( &model, &err, &warning, reinterpret_cast<unsigned char*>( &fileData[ 0 ] ), fileData.size() );
+	bool ret = loader.LoadBinaryFromMemory( &model, &err, &warning, reinterpret_cast<unsigned char*>( fileData.data() ), static_cast<unsigned int>( fileData.size() ) );
 	//bool ret = loader.LoadBinaryFromFile(&model, &err, argv[1]); // for binary glTF(.glb)
 	if ( !err.empty() )
 	{
@@ -483,37 +480,37 @@ void MeshFileLoader::GLTFStaticMesh( const tinygltf::Model* model, std::shared_p
 
 				switch ( accessor.componentType )
 				{
-				case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT:
-				{
-					const uint32_t* buf = reinterpret_cast<const uint32_t*>( &buffer.data[ accessor.byteOffset + bufferView.byteOffset ] );
-					for ( size_t index = 0; index < accessor.count; index++ )
+					case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT:
 					{
-						indices.push_back( buf[ index ] );
+						const uint32_t* buf = reinterpret_cast<const uint32_t*>( &buffer.data[ accessor.byteOffset + bufferView.byteOffset ] );
+						for ( size_t index = 0; index < accessor.count; index++ )
+						{
+							indices.push_back( buf[ index ] );
+						}
+						break;
 					}
-					break;
-				}
-				case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT:
-				{
-					const uint16_t* buf = reinterpret_cast<const uint16_t*>( &buffer.data[ accessor.byteOffset + bufferView.byteOffset ] );
+					case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT:
+					{
+						const uint16_t* buf = reinterpret_cast<const uint16_t*>( &buffer.data[ accessor.byteOffset + bufferView.byteOffset ] );
 
-					for ( size_t index = 0; index < accessor.count; index++ )
-					{
-						indices.push_back( buf[ index ] );
+						for ( size_t index = 0; index < accessor.count; index++ )
+						{
+							indices.push_back( buf[ index ] );
+						}
+						break;
 					}
-					break;
-				}
-				case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE:
-				{
-					const uint8_t* buf = reinterpret_cast<const uint8_t*>( &buffer.data[ accessor.byteOffset + bufferView.byteOffset ] );
-					for ( size_t index = 0; index < accessor.count; index++ )
+					case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE:
 					{
-						indices.push_back( buf[ index ] );
+						const uint8_t* buf = reinterpret_cast<const uint8_t*>( &buffer.data[ accessor.byteOffset + bufferView.byteOffset ] );
+						for ( size_t index = 0; index < accessor.count; index++ )
+						{
+							indices.push_back( buf[ index ] );
+						}
+						break;
 					}
-					break;
-				}
-				default:
-					std::cerr << "Index component type " << accessor.componentType << " not supported!" << std::endl;
-					return;
+					default:
+						std::cerr << "Index component type " << accessor.componentType << " not supported!" << std::endl;
+						return;
 				}
 			}
 
@@ -557,26 +554,15 @@ void MeshFileLoader::LoadOBJ( std::vector<char>& fileData, std::shared_ptr<Mesh>
 		{
 			Vertex vertex = {};
 
-			vertex.pos = {
-				attrib.vertices[ 3 * index.vertex_index + 0 ],
-				attrib.vertices[ 3 * index.vertex_index + 1 ],
-				attrib.vertices[ 3 * index.vertex_index + 2 ]
-			};
+			vertex.pos = { attrib.vertices[ 3 * index.vertex_index + 0 ], attrib.vertices[ 3 * index.vertex_index + 1 ], attrib.vertices[ 3 * index.vertex_index + 2 ] };
 
 			aabb.Grow( vertex.pos );
 
-			vertex.texCoords = {
-				attrib.texcoords[ 2 * index.texcoord_index + 0 ],
-				1.0f - attrib.texcoords[ 2 * index.texcoord_index + 1 ]
-			};
+			vertex.texCoords = { attrib.texcoords[ 2 * index.texcoord_index + 0 ], 1.0f - attrib.texcoords[ 2 * index.texcoord_index + 1 ] };
 
 			vertex.color = colors[ colorIndex ];
 
-			vertex.normal = {
-				attrib.normals[ 3 * index.normal_index + 0 ],
-				attrib.normals[ 3 * index.normal_index + 1 ],
-				attrib.normals[ 3 * index.normal_index + 2 ]
-			};
+			vertex.normal = { attrib.normals[ 3 * index.normal_index + 0 ], attrib.normals[ 3 * index.normal_index + 1 ], attrib.normals[ 3 * index.normal_index + 2 ] };
 
 			vertex.normal = glm::normalize( vertex.normal );
 

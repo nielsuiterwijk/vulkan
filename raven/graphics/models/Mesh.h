@@ -71,7 +71,7 @@ public:
 	virtual MeshType GetMeshType() const { return MeshType::Static; }
 
 protected:
-	SubMesh* AllocateBuffers( void* vertexData, const size_t& vertexDataSize, void* indexData, const size_t& indexDataSize, uint32_t triangles );
+	SubMesh* AllocateBuffers( void* vertexData, const uint64_t& vertexDataSize, void* indexData, const uint64_t& indexDataSize, uint32_t triangles );
 
 protected:
 	uint32_t triangleCount;

@@ -6,10 +6,11 @@
 #include "helpers/IMGUIVulkan.h"
 #include "helpers/Timer.h"
 
+#include "graphics/RenderThread.h"
+
 struct GLFWwindow;
 class Mesh;
 class Model;
-class VulkanSemaphore;
 
 class RavenApp
 {
@@ -51,7 +52,6 @@ private:
 	bool run;
 
 	uint64_t updateFrameIndex;
-	uint64_t renderFrameIndex;
 
 	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
 
@@ -60,9 +60,7 @@ private:
 
 	IMGUIVulkan* imguiVulkan;
 
-	VkFence renderFence;
-	VulkanSemaphore* renderSemaphore;
 
-	std::condition_variable updateThreadWait;
+	CRenderThread _RenderThread;
 
 };
