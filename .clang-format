@@ -1,27 +1,36 @@
 ﻿---
 BasedOnStyle: WebKit
 AlignAfterOpenBracket: Align
-AlignConsecutiveAssignments: 'false'
+AlignConsecutiveAssignments: false
 AlignEscapedNewlines: Left
-AlignOperands: 'true'
+AlignOperands: true
 AllowShortFunctionsOnASingleLine: InlineOnly
-AllowShortIfStatementsOnASingleLine: 'false'
-AlwaysBreakTemplateDeclarations: 'true'
-BinPackArguments: 'true'
+AllowShortIfStatementsOnASingleLine: false
+AlwaysBreakTemplateDeclarations: true
+BinPackArguments: false
+BinPackParameters: true
 BreakBeforeBraces: Allman
-BreakConstructorInitializers: AfterColon
-CompactNamespaces: 'false'
-ConstructorInitializerAllOnOneLineOrOnePerLine: 'true'
+CompactNamespaces: false
 Language: Cpp
-NamespaceIndentation: Inner
 PointerAlignment: Left
-SortIncludes: 'true'
-SortUsingDeclarations: 'true'
-SpaceBeforeAssignmentOperators: 'true'
+SortIncludes: true
+SortUsingDeclarations: true
+SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements
-SpacesInParentheses: 'true'
-SpacesInSquareBrackets: 'true'
-TabWidth: '4'
+SpacesInParentheses: true
+SpacesInSquareBrackets: true
+TabWidth: 4
 UseTab: Always
-
+IndentCaseLabels: true
+BreakConstructorInitializersBeforeComma: true
+BreakConstructorInitializers: BeforeComma
+BreakInheritanceList: AfterColon
+BreakBeforeInheritanceComma: true
+NamespaceIndentation: All
+ColumnLimit: 160
+AllowAllArgumentsOnNextLine: false
+AllowShortLambdasOnASingleLine: Empty
+ReflowComments: false
+AlignConsecutiveDeclarations: false
+AllowShortFunctionsOnASingleLine : InlineOnly
 ...
