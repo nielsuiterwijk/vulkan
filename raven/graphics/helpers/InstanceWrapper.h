@@ -61,7 +61,8 @@ public:
 
 		allocationCallbacks = allocator;
 
-		this->deleteCallback = [this, &device, callback, allocator]( T obj ) {
+		this->deleteCallback = [this, &device, callback, allocator]( T obj )
+		{
 			std::cout << "Deleting Vulkan Instance" << std::endl;
 			callback( device, obj, allocator );
 		};

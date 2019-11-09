@@ -220,7 +220,7 @@ void CRenderThread::DoFrame()
 
 	if ( RecreateSwapChain )
 	{
-		RavenApp::WindowResizedCallback( app->window, GraphicsContext::WindowSize.x, GraphicsContext::WindowSize.y );
+		//RavenApp::WindowResizedCallback( app->window, GraphicsContext::WindowSize.x, GraphicsContext::WindowSize.y );
 	}
 
 	//Sleep(16);

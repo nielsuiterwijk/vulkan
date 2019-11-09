@@ -32,6 +32,7 @@ void Texture2D::AllocateImage( uint32_t width, uint32_t height, uint32_t mipLeve
 	assert( width < 16384 );
 	assert( height < 16384 );
 	assert( mipLevels < 14 );
+	assert( format != VK_FORMAT_UNDEFINED );
 
 	this->width = width;
 	this->height = height;
@@ -51,6 +52,7 @@ void Texture2D::AllocateImage( uint32_t width, uint32_t height, uint32_t mipLeve
 void Texture2D::SetupView( VkFormat format, VkImageAspectFlags aspectFlags )
 {
 	this->format = format;
+	assert( format != VK_FORMAT_UNDEFINED );
 
 	VkImageViewCreateInfo viewInfo = {};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -80,6 +82,8 @@ void Texture2D::SetupView( VkFormat format, VkImageAspectFlags aspectFlags )
 //TODO: this function is in a bit of an odd place
 void Texture2D::Transition( VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout )
 {
+	assert( format != VK_FORMAT_UNDEFINED );
+
 	std::shared_ptr<CommandBuffer> commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
 
 	VkCommandBufferBeginInfo beginInfo = {};

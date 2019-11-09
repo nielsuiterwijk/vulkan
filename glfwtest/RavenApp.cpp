@@ -170,7 +170,7 @@ void RavenApp::Run()
 		bool DoUpdate = true;
 
 		{
-			std::unique_lock<std::mutex> lock( _RenderThread.AccessNotificationMutex() );
+			//std::unique_lock<std::mutex> lock( _RenderThread.AccessNotificationMutex() );
 
 			//The condition will take the lock and will wait for to be notified and will continue
 			//only if were stopping (stop == true) or if there are tasks to do, else it will keep waiting.

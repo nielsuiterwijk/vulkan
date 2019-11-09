@@ -1,10 +1,10 @@
 #include "FrameBuffer.h"
 #include "graphics/GraphicsContext.h"
 
-FrameBuffer::FrameBuffer() :
-	semaphore( nullptr ),
-	imageView( GraphicsContext::LogicalDevice, vkDestroyImageView, GraphicsContext::GlobalAllocator.Get() ),
-	framebuffer( GraphicsContext::LogicalDevice, vkDestroyFramebuffer, GraphicsContext::GlobalAllocator.Get() )
+FrameBuffer::FrameBuffer()
+	: semaphore( nullptr )
+	, imageView( GraphicsContext::LogicalDevice, vkDestroyImageView, GraphicsContext::GlobalAllocator.Get() )
+	, framebuffer( GraphicsContext::LogicalDevice, vkDestroyFramebuffer, GraphicsContext::GlobalAllocator.Get() )
 {
 }
 
@@ -24,6 +24,7 @@ void FrameBuffer::Destroy()
 void FrameBuffer::InitializeImageView( VkFormat imageFormat, VkImage image )
 {
 	format = imageFormat;
+	assert( format != VK_FORMAT_UNDEFINED );
 
 	VkImageViewCreateInfo viewInfo = {};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -55,10 +56,7 @@ void FrameBuffer::InitializeFrameBuffer( uint32_t width, uint32_t height, DepthB
 
 	semaphore = std::make_shared<VulkanSemaphore>();
 
-	std::array<VkImageView, 2> attachments = {
-		GetImageView(),
-		depthBuffer.GetImageView()
-	};
+	std::array<VkImageView, 2> attachments = { GetImageView(), depthBuffer.GetImageView() };
 
 	VkFramebufferCreateInfo framebufferInfo = {};
 	framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
