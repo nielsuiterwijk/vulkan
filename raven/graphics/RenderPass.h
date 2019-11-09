@@ -2,8 +2,6 @@
 
 #include "helpers\InstanceWrapper.h"
 
-#include "standard.h"
-
 class GraphicsDevice;
 
 class RenderPass

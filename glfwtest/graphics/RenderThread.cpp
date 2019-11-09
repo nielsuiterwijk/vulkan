@@ -8,7 +8,6 @@ void CRenderThread::Start()
 
 void CRenderThread::Initialize()
 {
-
 	VkFenceCreateInfo FenceInfo = {};
 	FenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	FenceInfo.pNext = VK_NULL_HANDLE;
@@ -18,6 +17,9 @@ void CRenderThread::Initialize()
 	assert( result == VK_SUCCESS );
 
 	_pRenderSemaphore.reset( new VulkanSemaphore() );
+		
+
+	GraphicsContext::CommandBufferPool->Create( _CommandBuffers, GraphicsContext::SwapChain->GetAmountOfFrameBuffers() );
 }
 
 void CRenderThread::Stop()
@@ -35,6 +37,7 @@ void CRenderThread::Destroy()
 
 void CRenderThread::ThreadRunner()
 {
+#if MULTITHREADED_RENDERING == 1
 	while ( _ShouldRun )
 	{
 		if ( GraphicsContext::LogicalDevice == nullptr )
@@ -42,18 +45,20 @@ void CRenderThread::ThreadRunner()
 
 		DoFrame();
 	}
+#endif
 }
 
 void CRenderThread::DoFrame()
 {
 	VkResult result;
+#if MULTITHREADED_RENDERING == 1
 	{
 		std::unique_lock<std::mutex> Lock( AccessNotificationMutex() );
 		// Wait until update thread is done with the next frame
 		//RavenApp::renderThreadWait.wait( lock, [=] { return app->updateFrameIndex > app->renderFrameIndex || !app->run; } );
 		_RenderRunCondition.wait( Lock );
 	}
-
+#endif
 	if ( !_ShouldRun )
 		return;
 
@@ -95,7 +100,7 @@ void CRenderThread::DoFrame()
 		_AcquireTimer.Stop();
 		_DrawCallTimer.Start();
 
-		/*std::shared_ptr<CommandBuffer> commandBuffer = app->commandBuffers[ imageIndex ];
+		CommandBuffer* commandBuffer = _CommandBuffers[ imageIndex ];
 		{
 
 			//std::cout << "current index: " << GraphicsContext::DescriptorPool->GetCurrentIndex() << std::endl;
@@ -121,20 +126,20 @@ void CRenderThread::DoFrame()
 			}
 
 			//TODO: Make the prepare threadsafe by doing a copy?
-			//TODO: dont pass the mesh, it should be owned / held by the renderObject
-			//app->renderobject->PrepareDraw(commandBuffer);
-			for ( std::shared_ptr<Model> pModel : app->models )
+			//TODO: dont pass the mesh, it should be owned / held by the renderObject: app->renderobject->PrepareDraw(commandBuffer);
+			
+			/*for ( std::shared_ptr<Model> pModel : app->models )
 			{
 				pModel->Draw( commandBuffer );
-			}
+			}*/
 
-			app->imguiVulkan->Render( commandBuffer );
+			//app->imguiVulkan->Render( commandBuffer );
 
 			{
 				vkCmdEndRenderPass( commandBuffer->GetNative() );
 				commandBuffer->StopRecording();
 			}
-		}*/
+		}
 		_DrawCallTimer.Stop();
 
 		{
@@ -168,8 +173,8 @@ void CRenderThread::DoFrame()
 		submitInfo.pWaitSemaphores = &backBufferSemaphore; //Wait until this semaphore is signaled to continue with executing the command buffers
 		submitInfo.pWaitDstStageMask = waitStages;
 
-		submitInfo.commandBufferCount = 0;
-		submitInfo.pCommandBuffers = nullptr;//&commandBuffer->GetNative();
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer->GetNative();
 		
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = RenderSemaphore;

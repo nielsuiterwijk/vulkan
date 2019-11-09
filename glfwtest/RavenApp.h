@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics/GraphicsDevice.h"
-#include "standard.h"
+
 
 #include "helpers/IMGUIVulkan.h"
 #include "helpers/Timer.h"
@@ -53,7 +53,6 @@ private:
 
 	uint64_t updateFrameIndex;
 
-	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
 
 	//objects..
 	std::vector<std::shared_ptr<Model>> models;

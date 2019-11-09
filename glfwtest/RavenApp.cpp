@@ -126,8 +126,6 @@ bool RavenApp::Initialize()
 
 	GraphicsContext::GlobalAllocator.PrintStats();
 
-	GraphicsContext::CommandBufferPool->Create( commandBuffers, GraphicsContext::SwapChain->GetAmountOfFrameBuffers() );
-
 
 	_RenderThread.Initialize();
 
@@ -267,12 +265,7 @@ void RavenApp::Run()
 #if MULTITHREADED_RENDERING
 	_RenderThread.Stop();
 #endif
-
-	for ( auto& x : commandBuffers )
-	{
-		x = nullptr;
-	}
-
+	
 	vkDeviceWaitIdle( GraphicsContext::LogicalDevice );
 }
 

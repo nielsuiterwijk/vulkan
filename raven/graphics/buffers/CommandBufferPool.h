@@ -2,7 +2,6 @@
 
 #include "graphics\buffers\CommandBuffer.h"
 #include "graphics\helpers\InstanceWrapper.h"
-#include "standard.h"
 
 //public std::enable_shared_from_this<Foo>
 class CommandBufferPool : public std::enable_shared_from_this<CommandBufferPool>
@@ -11,13 +10,13 @@ public:
 	CommandBufferPool( VkCommandPoolCreateFlags createFlags );
 	~CommandBufferPool();
 
-	//Give it an empty vector and it will fill it with propper Command Buffers
-	void Create( std::vector<std::shared_ptr<CommandBuffer>>& result, int count );
+	//Give it an empty vector and it will fill it with proper Command Buffers
+	void Create( std::vector<CommandBuffer*>& result, int count );
 
-	std::shared_ptr<CommandBuffer> Create();
+	CommandBuffer* Create();
 
 	void Clear();
-	void Free( std::shared_ptr<CommandBuffer> commandBuffer );
+	void Free( CommandBuffer* commandBuffer );
 
 	void FreeAll();
 	void RecreateAll();
@@ -27,5 +26,5 @@ public:
 private:
 	InstanceWrapper<VkCommandPool> commandPool;
 
-	std::vector<std::shared_ptr<CommandBuffer>> commandBuffers;
+	std::vector<std::unique_ptr<CommandBuffer>> commandBuffers;
 };

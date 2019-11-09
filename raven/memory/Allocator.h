@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MemoryUtils.h"
-#include "standard.h"
+
 
 class Allocator
 {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "graphics/helpers/InstanceWrapper.h"
-#include "standard.h"
 
 class UniformBuffer;
 class Texture2D;

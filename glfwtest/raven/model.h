@@ -5,7 +5,7 @@
 #include "graphics/buffers/UniformBuffer.h"
 #include "graphics/buffers/UniformBufferDefinition.h"
 #include "graphics/shaders/Material.h"
-#include "standard.h"
+
 
 class SkinnedMesh;
 

@@ -3,7 +3,7 @@
 #include "GraphicsContext.h"
 #include "helpers/VulkanDebugHook.h"
 #include "helpers/VulkanHelpers.h"
-#include "standard.h"
+
 
 #include <algorithm>
 #include <iostream>

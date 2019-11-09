@@ -3,8 +3,13 @@
 #include "helpers/Timer.h"
 #include "graphics/helpers/VulkanSemaphore.h"
 
+class CommandBuffer;
+class RavenApp;
+
 class CRenderThread
 {
+	friend class RavenApp;
+
 public:
 	CRenderThread() {};
 	
@@ -21,12 +26,17 @@ public:
 	uint64_t GetRenderFrame() const { return _RenderFrame; }
 
 
+	CommandBuffer* AcquireCommanderBuffer();
+
+
 private:
 	void ThreadRunner();
 	void DoFrame();
+		
+	std::thread _Thread;
 
 	
-	std::thread _Thread;
+	std::vector<CommandBuffer*> _CommandBuffers;
 
 	uint64_t _RenderFrame = 0;
 	bool _ShouldRun = true;
@@ -34,7 +44,7 @@ private:
 	std::mutex _NotificationMutex;
 	std::condition_variable _RenderRunCondition;
 
-	VkFence _RenderFence;
+	VkFence _RenderFence = {};
 	std::unique_ptr<VulkanSemaphore> _pRenderSemaphore;
 
 	float _AccumelatedTime = 0;

@@ -2,8 +2,6 @@
 
 //#include "graphics\buffers\CommandBufferPool.h"
 
-#include "standard.h"
-
 #include <vulkan\vulkan.h>
 
 class CommandBufferPool;
@@ -11,7 +9,7 @@ class CommandBufferPool;
 class CommandBuffer
 {
 public:
-	CommandBuffer( std::shared_ptr<CommandBufferPool> commandBufferPool );
+	CommandBuffer( CommandBufferPool* commandBufferPool );
 	~CommandBuffer();
 
 	void Initialize();
@@ -25,5 +23,5 @@ public:
 private:
 	VkCommandBuffer commandBuffer;
 
-	std::shared_ptr<CommandBufferPool> commandBufferPool;
+	CommandBufferPool* commandBufferPool;
 };

@@ -39,7 +39,7 @@ VK_COMMAND_BUFFER_LEVEL_SECONDARY :
 	Cannot be submitted directly, but can be called from primary command buffers.
 */
 
-void CommandBufferPool::Create( std::vector<std::shared_ptr<CommandBuffer>>& result, int count )
+void CommandBufferPool::Create( std::vector<CommandBuffer*>& result, int count )
 {
 	for ( size_t i = 0; i < count; i++ )
 	{
@@ -47,14 +47,12 @@ void CommandBufferPool::Create( std::vector<std::shared_ptr<CommandBuffer>>& res
 	}
 }
 
-std::shared_ptr<CommandBuffer> CommandBufferPool::Create()
+CommandBuffer* CommandBufferPool::Create()
 {
 	//Note: needs to be synchronized as it can be called from multiple threads.
-	std::shared_ptr<CommandBuffer> commandBuffer = std::make_shared<CommandBuffer>( shared_from_this() ); //todo.. this is all sorts of weird
+	commandBuffers.emplace_back( std::make_unique<CommandBuffer>( this ) );
 
-	commandBuffers.push_back( commandBuffer );
-
-	return commandBuffer;
+	return commandBuffers.back().get();
 }
 
 void CommandBufferPool::Clear()
@@ -62,11 +60,11 @@ void CommandBufferPool::Clear()
 	commandBuffers.clear();
 }
 //TODO: Fix this coupling, its ugly.
-void CommandBufferPool::Free( std::shared_ptr<CommandBuffer> commandBuffer )
+void CommandBufferPool::Free( CommandBuffer* commandBuffer )
 {
 	for ( size_t i = 0; i < commandBuffers.size(); i++ )
 	{
-		if ( commandBuffers[ i ] == commandBuffer )
+		if ( commandBuffers[ i ].get() == commandBuffer )
 		{
 			commandBuffers.erase( commandBuffers.begin() + i );
 			break;

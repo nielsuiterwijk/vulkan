@@ -84,7 +84,7 @@ void Texture2D::Transition( VkFormat format, VkImageLayout oldLayout, VkImageLay
 {
 	assert( format != VK_FORMAT_UNDEFINED );
 
-	std::shared_ptr<CommandBuffer> commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
+	CommandBuffer* commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
 
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -175,7 +175,7 @@ void Texture2D::Transition( VkFormat format, VkImageLayout oldLayout, VkImageLay
 
 void Texture2D::GenerateMipMaps()
 {
-	std::shared_ptr<CommandBuffer> commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
+	CommandBuffer* commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
 
 	commandBuffer->StartRecording( VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT );
 

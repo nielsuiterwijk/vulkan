@@ -9,8 +9,6 @@
 #include "graphics\buffers\CommandBufferPool.h"
 #include "shaders\Material.h"
 
-#include "standard.h"
-
 #include <memory>
 #include <mutex>
 #include <string>

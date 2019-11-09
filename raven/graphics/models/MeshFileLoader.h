@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics/helpers/InstanceWrapper.h"
-#include "standard.h"
+
 
 class Mesh;
 class SkinnedMesh;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "standard.h"
+
 
 #pragma pack( push, 2 )
 //https://en.wikipedia.org/wiki/STL_(file_format)#Binary_STL

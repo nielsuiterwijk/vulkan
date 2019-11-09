@@ -4,9 +4,9 @@
 #include "graphics\VulkanSwapChain.h"
 #include "graphics\buffers\CommandBufferPool.h"
 
-#include "standard.h"
 
-CommandBuffer::CommandBuffer( std::shared_ptr<CommandBufferPool> commandBufferPool ) :
+
+CommandBuffer::CommandBuffer( CommandBufferPool* commandBufferPool ) :
 	commandBufferPool( commandBufferPool )
 {
 	Initialize();

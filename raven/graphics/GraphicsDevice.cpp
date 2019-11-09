@@ -1,6 +1,6 @@
 #include "GraphicsDevice.h"
 
-#include "standard.h"
+
 
 #include "GraphicsContext.h"
 #include "PipelineStateObject.h"
