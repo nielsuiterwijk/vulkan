@@ -63,7 +63,7 @@ void PrintStats(const char* label, std::vector<STimePoint>& timings)
 	double fastest = std::numeric_limits<double>::max();
 	double slowest = std::numeric_limits<double>::min();
 
-	size_t Cutoff = timings.size() * 0.001; //we care about the 99.9% of the cases..?
+	size_t Cutoff = (size_t) (timings.size() * 0.001); //we care about the 99.9% of the cases..?
 
 	std::cout << std::fixed << std::setprecision(9) << label;
 	fastest = timings.back().count;
