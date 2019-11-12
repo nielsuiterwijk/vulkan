@@ -48,6 +48,8 @@
     <ClCompile Include="io\FileUtility.cpp" />
     <ClCompile Include="helpers\Utility.cpp" />
     <ClCompile Include="events\EventSystem.cpp" />
+    <ClCompile Include="helpers\SystemInfo.cpp" />
+    <ClCompile Include="memory\BlockAllocator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -173,5 +175,7 @@
     <ClInclude Include="threading\TaskSystem.h">
       <Filter>threading</Filter>
     </ClInclude>
+    <ClInclude Include="helpers\SystemInfo.h" />
+    <ClInclude Include="memory\BlockAllocator.h" />
   </ItemGroup>
 </Project>

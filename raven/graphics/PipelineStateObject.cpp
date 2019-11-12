@@ -4,49 +4,49 @@
 #include "RenderPass.h"
 #include "graphics/buffers/UniformBuffer.h"
 
-PipelineStateObject::PipelineStateObject() :
-	graphicsPipeline(),
-	material( nullptr ),
-	isDirty( true ),
-	vertexInputInfo(),
-	colorBlending(),
-	colorBlendAttachment(),
-	multisampling(),
-	rasterizer(),
-	viewportState(),
-	inputAssembly(),
-	depthStencil()
+PipelineStateObject::PipelineStateObject()
+	: _GraphicsPipeline()
+	, _pMaterial( nullptr )
+	, isDirty( true )
+	, vertexInputInfo()
+	, colorBlending()
+	, colorBlendAttachment()
+	, multisampling()
+	, rasterizer()
+	, viewportState()
+	, inputAssembly()
+	, depthStencil()
 {
 }
 
-PipelineStateObject::PipelineStateObject( std::shared_ptr<Material> material ) :
-	graphicsPipeline( GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get() ),
-	material( material ),
-	isDirty( true ),
-	vertexInputInfo(),
-	colorBlending(),
-	colorBlendAttachment(),
-	multisampling(),
-	rasterizer(),
-	viewportState(),
-	inputAssembly(),
-	depthStencil()
+PipelineStateObject::PipelineStateObject( std::shared_ptr<Material> material )
+	: _GraphicsPipeline( GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get() )
+	, _pMaterial( material )
+	, isDirty( true )
+	, vertexInputInfo()
+	, colorBlending()
+	, colorBlendAttachment()
+	, multisampling()
+	, rasterizer()
+	, viewportState()
+	, inputAssembly()
+	, depthStencil()
 {
-	Create( material, std::vector<VkDynamicState>(), true );
+	Create( _pMaterial, std::vector<VkDynamicState>(), true );
 
 	GraphicsDevice::Instance().OnSwapchainInvalidated( std::bind( &PipelineStateObject::Reload, this ) );
 }
 
 PipelineStateObject::~PipelineStateObject()
 {
-	graphicsPipeline = nullptr;
-	material = nullptr;
+	_GraphicsPipeline = nullptr;
+	_pMaterial = nullptr;
 	std::cout << "Destroyed PSO" << std::endl;
 }
 
 void PipelineStateObject::Reload()
 {
-	Create( material, std::vector<VkDynamicState>(), true );
+	Create( _pMaterial, std::vector<VkDynamicState>(), true );
 }
 
 /*void CreatePSO( VertexBuffer& vertexBuffer, 
@@ -61,10 +61,10 @@ void PipelineStateObject::Reload()
 */
 void PipelineStateObject::Create( std::shared_ptr<Material> material, const std::vector<VkDynamicState>& dynamicStates, bool enableDepthTest )
 {
-	this->material = material;
-	graphicsPipeline = nullptr;
+	_pMaterial = material;
+	_GraphicsPipeline = nullptr;
 
-	graphicsPipeline = InstanceWrapper<VkPipeline>( GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get() );
+	_GraphicsPipeline = InstanceWrapper<VkPipeline>( GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get() );
 
 	inputAssembly = {};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -91,16 +91,16 @@ void PipelineStateObject::Create( std::shared_ptr<Material> material, const std:
 	viewportState.scissorCount = 1;
 	viewportState.pScissors = &scissor;
 
-	activeDynamicStates.resize( dynamicStates.size() );
+	_ActiveDynamicStates.resize( dynamicStates.size() );
 	for ( size_t i = 0; i < dynamicStates.size(); i++ )
 	{
-		activeDynamicStates[ i ] = dynamicStates[ i ];
+		_ActiveDynamicStates[ i ] = dynamicStates[ i ];
 	}
 
 	dynamicState = {};
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	dynamicState.pDynamicStates = activeDynamicStates.data();
-	dynamicState.dynamicStateCount = static_cast<uint32_t>( activeDynamicStates.size() );
+	dynamicState.pDynamicStates = _ActiveDynamicStates.data();
+	dynamicState.dynamicStateCount = static_cast<uint32_t>( _ActiveDynamicStates.size() );
 
 	rasterizer = {};
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -172,9 +172,9 @@ void PipelineStateObject::Create( std::shared_ptr<Material> material, const std:
 	}
 
 	pipelineInfo = {};
-	if ( material != nullptr )
+	if ( _pMaterial != nullptr )
 	{
-		SetShader( material->GetShaderStages() );
+		SetShader( _pMaterial->GetShaderStages() );
 	}
 	isDirty = true;
 }
@@ -230,7 +230,7 @@ void PipelineStateObject::SetShader( const std::vector<VkPipelineShaderStageCrea
 const InstanceWrapper<VkPipeline>& PipelineStateObject::GetPipeLine() const
 {
 	assert( !isDirty );
-	return graphicsPipeline;
+	return _GraphicsPipeline;
 }
 
 void PipelineStateObject::Build( std::shared_ptr<Material> pMaterial )
@@ -258,7 +258,7 @@ void PipelineStateObject::Build( std::shared_ptr<Material> pMaterial )
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
 
-	if ( vkCreateGraphicsPipelines( GraphicsContext::LogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, graphicsPipeline.AllocationCallbacks(), graphicsPipeline.Replace() ) != VK_SUCCESS )
+	if ( vkCreateGraphicsPipelines( GraphicsContext::LogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, _GraphicsPipeline.AllocationCallbacks(), _GraphicsPipeline.Replace() ) != VK_SUCCESS )
 	{
 		throw std::runtime_error( "failed to create graphics pipeline!" );
 	}

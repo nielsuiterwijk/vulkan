@@ -173,8 +173,8 @@ void MeshFileLoader::LoadGLTF( std::vector<char>& fileData, std::shared_ptr<Mesh
 			continue;
 		}
 
-		const tinygltf::Buffer& buffer = model.buffers[ bufferView.buffer ];
-		std::cout << "buffer.size= " << buffer.data.size() << ", byteOffset= " << bufferView.byteOffset << std::endl;
+		//const tinygltf::Buffer& buffer = model.buffers[ bufferView.buffer ];
+		//std::cout << "bufferView.size= " << buffer.data.size() << ", byteOffset= " << bufferView.byteOffset << std::endl;
 	}
 
 	GLTFStaticMesh( &model, meshDestination );

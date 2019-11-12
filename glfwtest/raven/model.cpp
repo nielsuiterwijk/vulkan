@@ -13,9 +13,9 @@
 #include "graphics/textures/Texture2D.h"
 #include "graphics/textures/TextureSampler.h"
 
-Model::Model( const std::string& objectFile ) :
-	material( nullptr ),
-	mesh( nullptr )
+Model::Model( const std::string& objectFile )
+	: material( nullptr )
+	, mesh( nullptr )
 {
 	FileSystem::LoadFileAsync( "gameobjects/" + objectFile + ".gameobject", std::bind( &Model::FileLoaded, this, std::placeholders::_1 ) );
 }
@@ -84,18 +84,7 @@ bool Model::TexturesLoaded() const
 	return true;
 }
 
-void Model::Update(float delta)
-{
-	if (material == nullptr)
-		return;
-
-	if (!material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded())
-		return;
-
-	mesh->Update(delta);
-}
-
-void Model::Draw( std::shared_ptr<CommandBuffer> commandBuffer )
+void Model::Update( float delta )
 {
 	if ( material == nullptr )
 		return;
@@ -103,6 +92,16 @@ void Model::Draw( std::shared_ptr<CommandBuffer> commandBuffer )
 	if ( !material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded() )
 		return;
 
+	mesh->Update( delta );
+}
+
+void Model::Render( CommandBuffer* commandBuffer )
+{
+	if ( material == nullptr )
+		return;
+
+	if ( !material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded() )
+		return;
 
 	if ( material->GetUniformBuffers().size() != 2 )
 	{

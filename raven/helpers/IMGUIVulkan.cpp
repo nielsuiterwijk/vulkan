@@ -244,7 +244,7 @@ void IMGUIVulkan::NewFrame( float deltaTime )
 	didRender = false;
 }
 
-void IMGUIVulkan::Render( std::shared_ptr<CommandBuffer> commandBuffer )
+void IMGUIVulkan::Render(CommandBuffer* commandBuffer )
 {
 	if ( didRender )
 		return;

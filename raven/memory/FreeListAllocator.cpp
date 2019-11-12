@@ -25,7 +25,7 @@ void* FreeListAllocator::Allocate( size_t size, size_t alignment )
 {
 	assert( size != 0 );
 
-	std::lock_guard<std::mutex> guard( lock );
+	std::lock_guard<std::mutex> guard( _Mutex );
 
 	FreeBlock* previousBlock = nullptr;
 	FreeBlock* currentBlock = freeBlocks;
@@ -87,8 +87,8 @@ void* FreeListAllocator::Allocate( size_t size, size_t alignment )
 		header->alignment = (uint16_t)alignment;
 		header->adjustment = (uint16_t)adjustment;
 
-		usedMemory += totalSize;
-		numAllocations++;
+		_UsedMemory += totalSize;
+		_NumAllocations++;
 
 		assert( ( alignedAddress & ( alignment - 1 ) ) == 0 );
 
@@ -105,7 +105,7 @@ void FreeListAllocator::Deallocate( void* address )
 		return;
 	}
 
-	std::lock_guard<std::mutex> guard( lock );
+	std::lock_guard<std::mutex> guard( _Mutex );
 
 	AllocationHeader* header = (AllocationHeader*)Util::AddPtr( address, -(int)sizeof( AllocationHeader ) );
 
@@ -155,8 +155,8 @@ void FreeListAllocator::Deallocate( void* address )
 		previousBlock->next = currentBlock->next;
 	}
 
-	numAllocations--;
-	usedMemory -= blockSize;
+	_NumAllocations--;
+	_UsedMemory -= blockSize;
 }
 
 size_t FreeListAllocator::GetSizeOf( void* address )
@@ -166,7 +166,7 @@ size_t FreeListAllocator::GetSizeOf( void* address )
 		return 0;
 	}
 
-	std::lock_guard<std::mutex> guard( lock );
+	std::lock_guard<std::mutex> guard( _Mutex );
 
 	AllocationHeader* header = (AllocationHeader*)Util::AddPtr( address, -(int)sizeof( AllocationHeader ) );
 	return header->size - header->adjustment;
@@ -179,7 +179,7 @@ size_t FreeListAllocator::GetAlignmentOf( void* address )
 		return 0;
 	}
 
-	std::lock_guard<std::mutex> guard( lock );
+	std::lock_guard<std::mutex> guard( _Mutex );
 
 	AllocationHeader* header = (AllocationHeader*)Util::AddPtr( address, -(int)sizeof( AllocationHeader ) );
 	return header->alignment;

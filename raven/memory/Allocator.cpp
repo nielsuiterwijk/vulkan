@@ -3,14 +3,14 @@
 Allocator::Allocator() :
 	start( nullptr ),
 	size( 0 ),
-	usedMemory( 0 ),
-	numAllocations( 0 )
+	_UsedMemory( 0 ),
+	_NumAllocations( 0 )
 {
 }
 
 Allocator::~Allocator()
 {
-	assert( numAllocations == 0 && usedMemory == 0 );
+	assert( _NumAllocations == 0 && _UsedMemory == 0 );
 
 	start = nullptr;
 	size = 0;

@@ -6,7 +6,8 @@
 class GraphicsDevice;
 class Material;
 
-class PipelineStateObject
+//NU TODO: Every material should have a PipelineStateObject created for it. A model had a material, models with the same material can be rendered ideally in the same draw call if no dynamic data?
+class PipelineStateObject 
 {
 public:
 	PipelineStateObject();
@@ -28,9 +29,9 @@ public:
 	bool IsDirty() const { return isDirty; }
 
 private:
-	InstanceWrapper<VkPipeline> graphicsPipeline;
+	InstanceWrapper<VkPipeline> _GraphicsPipeline;
 
-	std::shared_ptr<Material> material;
+	std::shared_ptr<Material> _pMaterial;
 
 	bool isDirty;
 
@@ -49,5 +50,5 @@ private:
 	VkPipelineDepthStencilStateCreateInfo depthStencil;
 	VkPipelineDynamicStateCreateInfo dynamicState;
 
-	std::vector<VkDynamicState> activeDynamicStates;
+	std::vector<VkDynamicState> _ActiveDynamicStates;
 };

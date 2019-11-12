@@ -30,7 +30,7 @@ public:
 	bool Init( GLFWwindow* window, bool installCallbacks );
 	void Shutdown();
 	void NewFrame( float deltaTime );
-	void Render( std::shared_ptr<CommandBuffer> commandBuffer );
+	void Render( CommandBuffer* commandBuffer );
 
 	bool IsReady() const { return !psoBasic2D.IsDirty(); }
 

@@ -31,7 +31,7 @@ RavenApp::RavenApp()
 	: window( nullptr )
 	, imguiVulkan( nullptr )
 	, updateFrameIndex( 0 )
-	, _RenderThread( )
+	, _RenderThread()
 {
 }
 
@@ -126,15 +126,12 @@ bool RavenApp::Initialize()
 
 	GraphicsContext::GlobalAllocator.PrintStats();
 
-
 	_RenderThread.Initialize();
-
 
 	imguiVulkan = new IMGUIVulkan();
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext( nullptr );
 	imguiVulkan->Init( window, true );
-
 
 	std::shared_ptr<Model> model = std::make_shared<Model>( "cesiumman" );
 	models.push_back( model );
@@ -151,6 +148,7 @@ void RavenApp::Run()
 	_RenderThread.Start();
 #endif
 
+	static bool autoRotate = true;
 	static float rotation = 310;
 	float translationY = -1;
 	//float scale = 0.025;
@@ -195,7 +193,8 @@ void RavenApp::Run()
 				auto currentTime = std::chrono::high_resolution_clock::now();
 				float time = std::chrono::duration<float, std::chrono::seconds::period>( currentTime - startTime ).count();
 
-				rotation -= delta * 45.0f;
+				if ( autoRotate )
+					rotation -= delta * 45.0f;
 
 				if ( rotation < 0 )
 					rotation = 360.0f;
@@ -203,6 +202,12 @@ void RavenApp::Run()
 				for ( std::shared_ptr<Model>& pModel : models )
 				{
 					pModel->Update( delta );
+
+					auto RenderCallback = [&]( CommandBuffer* pBuffer ) {
+						pModel->Render( pBuffer );
+					};
+
+					_RenderThread.QueueRender( RenderCallback );
 
 					CameraUBO& camera = pModel->AccessUBO();
 
@@ -223,6 +228,7 @@ void RavenApp::Run()
 			{
 				ImGui::Begin( "Model" );
 
+				ImGui::Checkbox( "Auto Rotate", &autoRotate );
 				ImGui::DragFloat( "Object Rotation", &rotation, 0.1f );
 				ImGui::DragFloat( "Object Translation Y", &translationY, 0.01f );
 				ImGui::DragFloat( "Scale", &scale, 0.0001f );
@@ -231,6 +237,12 @@ void RavenApp::Run()
 
 				DebugUI UI;
 				UI.ListGameObjects();
+
+				auto RenderCallback = [&]( CommandBuffer* pBuffer ) {
+					imguiVulkan->Render( pBuffer );
+				};
+
+				_RenderThread.QueueRender( RenderCallback );
 			}
 
 			statsTimer += delta;
@@ -265,7 +277,7 @@ void RavenApp::Run()
 #if MULTITHREADED_RENDERING
 	_RenderThread.Stop();
 #endif
-	
+
 	vkDeviceWaitIdle( GraphicsContext::LogicalDevice );
 }
 

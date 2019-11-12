@@ -3,8 +3,12 @@
 #include "helpers/Timer.h"
 #include "graphics/helpers/VulkanSemaphore.h"
 
+#include <functional>
+
 class CommandBuffer;
 class RavenApp;
+
+typedef std::function<void(CommandBuffer*)> RenderCallback;
 
 class CRenderThread
 {
@@ -25,10 +29,11 @@ public:
 	std::condition_variable& AccessRunCondition() { return _RenderRunCondition; }
 	uint64_t GetRenderFrame() const { return _RenderFrame; }
 
-
-	CommandBuffer* AcquireCommanderBuffer();
-
-
+	void QueueRender(RenderCallback Callback)
+	{
+		_Callbacks.emplace_back(Callback);
+	}
+	   
 private:
 	void ThreadRunner();
 	void DoFrame();
@@ -37,6 +42,7 @@ private:
 
 	
 	std::vector<CommandBuffer*> _CommandBuffers;
+	std::vector< RenderCallback> _Callbacks;
 
 	uint64_t _RenderFrame = 0;
 	bool _ShouldRun = true;

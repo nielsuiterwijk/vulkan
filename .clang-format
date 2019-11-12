@@ -27,7 +27,7 @@ BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: AfterColon
 BreakBeforeInheritanceComma: true
 NamespaceIndentation: All
-ColumnLimit: 1000
+ColumnLimit: 160
 AllowAllArgumentsOnNextLine: false
 AllowShortLambdasOnASingleLine: Empty
 ReflowComments: false

@@ -14,7 +14,7 @@ Texture2D::Texture2D() :
 
 Texture2D::~Texture2D()
 {
-	//Destroy view -> image -> memory
+	//(destroy) Order: view -> image -> memory
 	imageView = nullptr;
 	image = nullptr;
 	imageDeviceMemory = nullptr;

@@ -2,7 +2,6 @@
 
 #include "graphics/GraphicsDevice.h"
 
-
 #include "helpers/IMGUIVulkan.h"
 #include "helpers/Timer.h"
 
@@ -53,13 +52,10 @@ private:
 
 	uint64_t updateFrameIndex;
 
-
 	//objects..
 	std::vector<std::shared_ptr<Model>> models;
 
 	IMGUIVulkan* imguiVulkan;
 
-
 	CRenderThread _RenderThread;
-
 };

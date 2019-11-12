@@ -311,10 +311,12 @@
     <ClCompile Include="helpers\DebugAssert.cpp" />
     <ClCompile Include="graphics\GraphicsDevice.cpp" />
     <ClCompile Include="helpers\IMGUIVulkan.cpp" />
+    <ClCompile Include="helpers\SystemInfo.cpp" />
     <ClCompile Include="helpers\Utility.cpp" />
     <ClCompile Include="io\FileUtility.cpp" />
     <ClCompile Include="io\FileSystem.cpp" />
     <ClCompile Include="memory\Allocator.cpp" />
+    <ClCompile Include="memory\BlockAllocator.cpp" />
     <ClCompile Include="memory\FreeListAllocator.cpp" />
     <ClCompile Include="memory\MemoryUtils.cpp" />
     <ClCompile Include="memory\PoolAllocator.cpp" />
@@ -334,6 +336,7 @@
     <ClInclude Include="graphics\FrameBuffer.h" />
     <ClInclude Include="graphics\GraphicsContext.h" />
     <ClInclude Include="graphics\helpers\Color.h" />
+    <ClInclude Include="helpers\SystemInfo.h" />
     <ClInclude Include="helpers\Utility.h" />
     <ClInclude Include="graphics\memory\VulkanAllocator.h" />
     <ClInclude Include="graphics\helpers\VulkanSemaphore.h" />
@@ -370,6 +373,7 @@
     <ClInclude Include="io\FileUtility.h" />
     <ClInclude Include="io\FileSystem.h" />
     <ClInclude Include="memory\Allocator.h" />
+    <ClInclude Include="memory\BlockAllocator.h" />
     <ClInclude Include="memory\FreeListAllocator.h" />
     <ClInclude Include="memory\MemoryUtils.h" />
     <ClInclude Include="memory\PoolAllocator.h" />

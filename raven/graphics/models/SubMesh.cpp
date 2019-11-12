@@ -3,17 +3,17 @@
 #include "graphics/buffers/UniformBuffer.h"
 #include "graphics/buffers/VulkanBuffer.h"
 
-SubMesh::SubMesh() :
-	triangleCount( 0 ),
-	indexBuffer( nullptr ),
-	vertexBuffer( nullptr )
+SubMesh::SubMesh()
+	: triangleCount( 0 )
+	, indexBuffer( nullptr )
+	, vertexBuffer( nullptr )
 {
 }
 
-SubMesh::SubMesh( uint32_t triangleCount ) :
-	triangleCount( triangleCount ),
-	indexBuffer( nullptr ),
-	vertexBuffer( nullptr )
+SubMesh::SubMesh( uint32_t triangleCount )
+	: triangleCount( triangleCount )
+	, indexBuffer( nullptr )
+	, vertexBuffer( nullptr )
 {
 }
 
@@ -34,7 +34,7 @@ bool SubMesh::AllocateBuffers( void* vertexData, const uint64_t& vertexDataSize,
 	return true;
 }
 
-void SubMesh::Draw( std::shared_ptr<CommandBuffer> commandBuffer )
+void SubMesh::Draw( CommandBuffer* commandBuffer )
 {
 	VkBuffer vertexBuffers[] = { vertexBuffer->GetNative() };
 	VkDeviceSize offsets[] = { 0 };

@@ -16,7 +16,7 @@ public:
 	bool AllocateBuffers( void* vertexData, const uint64_t& vertexDataSize, void* indexData, const uint64_t& indexDataSize );
 	bool IsLoaded() const { return vertexBuffer != nullptr && indexBuffer != nullptr; }
 
-	void Draw( std::shared_ptr<CommandBuffer> commandBuffer );
+	void Draw(CommandBuffer* commandBuffer );
 
 	void SetAABB( AABB aabb )
 	{

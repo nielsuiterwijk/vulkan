@@ -6,7 +6,6 @@
 #include "graphics/buffers/UniformBufferDefinition.h"
 #include "graphics/shaders/Material.h"
 
-
 class SkinnedMesh;
 
 class Model
@@ -17,9 +16,9 @@ public:
 
 	void WindowResized( int w, int h );
 
-	void Update(float delta);
+	void Update( float delta );
 
-	void Draw( std::shared_ptr<CommandBuffer> commandBuffer );
+	void Render( CommandBuffer* commandBuffer );
 
 	const CameraUBO& GetUBO() const { return camera; }
 	CameraUBO& AccessUBO() { return camera; }

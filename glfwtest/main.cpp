@@ -10,6 +10,10 @@
 #include "threading/ThreadPool_Serial.h"
 #include "threading/TaskSystem.h"
 
+#include "helpers/SystemInfo.h"
+
+
+#include "memory/BlockAllocator.h"
 
 #include <filesystem>
 #include <chrono>
@@ -439,6 +443,25 @@ int main()
 	FileSystem::Start();
 
 	//std::cout << "size of size_t: " << sizeof(size_t) << std::endl;
+
+	CSystemInfo Info;
+	CSystemInfo::FillInfoFromSystem( Info );
+
+	{
+		BlockAllocator BlockAllocator(Info._PageAllocationSize);
+		void* pBlock1 = BlockAllocator.Allocate(33);
+		void* pBlock2 = BlockAllocator.Allocate(16);
+		void* pBlock3 = BlockAllocator.Allocate(2756);
+		void* pBlock4 = BlockAllocator.Allocate(2756);
+		void* pBlock5 = BlockAllocator.Allocate(452);
+
+		memset(pBlock1, 1, 33);
+		memset(pBlock2, 2, 16);
+		memset(pBlock3, 3, 2756);
+		memset(pBlock4, 4, 2756);
+		memset(pBlock5, 5, 452);
+	}
+
 
 	{
 		RavenApp app;

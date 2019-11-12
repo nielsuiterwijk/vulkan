@@ -100,13 +100,13 @@ void CRenderThread::DoFrame()
 		_AcquireTimer.Stop();
 		_DrawCallTimer.Start();
 
-		CommandBuffer* commandBuffer = _CommandBuffers[ imageIndex ];
+		CommandBuffer* pCommandBuffer =  _CommandBuffers[ imageIndex ];
 		{
 
 			//std::cout << "current index: " << GraphicsContext::DescriptorPool->GetCurrentIndex() << std::endl;
 
 			{
-				commandBuffer->StartRecording( VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT );
+				pCommandBuffer->StartRecording( VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT );
 
 				VkRenderPassBeginInfo renderPassInfo = {};
 				renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -122,22 +122,24 @@ void CRenderThread::DoFrame()
 				renderPassInfo.clearValueCount = static_cast<uint32_t>( clearValues.size() );
 				renderPassInfo.pClearValues = clearValues.data();
 
-				vkCmdBeginRenderPass( commandBuffer->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE );
+				vkCmdBeginRenderPass( pCommandBuffer->GetNative(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE );
 			}
 
 			//TODO: Make the prepare threadsafe by doing a copy?
 			//TODO: dont pass the mesh, it should be owned / held by the renderObject: app->renderobject->PrepareDraw(commandBuffer);
 			
-			/*for ( std::shared_ptr<Model> pModel : app->models )
+			for ( RenderCallback& Callback : _Callbacks)
 			{
-				pModel->Draw( commandBuffer );
-			}*/
+				Callback( pCommandBuffer );
+			}
+
+			_Callbacks.clear();
 
 			//app->imguiVulkan->Render( commandBuffer );
 
 			{
-				vkCmdEndRenderPass( commandBuffer->GetNative() );
-				commandBuffer->StopRecording();
+				vkCmdEndRenderPass( pCommandBuffer->GetNative() );
+				pCommandBuffer->StopRecording();
 			}
 		}
 		_DrawCallTimer.Stop();
@@ -174,7 +176,7 @@ void CRenderThread::DoFrame()
 		submitInfo.pWaitDstStageMask = waitStages;
 
 		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer->GetNative();
+		submitInfo.pCommandBuffers = &pCommandBuffer->GetNative();
 		
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = RenderSemaphore;

@@ -37,17 +37,17 @@ public:
 
 	size_t GetTotalUsedMemory() const
 	{
-		return usedMemory;
+		return _UsedMemory;
 	}
 
 	size_t GetTotalFreeMemory() const
 	{
-		return size - usedMemory;
+		return size - _UsedMemory;
 	}
 
 	size_t GetNumAllocations() const
 	{
-		return numAllocations;
+		return _NumAllocations;
 	}
 
 protected:
@@ -57,8 +57,8 @@ protected:
 	void* start;
 	size_t size;
 
-	size_t usedMemory;
-	size_t numAllocations;
+	size_t _UsedMemory;
+	size_t _NumAllocations;
 
-	std::mutex lock;
+	std::mutex _Mutex;
 };
