@@ -21,22 +21,8 @@
 
 #include "helpers/measure/measure.h"
 
-#include "random_generator.h"
-
 #include "zstd/zstd.h"
 
-#include "misc/avx.h"
-
-namespace NPdxUtils
-{
-	template <class T>
-	void PdxMerge(std::vector<T> a, std::vector<T> b)
-	{
-		std::vector<T> d;
-		d.resize(a.size() + b.size());
-		std::merge(a.begin(), a.end(), b.begin(), b.end(), d.begin());
-	}
-}
 
 int ThreadedCall( int a, int b )
 {

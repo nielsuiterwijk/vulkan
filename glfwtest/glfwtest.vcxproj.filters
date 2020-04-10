@@ -8,29 +8,9 @@
     <ClCompile Include="graphics\RenderThread.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="helpers">
-      <UniqueIdentifier>{390904d6-e025-42ba-a281-dd3ef4e19fbe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="base">
-      <UniqueIdentifier>{97537fb6-3577-453e-9365-71bf0dbbcbe6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="vulkan">
-      <UniqueIdentifier>{32c43e2c-15f6-4f65-a253-84d8c8180024}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="threading">
-      <UniqueIdentifier>{52d6df23-77e3-4eeb-b6cf-67074eab8135}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="renderers">
-      <UniqueIdentifier>{851ac35d-fad4-4c4d-8736-83a629c405ce}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="RavenApp.h" />
     <ClInclude Include="raven\model.h" />
-    <ClInclude Include="misc\cache_binary.h" />
     <ClInclude Include="raven\DebugUI.h" />
-    <ClInclude Include="random_generator.h" />
-    <ClInclude Include="misc\avx.h" />
     <ClInclude Include="graphics\RenderThread.h" />
   </ItemGroup>
 </Project>

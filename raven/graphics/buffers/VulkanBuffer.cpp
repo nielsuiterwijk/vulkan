@@ -5,34 +5,30 @@
 
 #include <vulkan/vulkan.h>
 
-VulkanBuffer::VulkanBuffer( VkBufferUsageFlags flags, BufferType::Enum bufferType, void* bufferData, VkDeviceSize size ) :
-	nativeMemory( nullptr ),
-	deviceBuffer( nullptr ),
-	stagingMemory( nullptr ),
-	stagingBuffer( nullptr ),
-	size( size ),
-	bufferType( bufferType )
+VulkanBuffer::VulkanBuffer( VkBufferUsageFlags Flags, BufferType BufferType, void* BufferData, VkDeviceSize Size ) :
+	_Size( Size ),
+	_BufferType( BufferType )
 {
 
-	switch ( bufferType )
+	switch ( BufferType )
 	{
 	case BufferType::Static:
-		SetupStagingBuffer();
+	{
+		VulkanBuffer Tmp( Flags, BufferType::Staging, BufferData, Size );
+		
+		SetupLocalStaticBuffer( Flags );
 
-		Map( bufferData );
-
-		SetupLocalStaticBuffer( flags );
-
-		CopyStagingToDevice();
+		Tmp.CopyToBufferAndClear(*this);
 		break;
+	}
 	case BufferType::Dynamic:
-		SetupLocalDynamicBuffer( bufferData, flags );
-		Map( bufferData );
+		SetupLocalDynamicBuffer( Flags );
+		Map( BufferData );
 		break;
 
 	case BufferType::Staging:
 		SetupStagingBuffer();
-		Map( bufferData );
+		Map( BufferData );
 		break;
 	default:
 		assert( false && "Not implemented." );
@@ -42,93 +38,63 @@ VulkanBuffer::VulkanBuffer( VkBufferUsageFlags flags, BufferType::Enum bufferTyp
 
 VulkanBuffer::~VulkanBuffer()
 {
-	GraphicsContext::QueueLock.lock();
-	vkQueueWaitIdle( GraphicsContext::GraphicsQueue );
-	GraphicsContext::QueueLock.unlock();
-	FreeStagingBuffer();
-	FreeDeviceBuffer();
+	{
+		std::scoped_lock<std::mutex> Lock( GraphicsContext::QueueLock ); //todo: replace with own variant for RWLOCK
+		vkQueueWaitIdle( GraphicsContext::GraphicsQueue );
+	}
+	Free();
 }
 
-void VulkanBuffer::FreeStagingBuffer()
+void VulkanBuffer::Free()
 {
-	if ( stagingMemory != nullptr )
+	if ( _NativeBuffer.Buffer != nullptr )
 	{
-		std::cout << "freeing staging buffer of " << Helpers::MemorySizeToString( size ) << " bytes" << std::endl;
+		std::cout << "freeing device buffer of " << Helpers::MemorySizeToString( _Size ) << " bytes" << std::endl;
 
-		vkDestroyBuffer( GraphicsContext::LogicalDevice, stagingBuffer, GraphicsContext::GlobalAllocator.Get() );
-		vkFreeMemory( GraphicsContext::LogicalDevice, stagingMemory, GraphicsContext::GlobalAllocator.Get() );
-		stagingMemory = nullptr;
+		vmaDestroyBuffer( GraphicsContext::DeviceAllocator->Get(), _NativeBuffer.Buffer, _NativeBuffer.Allocation ); //TODO: Maybe also have this go through the GPUAllocator class?
+
+		_NativeBuffer.Buffer = nullptr;
+		_NativeBuffer.Allocation = nullptr;
 	}
 }
 
-void VulkanBuffer::FreeDeviceBuffer()
-{
-	if ( deviceBuffer != nullptr )
-	{
-		std::cout << "freeing device buffer of " << Helpers::MemorySizeToString( size ) << " bytes" << std::endl;
-
-		vkDestroyBuffer( GraphicsContext::LogicalDevice, deviceBuffer, GraphicsContext::GlobalAllocator.Get() );
-		vkFreeMemory( GraphicsContext::LogicalDevice, nativeMemory, GraphicsContext::GlobalAllocator.Get() );
-		deviceBuffer = nullptr;
-	}
-}
-
-void VulkanBuffer::SetupLocalDynamicBuffer( void* bufferData, VkBufferUsageFlags flags )
+void VulkanBuffer::SetupLocalDynamicBuffer( VkBufferUsageFlags flags )
 {
 	VkBufferCreateInfo localBufferInfo = {};
 	localBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	localBufferInfo.size = size;
+	localBufferInfo.size = _Size;
 	localBufferInfo.usage = flags;
 	localBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	if ( vkCreateBuffer( GraphicsContext::LogicalDevice, &localBufferInfo, GraphicsContext::GlobalAllocator.Get(), &deviceBuffer ) != VK_SUCCESS )
-	{
-		throw std::runtime_error( "failed to create vertex buffer!" );
-	}
-
-	GraphicsContext::DeviceAllocator->Allocate( deviceBuffer, &nativeMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT );
-
-	vkBindBufferMemory( GraphicsContext::LogicalDevice, deviceBuffer, nativeMemory, 0 );
+	GraphicsContext::DeviceAllocator->AllocateBuffer( &localBufferInfo, VMA_MEMORY_USAGE_CPU_ONLY, _NativeBuffer );
 }
 
 void VulkanBuffer::SetupLocalStaticBuffer( VkBufferUsageFlags flags )
 {
 	VkBufferCreateInfo localBufferInfo = {};
 	localBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	localBufferInfo.size = size;
+	localBufferInfo.size = _Size;
 	localBufferInfo.usage = flags | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 	localBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	if ( vkCreateBuffer( GraphicsContext::LogicalDevice, &localBufferInfo, GraphicsContext::GlobalAllocator.Get(), &deviceBuffer ) != VK_SUCCESS )
-	{
-		throw std::runtime_error( "failed to create vertex buffer!" );
-	}
-
-	GraphicsContext::DeviceAllocator->Allocate( deviceBuffer, &nativeMemory, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT );
-
-	vkBindBufferMemory( GraphicsContext::LogicalDevice, deviceBuffer, nativeMemory, 0 );
+	
+	GraphicsContext::DeviceAllocator->AllocateBuffer( &localBufferInfo, VMA_MEMORY_USAGE_GPU_ONLY, _NativeBuffer );
 }
 
 void VulkanBuffer::SetupStagingBuffer()
 {
 	VkBufferCreateInfo stagingBufferInfo = {};
 	stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	stagingBufferInfo.size = size;
+	stagingBufferInfo.size = _Size;
 	stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 	stagingBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	if ( vkCreateBuffer( GraphicsContext::LogicalDevice, &stagingBufferInfo, GraphicsContext::GlobalAllocator.Get(), &stagingBuffer ) != VK_SUCCESS )
-	{
-		throw std::runtime_error( "failed to create vertex buffer!" );
-	}
-
-	GraphicsContext::DeviceAllocator->Allocate( stagingBuffer, &stagingMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT );
-
-	vkBindBufferMemory( GraphicsContext::LogicalDevice, stagingBuffer, stagingMemory, 0 );
+	
+	GraphicsContext::DeviceAllocator->AllocateBuffer( &stagingBufferInfo, VMA_MEMORY_USAGE_CPU_TO_GPU, _NativeBuffer );
 }
 
-void VulkanBuffer::CopyStagingToDevice()
+void VulkanBuffer::CopyToBufferAndClear( VulkanBuffer& Destination )
 {
+	assert( Destination.GetType() != BufferType::Staging );
+
 	auto commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
 
 	commandBuffer->StartRecording( VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT );
@@ -136,8 +102,8 @@ void VulkanBuffer::CopyStagingToDevice()
 	VkBufferCopy copyRegion = {};
 	copyRegion.srcOffset = 0; // Optional
 	copyRegion.dstOffset = 0; // Optional
-	copyRegion.size = size;
-	vkCmdCopyBuffer( commandBuffer->GetNative(), stagingBuffer, deviceBuffer, 1, &copyRegion );
+	copyRegion.size = _Size;
+	vkCmdCopyBuffer( commandBuffer->GetNative(), GetNative(), Destination.GetNative(), 1, &copyRegion );
 
 	commandBuffer->StopRecording();
 
@@ -146,18 +112,19 @@ void VulkanBuffer::CopyStagingToDevice()
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer->GetNative();
 
-	GraphicsContext::QueueLock.lock();
-	//TODO: This causes waits, needs to be async
-	vkQueueSubmit( GraphicsContext::TransportQueue, 1, &submitInfo, VK_NULL_HANDLE );
-	vkQueueWaitIdle( GraphicsContext::TransportQueue );
-	GraphicsContext::QueueLock.unlock();
+	{
+		std::scoped_lock<std::mutex> Lock( GraphicsContext::QueueLock );
+		//TODO: This causes waits, needs to be async
+		vkQueueSubmit( GraphicsContext::TransportQueue, 1, &submitInfo, VK_NULL_HANDLE );
+		vkQueueWaitIdle( GraphicsContext::TransportQueue );
+	}
 
 	GraphicsContext::CommandBufferPoolTransient->Free( commandBuffer );
 
-	FreeStagingBuffer();
+	Free();
 }
 
-void VulkanBuffer::CopyStagingToImage( VkImage image, uint32_t width, uint32_t height )
+void VulkanBuffer::CopyToImageAndClear( VkImage image, uint32_t width, uint32_t height )
 {
 	auto commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
 
@@ -176,7 +143,7 @@ void VulkanBuffer::CopyStagingToImage( VkImage image, uint32_t width, uint32_t h
 	region.imageOffset = { 0, 0, 0 };
 	region.imageExtent = { width, height, 1 };
 
-	vkCmdCopyBufferToImage( commandBuffer->GetNative(), stagingBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region );
+	vkCmdCopyBufferToImage( commandBuffer->GetNative(), GetNative(), image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region );
 
 	commandBuffer->StopRecording();
 
@@ -194,36 +161,38 @@ void VulkanBuffer::CopyStagingToImage( VkImage image, uint32_t width, uint32_t h
 
 	GraphicsContext::CommandBufferPoolTransient->Free( commandBuffer );
 
-	FreeStagingBuffer();
+	Free();
 }
 
-void VulkanBuffer::Map( void* bufferData, VkDeviceSize sizeToMap ) const
+void VulkanBuffer::Map( void* bufferData, VkDeviceSize sizeToMap ) const //TODO: this name doesnt tell the truth, it aint a persistent mapping. 'Update' maybe?
 {
 	if ( bufferData == nullptr )
 		return;
 
 	if ( sizeToMap == -1 )
-		sizeToMap = size;
+		sizeToMap = _Size;
 
-	assert( sizeToMap <= size );
+	assert( sizeToMap <= _Size );
 
 	VkResult result = VK_SUCCESS;
 	void* vulkanVirtualMappedMemoryAddress;
 
-	switch ( bufferType )
+	VmaAllocator DeviceAllocator = GraphicsContext::DeviceAllocator->Get();
+
+	switch ( _BufferType )
 	{
 	case BufferType::Static:
 	case BufferType::Staging:
-		result = vkMapMemory( GraphicsContext::LogicalDevice, stagingMemory, 0, sizeToMap, 0, &vulkanVirtualMappedMemoryAddress );
-		assert( result == VK_SUCCESS );
-		memcpy( vulkanVirtualMappedMemoryAddress, bufferData, sizeToMap );
-		vkUnmapMemory( GraphicsContext::LogicalDevice, stagingMemory );
-		break;
 	case BufferType::Dynamic:
-		result = vkMapMemory( GraphicsContext::LogicalDevice, nativeMemory, 0, sizeToMap, 0, &vulkanVirtualMappedMemoryAddress );
+		/*result = vkMapMemory( GraphicsContext::LogicalDevice, _StagingMemory, 0, sizeToMap, 0, &vulkanVirtualMappedMemoryAddress );
 		assert( result == VK_SUCCESS );
 		memcpy( vulkanVirtualMappedMemoryAddress, bufferData, sizeToMap );
-		vkUnmapMemory( GraphicsContext::LogicalDevice, nativeMemory );
+		vkUnmapMemory( GraphicsContext::LogicalDevice, _StagingMemory );*/
+		result = vmaMapMemory( DeviceAllocator, _NativeBuffer.Allocation, &vulkanVirtualMappedMemoryAddress );
+		assert( result == VK_SUCCESS );
+		memcpy( vulkanVirtualMappedMemoryAddress, bufferData, sizeToMap );
+		vmaUnmapMemory( DeviceAllocator, _NativeBuffer.Allocation );
+
 		break;
 	default:
 		assert( false && "Not implemented." );

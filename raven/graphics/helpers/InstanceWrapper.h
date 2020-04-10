@@ -22,7 +22,7 @@ public:
 		: _AllocationCallbacks( allocator )
 	{
 		this->_DeleteCallback = [ = ]( T obj ) {
-			std::cout << "Deleting Vulkan Instance" << std::endl;
+			std::cout << "Deleting InstanceWrapper" << std::endl;
 			callback( obj, allocator );
 		};
 	}
@@ -31,7 +31,7 @@ public:
 		: _AllocationCallbacks( allocator )
 	{
 		this->_DeleteCallback = [ this, &instance, callback, allocator ]( T obj ) {
-			std::cout << "Deleting Vulkan Instance" << std::endl;
+			std::cout << "Deleting InstanceWrapper" << std::endl;
 			callback( instance, obj, allocator );
 		};
 	}
@@ -40,7 +40,7 @@ public:
 		: _AllocationCallbacks( allocator )
 	{
 		this->_DeleteCallback = [ this, &device, callback, allocator ]( T obj ) {
-			std::cout << "Deleting Vulkan Instance" << std::endl;
+			std::cout << "Deleting InstanceWrapper" << std::endl;
 			callback( device, obj, allocator );
 		};
 	}
@@ -64,7 +64,7 @@ public:
 		_AllocationCallbacks = allocator;
 
 		this->_DeleteCallback = [ this, &device, callback, allocator ]( T obj ) {
-			std::cout << "Deleting Vulkan Instance" << std::endl;
+			std::cout << "Deleting InstanceWrapper" << std::endl;
 			callback( device, obj, allocator );
 		};
 	}

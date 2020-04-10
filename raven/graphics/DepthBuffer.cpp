@@ -14,15 +14,13 @@ DepthBuffer::~DepthBuffer()
 
 void DepthBuffer::Destroy()
 {
-	imageView = nullptr;
-	image = nullptr;
-	imageDeviceMemory = nullptr; //TODO: Use GpuAllocator::Free();
+	//parent will destroy resource
 }
 
 void DepthBuffer::Initialize( uint32_t width, uint32_t height )
 {
 	VkFormat depthFormat = FindDepthFormat();
-	AllocateImage( width, height, 1, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT );
+	AllocateImage( width, height, 1, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY );
 	SetupView( depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT );
 	Transition( depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL );
 }

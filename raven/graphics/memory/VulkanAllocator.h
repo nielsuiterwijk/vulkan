@@ -10,7 +10,7 @@
 #include <vulkan/vulkan.h>
 
 #include "helpers/Singleton.h"
-#include "helpers\Helpers.h"
+#include "helpers/Helpers.h"
 
 class VulkanAllocator
 {
@@ -53,20 +53,14 @@ public:
 		vulkanAllocator.pfnFree = &VulkanAllocator::Free;
 		vulkanAllocator.pfnInternalAllocation = &VulkanAllocator::InternalAllocationNotification;
 		vulkanAllocator.pfnInternalFree = &VulkanAllocator::InternalFreeNotification;
-
-		/*   = 0,
-		 = 1,
-		 = 2,
-		 = 3,
-		 = 4,*/
-
+		
 		trackers.push_back( AllocationTracker( VK_SYSTEM_ALLOCATION_SCOPE_COMMAND ) );
 		trackers.push_back( AllocationTracker( VK_SYSTEM_ALLOCATION_SCOPE_OBJECT ) );
 		trackers.push_back( AllocationTracker( VK_SYSTEM_ALLOCATION_SCOPE_CACHE ) );
 		trackers.push_back( AllocationTracker( VK_SYSTEM_ALLOCATION_SCOPE_DEVICE ) );
 		trackers.push_back( AllocationTracker( VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE ) );
 
-		std::cout << "Allocator" << std::endl;
+		std::cout << "Vulkan CPU Allocator" << std::endl;
 	}
 
 	~VulkanAllocator()
@@ -80,7 +74,7 @@ public:
 
 		trackers.clear();
 
-		std::cout << "~Allocator" << std::endl;
+		std::cout << "~Vulkan CPU Allocator" << std::endl;
 	}
 
 	void PrintStats()

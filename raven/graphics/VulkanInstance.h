@@ -36,7 +36,7 @@ private:
 	InstanceWrapper<VkDebugReportCallbackEXT> debugCallback;
 
 	//TODO: load from file
-	const std::vector<const char*> validationLayers = {
+	const std::array<const char*, 1> _ValidationLayers = {
 		"VK_LAYER_LUNARG_standard_validation"
 	};
 

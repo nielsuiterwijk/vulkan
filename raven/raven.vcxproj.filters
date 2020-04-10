@@ -50,6 +50,7 @@
     <ClCompile Include="events\EventSystem.cpp" />
     <ClCompile Include="helpers\SystemInfo.cpp" />
     <ClCompile Include="memory\BlockAllocator.cpp" />
+    <ClCompile Include="graphics\memory\VulkanMemoryAllocator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -177,5 +178,7 @@
     </ClInclude>
     <ClInclude Include="helpers\SystemInfo.h" />
     <ClInclude Include="memory\BlockAllocator.h" />
+    <ClInclude Include="include\vma\vk_mem_alloc.h" />
+    <ClInclude Include="include\vma\vk_mem_alloc_fwd.h" />
   </ItemGroup>
 </Project>

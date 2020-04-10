@@ -57,8 +57,8 @@ void VulkanInstance::CreateInstance( std::vector<std::string> requiredExtensions
 
 	if ( enableValidationLayers )
 	{
-		createInfo.enabledLayerCount = static_cast<uint32_t>( validationLayers.size() );
-		createInfo.ppEnabledLayerNames = validationLayers.data();
+		createInfo.enabledLayerCount = static_cast<uint32_t>( _ValidationLayers.size() );
+		createInfo.ppEnabledLayerNames = _ValidationLayers.data();
 	}
 	else
 	{
@@ -122,7 +122,7 @@ void VulkanInstance::CacheLayers()
 
 bool VulkanInstance::CheckValidationLayers()
 {
-	for ( const char* layerName : validationLayers )
+	for ( const char* layerName : _ValidationLayers )
 	{
 		bool layerFound = false;
 

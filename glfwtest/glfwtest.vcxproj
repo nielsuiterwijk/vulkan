@@ -185,7 +185,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG=1;_ITERATOR_DEBUG_LEVEL=0</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)external_libs\include\;$(SolutionDir)external_libs\include\glm\;$(SolutionDir)vulkan\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external_libs\include\;$(SolutionDir)external_libs\include\glm\;$(SolutionDir)raven\include\</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
@@ -213,7 +213,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Full</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);DEBUG=1</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)external_libs\include\;$(SolutionDir)external_libs\include\glm\;$(SolutionDir)vulkan\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external_libs\include\;$(SolutionDir)external_libs\include\glm\;$(SolutionDir)raven\include\</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -262,7 +262,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)external_libs\include\;$(SolutionDir)external_libs\include\glm\;$(SolutionDir)vulkan\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external_libs\include\;$(SolutionDir)external_libs\include\glm\;$(SolutionDir)raven\include\</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -270,6 +270,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>standard.h</PrecompiledHeaderFile>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -289,9 +290,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="graphics\RenderThread.h" />
-    <ClInclude Include="misc\avx.h" />
-    <ClInclude Include="misc\cache_binary.h" />
-    <ClInclude Include="random_generator.h" />
     <ClInclude Include="RavenApp.h" />
     <ClInclude Include="raven\DebugUI.h" />
     <ClInclude Include="raven\model.h" />

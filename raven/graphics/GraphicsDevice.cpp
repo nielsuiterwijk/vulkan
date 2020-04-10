@@ -37,15 +37,13 @@ void GraphicsDevice::Finalize()
 	ShaderCache::Destroy();
 
 	GraphicsContext::SwapChain->DestroySwapchain();
-
-	delete GraphicsContext::DeviceAllocator;
+	GraphicsContext::SwapChain = nullptr;
 
 	vkDestroyEvent( GraphicsContext::LogicalDevice, GraphicsContext::TransportEvent, GraphicsContext::GlobalAllocator.Get() );
 
+	GraphicsContext::DeviceAllocator = nullptr;
 	GraphicsContext::LogicalDevice = nullptr;
-	//a = nullptr;
 
-	GraphicsContext::SwapChain = nullptr;
 	GraphicsContext::VulkanInstance = nullptr;
 }
 
@@ -60,10 +58,12 @@ void GraphicsDevice::Initialize( const glm::u32vec2& windowSize, std::shared_ptr
 	GraphicsContext::SwapChain = vulkanSwapChain;
 
 	CreatePhysicalDevice( GraphicsContext::SwapChain->GetSurface() );
-
+	
 	GraphicsContext::FamilyIndices = FindQueueFamilies( GraphicsContext::PhysicalDevice, GraphicsContext::SwapChain->GetSurface() );
 
 	CreateLogicalDevice();
+
+	GraphicsContext::DeviceAllocator = std::make_unique<GPUAllocator>();
 
 	//TODO: Wrap vkEvent into a VulkanEvent object
 	{
@@ -76,7 +76,6 @@ void GraphicsDevice::Initialize( const glm::u32vec2& windowSize, std::shared_ptr
 		assert( result == VK_SUCCESS );
 	}
 
-	GraphicsContext::DeviceAllocator = new GPUAllocator( 16 * 1024 * 1024, 8 );
 
 	vkGetDeviceQueue( GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.transportFamily, 0, &GraphicsContext::TransportQueue );
 	vkGetDeviceQueue( GraphicsContext::LogicalDevice, GraphicsContext::FamilyIndices.graphicsFamily, 0, &GraphicsContext::GraphicsQueue );

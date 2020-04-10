@@ -15,19 +15,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "raven", "raven\raven.vcxpro
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug Optimized|x64 = Debug Optimized|x64
-		Debug Optimized|x86 = Debug Optimized|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug Optimized|x64.ActiveCfg = Debug Optimized|x64
-		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug Optimized|x64.Build.0 = Debug Optimized|x64
-		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug Optimized|x64.Deploy.0 = Debug Optimized|x64
-		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug Optimized|x86.ActiveCfg = Debug|Win32
-		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug Optimized|x86.Build.0 = Debug|Win32
 		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug|x64.ActiveCfg = Debug|x64
 		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug|x64.Build.0 = Debug|x64
 		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Debug|x86.ActiveCfg = Debug|Win32
@@ -36,10 +29,6 @@ Global
 		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Release|x64.Build.0 = Release|x64
 		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Release|x86.ActiveCfg = Release|Win32
 		{9CFE5564-5867-454F-B0BC-9EAC76A75222}.Release|x86.Build.0 = Release|Win32
-		{81E8AAAF-6261-4590-9729-994088D014E6}.Debug Optimized|x64.ActiveCfg = Release|x64
-		{81E8AAAF-6261-4590-9729-994088D014E6}.Debug Optimized|x64.Build.0 = Release|x64
-		{81E8AAAF-6261-4590-9729-994088D014E6}.Debug Optimized|x86.ActiveCfg = Debug|Win32
-		{81E8AAAF-6261-4590-9729-994088D014E6}.Debug Optimized|x86.Build.0 = Debug|Win32
 		{81E8AAAF-6261-4590-9729-994088D014E6}.Debug|x64.ActiveCfg = Debug|x64
 		{81E8AAAF-6261-4590-9729-994088D014E6}.Debug|x64.Build.0 = Debug|x64
 		{81E8AAAF-6261-4590-9729-994088D014E6}.Debug|x86.ActiveCfg = Debug|Win32
@@ -48,10 +37,6 @@ Global
 		{81E8AAAF-6261-4590-9729-994088D014E6}.Release|x64.Build.0 = Release|x64
 		{81E8AAAF-6261-4590-9729-994088D014E6}.Release|x86.ActiveCfg = Release|Win32
 		{81E8AAAF-6261-4590-9729-994088D014E6}.Release|x86.Build.0 = Release|Win32
-		{738F1E1E-56D0-402F-801F-AF6AE8ECE5DB}.Debug Optimized|x64.ActiveCfg = Debug Optimized|x64
-		{738F1E1E-56D0-402F-801F-AF6AE8ECE5DB}.Debug Optimized|x64.Build.0 = Debug Optimized|x64
-		{738F1E1E-56D0-402F-801F-AF6AE8ECE5DB}.Debug Optimized|x86.ActiveCfg = Debug Optimized|Win32
-		{738F1E1E-56D0-402F-801F-AF6AE8ECE5DB}.Debug Optimized|x86.Build.0 = Debug Optimized|Win32
 		{738F1E1E-56D0-402F-801F-AF6AE8ECE5DB}.Debug|x64.ActiveCfg = Debug|x64
 		{738F1E1E-56D0-402F-801F-AF6AE8ECE5DB}.Debug|x64.Build.0 = Debug|x64
 		{738F1E1E-56D0-402F-801F-AF6AE8ECE5DB}.Debug|x86.ActiveCfg = Debug|Win32

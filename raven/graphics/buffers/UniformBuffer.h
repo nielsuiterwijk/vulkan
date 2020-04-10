@@ -3,6 +3,7 @@
 #include "graphics/GraphicsContext.h"
 #include "graphics/GraphicsDevice.h"
 #include "graphics/buffers/VulkanDescriptorPool.h"
+#include "graphics/buffers/VulkanBuffer.h"
 
 
 struct DataBlock
@@ -31,6 +32,6 @@ public:
 private:
 	DataBlock dataBlock;
 
-	VulkanBuffer vulkanBuffer;
+	VulkanBuffer _VulkanBuffer;
 	VkDescriptorBufferInfo bufferInfo;
 };

@@ -49,9 +49,9 @@ void TextureLoader::FileLoaded( std::vector<char> fileData, std::shared_ptr<Text
 
 	stbi_image_free( pixels );
 
-	texture2d->AllocateImage( texWidth, texHeight, mipLevels, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, ( VkImageUsageFlagBits )( VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT ), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT );
+	texture2d->AllocateImage( texWidth, texHeight, mipLevels, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, ( VkImageUsageFlagBits )( VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT ), VMA_MEMORY_USAGE_GPU_ONLY );
 	texture2d->Transition( VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL ); //Setup image data so it can be transfered to.
-	buffer.CopyStagingToImage( texture2d->GetImage(), texWidth, texHeight );
+	buffer.CopyToImageAndClear( texture2d->GetImage(), texWidth, texHeight );
 	texture2d->GenerateMipMaps();
 	//texture2d->Transition(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL); //transform from writeable to read only for shader
 	texture2d->SetupView( VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT );

@@ -1,62 +1,70 @@
 #include "Texture2D.h"
 #include "graphics/GraphicsContext.h"
 
-Texture2D::Texture2D() :
-	width( -1 ),
-	height( -1 ),
-	mipLevels( -1 ),
-	image(),
-	imageView(),
-	imageDeviceMemory(),
-	format( VK_FORMAT_UNDEFINED )
+Texture2D::Texture2D()
+	: _Width( -1 )
+	, _Height( -1 )
+	, _MipLevels( -1 )
+	, _View()
+	, _Format( VK_FORMAT_UNDEFINED )
 {
 }
 
 Texture2D::~Texture2D()
 {
 	//(destroy) Order: view -> image -> memory
-	imageView = nullptr;
-	image = nullptr;
-	imageDeviceMemory = nullptr;
+	_View = nullptr;
+	//_Image = nullptr;
+	//_ImageAllocation = nullptr;
+
+	vmaDestroyImage( GraphicsContext::DeviceAllocator->Get(),
+					 _Resource.Image,
+					 _Resource.Allocation ); //TODO: Maybe also have this go through the GPUAllocator class?
 }
 
-void Texture2D::SetImage( const VkImage& vkImage )
-{
-	image.Initialize( GraphicsContext::LogicalDevice, vkDestroyImage, GraphicsContext::GlobalAllocator.Get() );
-
-	image = vkImage;
-}
-
-void Texture2D::AllocateImage( uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlagBits imageUsage, VkMemoryPropertyFlagBits propertyFlags )
+void Texture2D::AllocateImage( uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlagBits imageUsage,
+							   VmaMemoryUsage Usage )
 {
 	assert( width < 16384 );
 	assert( height < 16384 );
 	assert( mipLevels < 14 );
 	assert( format != VK_FORMAT_UNDEFINED );
 
-	this->width = width;
-	this->height = height;
-	this->mipLevels = mipLevels;
+	this->_Width = width;
+	this->_Height = height;
+	this->_MipLevels = mipLevels;
 
 	if ( mipLevels > 1 )
 	{
 		imageUsage = ( VkImageUsageFlagBits )( ( (int)imageUsage ) | (int)VK_IMAGE_USAGE_TRANSFER_SRC_BIT );
 	}
 
-	image.Initialize( GraphicsContext::LogicalDevice, vkDestroyImage, GraphicsContext::GlobalAllocator.Get() );
-	imageDeviceMemory.Initialize( GraphicsContext::LogicalDevice, vkFreeMemory, GraphicsContext::GlobalAllocator.Get() );
+	VkImageCreateInfo ImageInfo = {};
+	ImageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	ImageInfo.imageType = VK_IMAGE_TYPE_2D;
+	ImageInfo.extent.width = width;
+	ImageInfo.extent.height = height;
+	ImageInfo.extent.depth = 1;
+	ImageInfo.mipLevels = mipLevels;
+	ImageInfo.arrayLayers = 1;
+	ImageInfo.format = format;
+	ImageInfo.tiling = imageTiling;
+	ImageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	ImageInfo.usage = imageUsage;
+	ImageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	ImageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	GraphicsContext::DeviceAllocator->AllocateImage( width, height, mipLevels, format, imageTiling, imageUsage, propertyFlags, image, imageDeviceMemory );
+	GraphicsContext::DeviceAllocator->AllocateImage( &ImageInfo, Usage, _Resource );
 }
 
 void Texture2D::SetupView( VkFormat format, VkImageAspectFlags aspectFlags )
 {
-	this->format = format;
+	this->_Format = format;
 	assert( format != VK_FORMAT_UNDEFINED );
 
 	VkImageViewCreateInfo viewInfo = {};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	viewInfo.image = image;
+	viewInfo.image = _Resource.Image;
 	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 	viewInfo.format = format;
 
@@ -67,13 +75,13 @@ void Texture2D::SetupView( VkFormat format, VkImageAspectFlags aspectFlags )
 
 	viewInfo.subresourceRange.aspectMask = aspectFlags;
 	viewInfo.subresourceRange.baseMipLevel = 0;
-	viewInfo.subresourceRange.levelCount = mipLevels;
+	viewInfo.subresourceRange.levelCount = _MipLevels;
 	viewInfo.subresourceRange.baseArrayLayer = 0;
 	viewInfo.subresourceRange.layerCount = 1;
 
-	imageView.Initialize( GraphicsContext::LogicalDevice, vkDestroyImageView, GraphicsContext::GlobalAllocator.Get() );
+	_View.Initialize( GraphicsContext::LogicalDevice, vkDestroyImageView, GraphicsContext::GlobalAllocator.Get() );
 
-	if ( vkCreateImageView( GraphicsContext::LogicalDevice, &viewInfo, imageView.AllocationCallbacks(), imageView.Replace() ) != VK_SUCCESS )
+	if ( vkCreateImageView( GraphicsContext::LogicalDevice, &viewInfo, _View.AllocationCallbacks(), _View.Replace() ) != VK_SUCCESS )
 	{
 		throw std::runtime_error( "failed to create texture image view!" );
 	}
@@ -100,7 +108,7 @@ void Texture2D::Transition( VkFormat format, VkImageLayout oldLayout, VkImageLay
 		barrier.newLayout = newLayout;
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = image;
+		barrier.image = _Resource.Image;
 
 		if ( newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL )
 		{
@@ -117,7 +125,7 @@ void Texture2D::Transition( VkFormat format, VkImageLayout oldLayout, VkImageLay
 		}
 
 		barrier.subresourceRange.baseMipLevel = 0;
-		barrier.subresourceRange.levelCount = mipLevels;
+		barrier.subresourceRange.levelCount = _MipLevels;
 		barrier.subresourceRange.baseArrayLayer = 0;
 		barrier.subresourceRange.layerCount = 1;
 
@@ -146,7 +154,8 @@ void Texture2D::Transition( VkFormat format, VkImageLayout oldLayout, VkImageLay
 			barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
 			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-			destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT; //You should pick the earliest pipeline stage that matches the specified operations, so that it is ready for usage as depth attachment when it needs to be.
+			destinationStage
+				= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT; //You should pick the earliest pipeline stage that matches the specified operations, so that it is ready for usage as depth attachment when it needs to be.
 		}
 		else
 		{
@@ -181,7 +190,7 @@ void Texture2D::GenerateMipMaps()
 
 	VkImageMemoryBarrier barrier = {};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.image = image;
+	barrier.image = _Resource.Image;
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -189,11 +198,11 @@ void Texture2D::GenerateMipMaps()
 	barrier.subresourceRange.baseArrayLayer = 0;
 	barrier.subresourceRange.layerCount = 1;
 
-	int32_t mipWidth = width;
-	int32_t mipHeight = height;
+	int32_t mipWidth = _Width;
+	int32_t mipHeight = _Height;
 
 	//Note: starts at 1, not 0!
-	for ( uint32_t i = 1; i < mipLevels; i++ )
+	for ( uint32_t i = 1; i < _MipLevels; i++ )
 	{
 		barrier.subresourceRange.baseMipLevel = i - 1;
 		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
@@ -201,7 +210,16 @@ void Texture2D::GenerateMipMaps()
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
-		vkCmdPipelineBarrier( commandBuffer->GetNative(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier );
+		vkCmdPipelineBarrier( commandBuffer->GetNative(),
+							  VK_PIPELINE_STAGE_TRANSFER_BIT,
+							  VK_PIPELINE_STAGE_TRANSFER_BIT,
+							  0,
+							  0,
+							  nullptr,
+							  0,
+							  nullptr,
+							  1,
+							  &barrier );
 
 		//blit from larger source to smaller destination
 		VkImageBlit blit = {};
@@ -222,7 +240,14 @@ void Texture2D::GenerateMipMaps()
 		//The source mip level was just transitioned to VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL (using the memory barrier)
 		//and the destination level is still in VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL from the initial Transition call.
 		//https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/vkCmdBlitImage.html
-		vkCmdBlitImage( commandBuffer->GetNative(), image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR );
+		vkCmdBlitImage( commandBuffer->GetNative(),
+						_Resource.Image,
+						VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+						_Resource.Image,
+						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+						1,
+						&blit,
+						VK_FILTER_LINEAR );
 
 		//Now transition back from SRC_OPTIMAL to SHADER_READ_ONLY_OPTIMAL. This waits on the previous command to be done
 		//as the previous memory barrier waits until every command in the TRANSFER stage is done.
@@ -231,7 +256,16 @@ void Texture2D::GenerateMipMaps()
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-		vkCmdPipelineBarrier( commandBuffer->GetNative(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier );
+		vkCmdPipelineBarrier( commandBuffer->GetNative(),
+							  VK_PIPELINE_STAGE_TRANSFER_BIT,
+							  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+							  0,
+							  0,
+							  nullptr,
+							  0,
+							  nullptr,
+							  1,
+							  &barrier );
 
 		if ( mipWidth > 1 )
 		{
@@ -245,13 +279,22 @@ void Texture2D::GenerateMipMaps()
 	}
 
 	//Final, as the last source is never blitted from, thus never transitioned
-	barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+	barrier.subresourceRange.baseMipLevel = _MipLevels - 1;
 	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-	vkCmdPipelineBarrier( commandBuffer->GetNative(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier );
+	vkCmdPipelineBarrier( commandBuffer->GetNative(),
+						  VK_PIPELINE_STAGE_TRANSFER_BIT,
+						  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+						  0,
+						  0,
+						  nullptr,
+						  0,
+						  nullptr,
+						  1,
+						  &barrier );
 
 	commandBuffer->StopRecording();
 
@@ -274,5 +317,5 @@ void Texture2D::GenerateMipMaps()
 
 bool Texture2D::IsLoaded() const
 {
-	return imageView != nullptr;
+	return _View != nullptr;
 }

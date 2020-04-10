@@ -1,22 +1,34 @@
 #pragma once
 
-#include "graphics/buffers/VulkanBuffer.h"
 #include "graphics/helpers/InstanceWrapper.h"
+#include "vma/vk_mem_alloc.h"
 #include <vulkan/vulkan.h>
+
+
+struct SAllocatedBuffer
+{
+	VkBuffer Buffer;
+	VmaAllocation Allocation;
+};
+
+struct SAllocatedImage
+{
+	VkImage Image;
+	VmaAllocation Allocation;
+};
 
 class GPUAllocator
 {
 public:
-	GPUAllocator( int32_t size, int32_t alignment );
+	GPUAllocator();
 	~GPUAllocator();
 
-	void Allocate( const VkBuffer& buffer, VkDeviceMemory* memory, VkMemoryPropertyFlags requiredProperties );
+	bool AllocateBuffer( VkBufferCreateInfo* pCreateInfo, VmaMemoryUsage UsageFlag, SAllocatedBuffer& Out );
 
-	void AllocateImage( uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, InstanceWrapper<VkImage>& image, InstanceWrapper<VkDeviceMemory>& imageMemory );
+	bool AllocateImage( VkImageCreateInfo* pImageInfo, VmaMemoryUsage UsageFlag, SAllocatedImage& Out );
+
+	VmaAllocator Get() const { return _Allocator; }
 
 private:
-	int32_t FindProperties( uint32_t memoryTypeBitsRequirement, VkMemoryPropertyFlags requiredProperties );
-
-private:
-	VkPhysicalDeviceMemoryProperties* memoryProperties;
+	VmaAllocator _Allocator;
 };
