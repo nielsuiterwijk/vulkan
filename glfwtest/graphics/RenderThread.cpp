@@ -204,8 +204,8 @@ void CRenderThread::DoFrame()
 		presentInfo.pSwapchains = &GraphicsContext::SwapChain->GetNative();
 		presentInfo.pImageIndices = &imageIndex;
 
-		GraphicsContext::QueueLock.lock();
 		{
+			std::scoped_lock<std::mutex> Lock( GraphicsContext::QueueLock );
 			//Present (wait until drawing is done)
 			result = vkQueuePresentKHR( GraphicsContext::PresentQueue, &presentInfo );
 
@@ -220,7 +220,6 @@ void CRenderThread::DoFrame()
 				assert( false && "failed to present!" );
 			}
 		}
-		GraphicsContext::QueueLock.unlock();
 		_PresentTimer.Stop();
 	}
 	GraphicsDevice.Unlock();

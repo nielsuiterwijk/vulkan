@@ -11,7 +11,8 @@ namespace
 	void CountPhysicalCores( uint32_t& nOutPhysical )
 	{
 		typedef BOOL( WINAPI * LPFN_GETLOGICALPROCESSORINFORMATION )( PSYSTEM_LOGICAL_PROCESSOR_INFORMATION, PDWORD );
-		LPFN_GETLOGICALPROCESSORINFORMATION fnGetLogicalProcessorInformation = reinterpret_cast<LPFN_GETLOGICALPROCESSORINFORMATION>( GetProcAddress( GetModuleHandle( TEXT( "kernel32" ) ), "GetLogicalProcessorInformation" ) );
+		LPFN_GETLOGICALPROCESSORINFORMATION fnGetLogicalProcessorInformation = reinterpret_cast<LPFN_GETLOGICALPROCESSORINFORMATION>(
+			GetProcAddress( GetModuleHandle( TEXT( "kernel32" ) ), "GetLogicalProcessorInformation" ) );
 
 		if ( NULL != fnGetLogicalProcessorInformation )
 		{
@@ -117,22 +118,6 @@ namespace
 		{
 			return "Windows 7";
 		}
-		else if ( ( rovi.dwMajorVersion == 6 ) && ( rovi.dwMinorVersion == 0 ) )
-		{
-			return "Windows Vista";
-		}
-		else if ( ( rovi.dwMajorVersion == 5 ) && ( rovi.dwMinorVersion == 2 ) )
-		{
-			return "Windows Server 2003";
-		}
-		else if ( ( rovi.dwMajorVersion == 5 ) && ( rovi.dwMinorVersion == 1 ) )
-		{
-			return "Windows XP";
-		}
-		else if ( ( rovi.dwMajorVersion == 5 ) && ( rovi.dwMinorVersion == 0 ) )
-		{
-			return "Windows 2000";
-		}
 
 		return "Unknown";
 	}
@@ -152,26 +137,26 @@ namespace
 			size_t charsConverted = 0;
 			const wchar_t* inputW = &szName[ 0 ];
 			wcstombs_s( &charsConverted, outputString, outputSize, inputW, MaxLength );
-						
+
 			OutLanguage = std::string( outputString );
 			delete[] outputString;
 		}
 	}
 
-	void FillCPUInfo( std::string& OutModel, uint32_t& nOutLogical, uint32_t& nOutPhysical, uint32_t& nOutSpeed, ECPUVendor& OutVendor, uint32_t& PageSize )
+	void FillCPUInfo( SystemInfo& OutInfo )
 	{
-		nOutSpeed = ReadProcessorMHzFromRegistry();
+		OutInfo._CPUSpeed = ReadProcessorMHzFromRegistry();
 
 		SYSTEM_INFO SysInfo;
 		memset( &SysInfo, 0, sizeof( SYSTEM_INFO ) );
 		GetNativeSystemInfo( &SysInfo ); // Required for WOW64 mode (32-bit exe on 64-bit OS), but functions the same as GetSystemInfo on 64-bit CPUs
 
-		PageSize = SysInfo.dwPageSize;
+		OutInfo._PageAllocationSize = SysInfo.dwPageSize;
 
-		nOutLogical = SysInfo.dwNumberOfProcessors;
-		nOutPhysical = nOutLogical; //Fallback
+		OutInfo._CPULogicalCores = SysInfo.dwNumberOfProcessors;
+		OutInfo._CPUPhysicalCores = OutInfo._CPULogicalCores; //Fallback
 
-		CountPhysicalCores( nOutPhysical );
+		CountPhysicalCores( OutInfo._CPUPhysicalCores );
 
 		int CPUInfo[ 4 ] = { -1 };
 		char CPUBrandString[ 0x40 ];
@@ -189,7 +174,7 @@ namespace
 			memcpy( CPUBrandString + 16, CPUInfo, sizeof( CPUInfo ) );
 			__cpuid( CPUInfo, 0x80000004 );
 			memcpy( CPUBrandString + 32, CPUInfo, sizeof( CPUInfo ) );
-			OutModel = CPUBrandString;
+			OutInfo._CPUModel = CPUBrandString;
 		}
 
 		std::string CPUBrandUpper = CPUBrandString;
@@ -198,9 +183,9 @@ namespace
 		} );
 
 		if ( CPUBrandUpper.find( "INTEL" ) != -1 )
-			OutVendor = ECPUVendor::Intel;
+			OutInfo._CPUVendor = CPUVendor::Intel;
 		else if ( CPUBrandUpper.find( "AMD" ) != -1 )
-			OutVendor = ECPUVendor::AMD;
+			OutInfo._CPUVendor = CPUVendor::AMD;
 	}
 
 	void FillRAMInfo( uint32_t& nOutTotal )
@@ -214,9 +199,9 @@ namespace
 	}
 }
 
-void CSystemInfo::FillInfoFromSystem( CSystemInfo& OutInfo )
+void SystemInfo::FillInfoFromSystem( SystemInfo& OutInfo )
 {
 	FillOSInfo( OutInfo._OSName, OutInfo._OSLanguage );
-	FillCPUInfo( OutInfo._CPUModel, OutInfo._CPULogicalCores, OutInfo._CPUPhysicalCores, OutInfo._CPUSpeed, OutInfo._CPUVendor, OutInfo._PageAllocationSize );
+	FillCPUInfo( OutInfo );
 	FillRAMInfo( OutInfo._RAMTotal );
 }

@@ -289,7 +289,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="graphics\RenderThread.h" />
-    <ClInclude Include="includes\standard.h" />
     <ClInclude Include="misc\avx.h" />
     <ClInclude Include="misc\cache_binary.h" />
     <ClInclude Include="random_generator.h" />

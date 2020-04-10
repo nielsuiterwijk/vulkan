@@ -1,6 +1,6 @@
 #pragma once
 
-enum class ECPUVendor
+enum class CPUVendor
 {
 	Unknown,
 	Intel,
@@ -8,22 +8,22 @@ enum class ECPUVendor
 	Count
 };
 
-const char* GetCPUVendorString( ECPUVendor CPUVendor );
+const char* GetCPUVendorString( CPUVendor CPUVendor );
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-class CSystemInfo
+class SystemInfo
 {
 public:
-	CSystemInfo() = default;
-	~CSystemInfo() = default;
+	SystemInfo() = default;
+	~SystemInfo() = default;
 
 	const std::string& GetOSName() const;
 	const std::string& GetOSLanguage() const;
 
 	const std::string& GetCPUModel() const;
 
-	ECPUVendor GetCPUVendor() const;
+	CPUVendor GetCPUVendor() const;
 
 	uint32_t GetCPUSpeed() const;
 	uint32_t GetCPULogicalCores() const;
@@ -31,7 +31,7 @@ public:
 
 	uint32_t GetRAMTotal() const;
 
-	static void FillInfoFromSystem( CSystemInfo& OutInfo );
+	static void FillInfoFromSystem( SystemInfo& OutInfo );
 
 public:
 	std::string _OSName;
@@ -44,6 +44,6 @@ public:
 
 	uint32_t _RAMTotal = -1;
 	uint32_t _PageAllocationSize = -1;
-
-	ECPUVendor _CPUVendor = ECPUVendor::Unknown;
+	
+	CPUVendor _CPUVendor = CPUVendor::Unknown;
 };

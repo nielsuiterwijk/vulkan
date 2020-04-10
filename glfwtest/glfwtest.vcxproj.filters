@@ -8,24 +8,6 @@
     <ClCompile Include="graphics\RenderThread.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="includes">
-      <UniqueIdentifier>{bc683fd0-55fa-47ef-a964-03a5aa26bf60}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="includes\glm">
-      <UniqueIdentifier>{721112e3-b1aa-4d4b-800d-eed171d3d361}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="includes\glm\detail">
-      <UniqueIdentifier>{64583641-bc41-4731-a1c0-7815cfdf8318}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="includes\glm\gtc">
-      <UniqueIdentifier>{56cbb43c-23ee-4e09-8403-1a2eb1254353}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="includes\glm\gtx">
-      <UniqueIdentifier>{b7b116bb-7cb7-4d1c-88b7-2339838abe66}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="includes\glm\simd">
-      <UniqueIdentifier>{7389bc55-7981-450f-bf40-c886b1e16397}</UniqueIdentifier>
-    </Filter>
     <Filter Include="helpers">
       <UniqueIdentifier>{390904d6-e025-42ba-a281-dd3ef4e19fbe}</UniqueIdentifier>
     </Filter>
@@ -44,9 +26,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RavenApp.h" />
-    <ClInclude Include="includes\standard.h">
-      <Filter>includes</Filter>
-    </ClInclude>
     <ClInclude Include="raven\model.h" />
     <ClInclude Include="misc\cache_binary.h" />
     <ClInclude Include="raven\DebugUI.h" />

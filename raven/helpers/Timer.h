@@ -14,9 +14,27 @@ public:
 	float GetTimeInSeconds();
 
 private:
-	LARGE_INTEGER m_ticksPerSecond;
-	LARGE_INTEGER m_currentTicks;
-	LARGE_INTEGER m_frameDelay;
+	LARGE_INTEGER _TicksPerSecond;
+	LARGE_INTEGER _CurrentTicks;
+	LARGE_INTEGER _FrameDelay;
+};
 
-	float timeInSeconds;
+
+class HighResTimer
+{
+public:
+	static double TicksPerSecond;
+
+	HighResTimer();
+	~HighResTimer();
+
+	void Start();
+	void Stop();
+
+	float GetTimeInSeconds();
+
+private:
+	uint64_t _Start;
+	uint64_t _End;
+
 };
