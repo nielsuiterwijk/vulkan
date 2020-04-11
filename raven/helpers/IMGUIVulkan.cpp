@@ -8,6 +8,7 @@
 #include "graphics/shaders/VertexShader.h"
 #include "graphics/shaders/material.h"
 #include "graphics/textures/TextureSampler.h"
+#include "io/InputEvent.h"
 
 #ifdef _WIN32
 #undef APIENTRY
@@ -18,7 +19,7 @@
 
 IMGUIVulkan::IMGUIVulkan() :
 	psoBasic2D(),
-	mousePressed(),
+	_MousePressed(),
 	mouseCursors(),
 	cpuVertex( nullptr ),
 	cpuIndex( nullptr ),
@@ -80,7 +81,6 @@ bool IMGUIVulkan::Init( GLFWwindow* window, bool installCallbacks )
 	// Load cursors
 	// FIXME: GLFW doesn't expose suitable cursors for ResizeAll, ResizeNESW, ResizeNWSE. We revert to arrow cursor for those.
 	mouseCursors.resize( ImGuiMouseCursor_COUNT );
-	mousePressed.resize( 3 );
 
 	mouseCursors[ ImGuiMouseCursor_Arrow ] = glfwCreateStandardCursor( GLFW_ARROW_CURSOR );
 	mouseCursors[ ImGuiMouseCursor_TextInput ] = glfwCreateStandardCursor( GLFW_IBEAM_CURSOR );
@@ -95,10 +95,10 @@ bool IMGUIVulkan::Init( GLFWwindow* window, bool installCallbacks )
 		using namespace std::placeholders;
 
 		//TODO: Use event system instead
-		//RavenApp::OnMouseButton.push_back( std::bind( &IMGUIVulkan::MouseButtonCallback, this, _1, _2, _3 ) );
-		//RavenApp::OnMouseScroll.push_back( std::bind( &IMGUIVulkan::ScrollCallback, this, _1, _2 ) );
-		//RavenApp::OnKey.push_back( std::bind( &IMGUIVulkan::KeyCallback, this, _1, _2, _3, _4 ) );
-		//RavenApp::OnChar.push_back( std::bind( &IMGUIVulkan::CharCallback, this, _1 ) );
+		InputEvent::OnMouseButton.push_back( std::bind( &IMGUIVulkan::MouseButtonCallback, this, _1, _2, _3 ) );
+		InputEvent::OnMouseScroll.push_back( std::bind( &IMGUIVulkan::ScrollCallback, this, _1, _2 ) );
+		InputEvent::OnKey.push_back( std::bind( &IMGUIVulkan::KeyCallback, this, _1, _2, _3, _4 ) );
+		InputEvent::OnChar.push_back( std::bind( &IMGUIVulkan::CharCallback, this, _1 ) );
 	}
 
 	material = std::make_shared<Material>( "imgui" );
@@ -139,7 +139,7 @@ bool IMGUIVulkan::Init( GLFWwindow* window, bool installCallbacks )
 	imguiFont->Transition( VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ); //move data to shader readable
 	imguiFont->SetupView( VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT );
 
-	io.Fonts->TexID = (void*)(intptr_t)imguiFont->GetImage();
+	io.Fonts->TexID = (void*)imguiFont->GetImage();
 
 	sampler = new TextureSampler();
 	sampler->Initialize( VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, 0 );
@@ -212,10 +212,10 @@ void IMGUIVulkan::NewFrame( float deltaTime )
 		io.MousePos = ImVec2( -FLT_MAX, -FLT_MAX );
 	}
 
-	for ( int i = 0; i < mousePressed.size(); i++ )
+	for ( int i = 0; i < _MousePressed.size(); i++ )
 	{
-		io.MouseDown[ i ] = mousePressed[ i ] || glfwGetMouseButton( window, i ) != 0; // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
-		mousePressed[ i ] = false;
+		io.MouseDown[ i ] = _MousePressed[ i ];// || glfwGetMouseButton( window, i ) != 0; // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+		//_MousePressed[ i ] = false;
 	}
 
 	// Update OS/hardware mouse cursor if imgui isn't drawing a software cursor
@@ -389,8 +389,8 @@ void IMGUIVulkan::Render(CommandBuffer* commandBuffer )
 
 void IMGUIVulkan::MouseButtonCallback( int button, int action, int mods )
 {
-	if ( action == GLFW_PRESS && button >= 0 && button < 3 )
-		mousePressed[ button ] = true;
+	if ( button >= 0 && button < _MousePressed.size() )
+		_MousePressed[ button ] = action == GLFW_PRESS;
 }
 
 void IMGUIVulkan::ScrollCallback( double xoffset, double yoffset )

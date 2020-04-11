@@ -35,7 +35,7 @@ void Model::FileLoaded( std::vector<char> fileData )
 
 	mesh = std::static_pointer_cast<SkinnedMesh>( MeshFileLoader::Skinned( meshFileName ) );
 	material = std::make_shared<Material>( materialFileName );
-	material->AddUniformBuffer( new UniformBuffer( { static_cast<void*>( &camera ), sizeof( CameraUBO ) } ) );
+	material->AddUniformBuffer( new UniformBuffer( { static_cast<void*>( &camera ), sizeof( Camera::Buffer ) } ) );
 
 	std::vector<std::string> texturesJson = jsonObject[ "textures" ];
 
@@ -84,7 +84,7 @@ bool Model::TexturesLoaded() const
 	return true;
 }
 
-void Model::Update( float delta )
+void Model::Update( )
 {
 	if ( material == nullptr )
 		return;
@@ -92,7 +92,7 @@ void Model::Update( float delta )
 	if ( !material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded() )
 		return;
 
-	mesh->Update( delta );
+	mesh->Update( Frame::DeltaTime );
 }
 
 void Model::Render( CommandBuffer* commandBuffer )

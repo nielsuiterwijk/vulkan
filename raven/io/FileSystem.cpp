@@ -7,8 +7,8 @@ bool FileSystem::threadStarted = false;
 std::thread FileSystem::fileLoadingThread;
 std::queue<FileSystem::AsyncFileLoad> FileSystem::tasks;
 
-std::mutex FileSystem::queue_mutex;
-std::condition_variable FileSystem::condition;
+Mutex FileSystem::queue_mutex;
+std::condition_variable_any FileSystem::condition;
 
 ThreadPool* FileSystem::threadPool = nullptr;
 
@@ -67,7 +67,7 @@ std::vector<char> FileSystem::ReadFile( const std::string& filename )
 	std::cout << "[FileSystem] Loaded " << filename.c_str() << " size: " << fileSize << std::endl;
 
 #if DEBUG
-	//::_sleep(1000);
+	Sleep(100);
 #endif
 
 	return buffer;
@@ -99,7 +99,7 @@ void FileSystem::LoadAsync()
 		AsyncFileLoad loadTask;
 
 		{
-			std::unique_lock<std::mutex> lock( queue_mutex );
+			std::unique_lock<Mutex> lock( queue_mutex );
 
 			//The condition will take the lock and will wait for to be notified and will continue
 			//only if were stopping (stop == true) or if there are tasks to do, else it will keep waiting.

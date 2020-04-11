@@ -4000,7 +4000,7 @@ void *aligned_alloc(size_t alignment, size_t size)
         void Unlock() { m_Mutex.unlock(); }
         bool TryLock() { return m_Mutex.try_lock(); }
     private:
-        std::mutex m_Mutex;
+        Mutex m_Mutex;
     };
     #define VMA_MUTEX VmaMutex
 #endif

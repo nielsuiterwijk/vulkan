@@ -316,6 +316,7 @@
     <ClCompile Include="helpers\Utility.cpp" />
     <ClCompile Include="io\FileUtility.cpp" />
     <ClCompile Include="io\FileSystem.cpp" />
+    <ClCompile Include="io\InputEvent.cpp" />
     <ClCompile Include="memory\Allocator.cpp" />
     <ClCompile Include="memory\BlockAllocator.cpp" />
     <ClCompile Include="memory\FreeListAllocator.cpp" />
@@ -375,18 +376,19 @@
     <ClInclude Include="include\vma\vk_mem_alloc_fwd.h" />
     <ClInclude Include="io\FileUtility.h" />
     <ClInclude Include="io\FileSystem.h" />
+    <ClInclude Include="io\InputEvent.h" />
     <ClInclude Include="memory\Allocator.h" />
     <ClInclude Include="memory\BlockAllocator.h" />
     <ClInclude Include="memory\FreeListAllocator.h" />
     <ClInclude Include="memory\MemoryUtils.h" />
     <ClInclude Include="memory\PoolAllocator.h" />
     <ClInclude Include="physics\aabb.h" />
+    <ClInclude Include="threading\Mutex.h" />
     <ClInclude Include="threading\Task.h" />
     <ClInclude Include="threading\TaskSystem.h" />
     <ClInclude Include="threading\ThreadPool.h" />
     <ClInclude Include="helpers\Timer.h" />
     <ClInclude Include="graphics\VulkanInstance.h" />
-    <ClInclude Include="threading\ThreadPool_OldStyle.h" />
     <ClInclude Include="threading\ThreadPool_PerThreadQueue.h" />
     <ClInclude Include="threading\ThreadPool_Serial.h" />
   </ItemGroup>

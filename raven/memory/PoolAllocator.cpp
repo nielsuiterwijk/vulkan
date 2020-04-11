@@ -49,7 +49,7 @@ void* PoolAllocator::Allocate( size_t size, size_t alignment )
 {
 	assert( size <= objectSize && alignment <= objectAlignment );
 
-	std::lock_guard<std::mutex> guard( _Mutex );
+	std::lock_guard<Mutex> guard( _Mutex );
 
 	if ( freeList == nullptr )
 	{
@@ -70,7 +70,7 @@ void* PoolAllocator::Allocate( size_t size, size_t alignment )
 
 void PoolAllocator::Deallocate( void* address )
 {
-	std::lock_guard<std::mutex> guard( _Mutex );
+	std::lock_guard<Mutex> guard( _Mutex );
 
 	*( (void**)address ) = freeList;
 	freeList = (void**)address;

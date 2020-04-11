@@ -51,6 +51,7 @@
     <ClCompile Include="helpers\SystemInfo.cpp" />
     <ClCompile Include="memory\BlockAllocator.cpp" />
     <ClCompile Include="graphics\memory\VulkanMemoryAllocator.cpp" />
+    <ClCompile Include="io\InputEvent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -167,9 +168,6 @@
     <ClInclude Include="threading\ThreadPool_PerThreadQueue.h">
       <Filter>threading</Filter>
     </ClInclude>
-    <ClInclude Include="threading\ThreadPool_OldStyle.h">
-      <Filter>threading</Filter>
-    </ClInclude>
     <ClInclude Include="threading\ThreadPool_Serial.h">
       <Filter>threading</Filter>
     </ClInclude>
@@ -180,5 +178,7 @@
     <ClInclude Include="memory\BlockAllocator.h" />
     <ClInclude Include="include\vma\vk_mem_alloc.h" />
     <ClInclude Include="include\vma\vk_mem_alloc_fwd.h" />
+    <ClInclude Include="threading\Mutex.h" />
+    <ClInclude Include="io\InputEvent.h" />
   </ItemGroup>
 </Project>

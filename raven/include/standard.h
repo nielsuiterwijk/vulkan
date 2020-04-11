@@ -49,3 +49,4 @@ using json = nlohmann::json;
 #include "helpers/DebugAssert.h"
 #include "helpers/Utility.h"
 #include "io/FileUtility.h"
+#include "threading/Mutex.h"

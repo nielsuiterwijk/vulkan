@@ -192,7 +192,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <PrecompiledHeaderFile>standard.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <ForcedIncludeFiles>include/standard.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Platform.h</ForcedIncludeFiles>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -223,6 +223,7 @@
       <PrecompiledHeaderFile>standard.h</PrecompiledHeaderFile>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ForcedIncludeFiles>Platform.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -266,7 +267,7 @@
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <ForcedIncludeFiles>standard.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Platform.h</ForcedIncludeFiles>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>standard.h</PrecompiledHeaderFile>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
@@ -282,17 +283,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="core\FirstPersonCamera.cpp" />
+    <ClCompile Include="core\Frame.cpp" />
+    <ClCompile Include="graphics\Camera.cpp" />
+    <ClCompile Include="graphics\model.cpp" />
     <ClCompile Include="graphics\RenderThread.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RavenApp.cpp" />
     <ClCompile Include="raven\DebugUI.cpp" />
-    <ClCompile Include="raven\model.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="core\FirstPersonCamera.h" />
+    <ClInclude Include="core\Frame.h" />
+    <ClInclude Include="graphics\Camera.h" />
+    <ClInclude Include="graphics\model.h" />
     <ClInclude Include="graphics\RenderThread.h" />
+    <ClInclude Include="Platform.h" />
     <ClInclude Include="RavenApp.h" />
     <ClInclude Include="raven\DebugUI.h" />
-    <ClInclude Include="raven\model.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

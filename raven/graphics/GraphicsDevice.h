@@ -74,5 +74,5 @@ private:
 
 	std::vector<std::function<void()>> swapchainInvalidatedCallbacks;
 
-	std::mutex busy;
+	Mutex busy;
 };

@@ -26,7 +26,7 @@ private:
 	{
 	public:
 		AsyncFileLoad() :
-			fileName( "default" ),
+			fileName( "" ),
 			callback( nullptr )
 		{
 		}
@@ -67,8 +67,8 @@ private:
 	static std::thread fileLoadingThread;
 	static std::queue<AsyncFileLoad> tasks;
 
-	static std::mutex queue_mutex;
-	static std::condition_variable condition;
+	static Mutex queue_mutex;
+	static std::condition_variable_any condition;
 
 	static ThreadPool* threadPool;
 

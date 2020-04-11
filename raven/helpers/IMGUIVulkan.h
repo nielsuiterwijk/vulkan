@@ -70,7 +70,7 @@ private:
 	ImDrawIdx* cpuIndex; // = new ImDrawIdx[draw_data->TotalIdxCount];
 	size_t sizeOfIndexBuffer;
 
-	std::vector<bool> mousePressed;
+	std::array<bool, 3> _MousePressed;
 	std::vector<GLFWcursor*> mouseCursors;
 
 	bool showDemoWindow;

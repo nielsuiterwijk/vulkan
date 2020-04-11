@@ -53,7 +53,7 @@ void CRenderThread::DoFrame()
 	VkResult result;
 #if MULTITHREADED_RENDERING == 1
 	{
-		std::unique_lock<std::mutex> Lock( AccessNotificationMutex() );
+		std::unique_lock<Mutex> Lock( AccessNotificationMutex() );
 		// Wait until update thread is done with the next frame
 		//RavenApp::renderThreadWait.wait( lock, [=] { return app->updateFrameIndex > app->renderFrameIndex || !app->run; } );
 		_RenderRunCondition.wait( Lock );
@@ -205,7 +205,7 @@ void CRenderThread::DoFrame()
 		presentInfo.pImageIndices = &imageIndex;
 
 		{
-			std::scoped_lock<std::mutex> Lock( GraphicsContext::QueueLock );
+			std::scoped_lock<Mutex> Lock( GraphicsContext::QueueLock );
 			//Present (wait until drawing is done)
 			result = vkQueuePresentKHR( GraphicsContext::PresentQueue, &presentInfo );
 

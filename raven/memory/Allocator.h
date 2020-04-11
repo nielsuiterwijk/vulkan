@@ -60,5 +60,5 @@ protected:
 	size_t _UsedMemory;
 	size_t _NumAllocations;
 
-	std::mutex _Mutex;
+	Mutex _Mutex;
 };

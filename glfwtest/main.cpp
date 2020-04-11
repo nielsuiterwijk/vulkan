@@ -6,7 +6,6 @@
 #include "threading/Task.h"
 #include "threading/ThreadPool.h"
 #include "threading/ThreadPool_PerThreadQueue.h"
-#include "threading/ThreadPool_OldStyle.h"
 #include "threading/ThreadPool_Serial.h"
 #include "threading/TaskSystem.h"
 

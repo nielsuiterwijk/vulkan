@@ -24,7 +24,7 @@ public:
 					std::function<void()> task = nullptr;
 
 					{
-						std::unique_lock<std::mutex> lock( Info.queue_mutex );
+						std::unique_lock<Mutex> lock( Info.queue_mutex );
 
 						//The condition will take the lock and will wait for to be notified and will continue
 						//only if were stopping (stop == true) or if there are tasks to do, else it will keep waiting.
@@ -79,7 +79,7 @@ public:
 		
 		{
 			//Take the lock, and it will be auto cleared at the end of the scope.
-			std::unique_lock<std::mutex> lock( info.queue_mutex );
+			std::unique_lock<Mutex> lock( info.queue_mutex );
 
 			// don't allow enqueueing after stopping the pool
 			if (stop)
@@ -99,8 +99,8 @@ private:
 	struct ThreadInfo
 	{
 		std::queue<std::function<void()>> tasks = {};
-		std::mutex queue_mutex = {};
-		std::condition_variable condition = {};
+		Mutex queue_mutex = {};
+		std::condition_variable_any condition = {};
 	};
 
 	std::array<ThreadInfo, 12> threadInfo;

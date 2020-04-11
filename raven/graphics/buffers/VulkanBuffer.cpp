@@ -39,7 +39,7 @@ VulkanBuffer::VulkanBuffer( VkBufferUsageFlags Flags, BufferType BufferType, voi
 VulkanBuffer::~VulkanBuffer()
 {
 	{
-		std::scoped_lock<std::mutex> Lock( GraphicsContext::QueueLock ); //todo: replace with own variant for RWLOCK
+		std::scoped_lock<Mutex> Lock( GraphicsContext::QueueLock ); //todo: replace with own variant for RWLOCK
 		vkQueueWaitIdle( GraphicsContext::GraphicsQueue );
 	}
 	Free();
@@ -113,7 +113,7 @@ void VulkanBuffer::CopyToBufferAndClear( VulkanBuffer& Destination )
 	submitInfo.pCommandBuffers = &commandBuffer->GetNative();
 
 	{
-		std::scoped_lock<std::mutex> Lock( GraphicsContext::QueueLock );
+		std::scoped_lock<Mutex> Lock( GraphicsContext::QueueLock );
 		//TODO: This causes waits, needs to be async
 		vkQueueSubmit( GraphicsContext::TransportQueue, 1, &submitInfo, VK_NULL_HANDLE );
 		vkQueueWaitIdle( GraphicsContext::TransportQueue );

@@ -5,6 +5,7 @@
 #include "graphics/buffers/UniformBuffer.h"
 #include "graphics/buffers/UniformBufferDefinition.h"
 #include "graphics/shaders/Material.h"
+#include "graphics/Camera.h"
 
 class SkinnedMesh;
 
@@ -16,12 +17,12 @@ public:
 
 	void WindowResized( int w, int h );
 
-	void Update( float delta );
+	void Update( );
 
 	void Render( CommandBuffer* commandBuffer );
 
-	const CameraUBO& GetUBO() const { return camera; }
-	CameraUBO& AccessUBO() { return camera; }
+	const Camera::Buffer& GetUBO() const { return camera; }
+	Camera::Buffer& AccessUBO() { return camera; }
 
 private:
 	void FileLoaded( std::vector<char> fileData );
@@ -31,7 +32,7 @@ private:
 private:
 	PipelineStateObject pso;
 
-	CameraUBO camera;
+	Camera::Buffer camera;
 	std::shared_ptr<SkinnedMesh> mesh;
 	std::shared_ptr<Material> material;
 

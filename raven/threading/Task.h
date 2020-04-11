@@ -75,7 +75,7 @@ private:
 	}
 
 private:
-	std::mutex Mutex;
+	Mutex Mutex;
 	ETaskState State = ETaskState::InQueue;
 	std::function<void()> Callback;
 };

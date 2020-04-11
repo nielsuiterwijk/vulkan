@@ -1,14 +1,14 @@
 #pragma once
 
-#include "helpers/Timer.h"
 #include "graphics/helpers/VulkanSemaphore.h"
+#include "helpers/Timer.h"
 
 #include <functional>
 
 class CommandBuffer;
 class RavenApp;
 
-typedef std::function<void(CommandBuffer*)> RenderCallback;
+typedef std::function<void( CommandBuffer* )> RenderCallback;
 
 class CRenderThread
 {
@@ -16,7 +16,7 @@ class CRenderThread
 
 public:
 	CRenderThread() {};
-	
+
 
 
 	void Start();
@@ -25,30 +25,27 @@ public:
 	void Initialize();
 	void Destroy();
 
-	std::mutex& AccessNotificationMutex() { return _NotificationMutex; }
-	std::condition_variable& AccessRunCondition() { return _RenderRunCondition; }
+	Mutex& AccessNotificationMutex() { return _NotificationMutex; }
+	std::condition_variable_any& AccessRunCondition() { return _RenderRunCondition; }
 	uint64_t GetRenderFrame() const { return _RenderFrame; }
 
-	void QueueRender(RenderCallback Callback)
-	{
-		_Callbacks.emplace_back(Callback);
-	}
-	   
+	void QueueRender( RenderCallback Callback ) { _Callbacks.emplace_back( Callback ); }
+
 private:
 	void ThreadRunner();
 	void DoFrame();
-		
+
 	std::thread _Thread;
 
-	
+
 	std::vector<CommandBuffer*> _CommandBuffers;
-	std::vector< RenderCallback> _Callbacks;
+	std::vector<RenderCallback> _Callbacks;
 
 	uint64_t _RenderFrame = 0;
 	bool _ShouldRun = true;
 
-	std::mutex _NotificationMutex;
-	std::condition_variable _RenderRunCondition;
+	Mutex _NotificationMutex;
+	std::condition_variable_any _RenderRunCondition;
 
 	VkFence _RenderFence = {};
 	std::unique_ptr<VulkanSemaphore> _pRenderSemaphore;

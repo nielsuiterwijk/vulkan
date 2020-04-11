@@ -39,7 +39,7 @@ void BlockAllocator::Initialize( size_t size, void* start )
 
 void* BlockAllocator::Allocate( size_t Size, size_t Alignment )
 {
-	std::lock_guard<std::mutex> guard( _Mutex ); //NU TODO: Read/Write lock would be better..
+	std::lock_guard<Mutex> guard( _Mutex ); //NU TODO: Read/Write lock would be better..
 
 	_NumAllocations++;
 	_UsedMemory += Size;

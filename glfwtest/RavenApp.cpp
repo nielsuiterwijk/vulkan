@@ -1,34 +1,28 @@
 #include "RavenApp.h"
 
-#include <iostream>
-#include <thread>
-#include <vector>
-
 #include "graphics/GraphicsDevice.h"
 #include "graphics/VulkanInstance.h"
+#include "graphics/memory/GPUAllocator.h"
+#include "graphics/model.h"
+#include "graphics/models/Mesh.h"
+#include "graphics/textures/TextureLoader.h"
 #include "graphics\PipelineStateObject.h"
 #include "graphics\VulkanSwapChain.h"
 #include "graphics\buffers\UniformBuffer.h"
 #include "helpers/DebugAssert.h"
 #include "helpers/Helpers.h"
-
-#include "graphics/memory/GPUAllocator.h"
-#include "graphics/models/Mesh.h"
-#include "graphics/textures/TextureLoader.h"
-
 #include "imgui/imgui.h"
-
 #include "raven/DebugUI.h"
-#include "raven/model.h"
+#include "core/Frame.h"
 
-std::vector<std::function<void( int, int, int )>> RavenApp::OnMouseButton = {};
-std::vector<std::function<void( double, double )>> RavenApp::OnMouseScroll = {};
-std::vector<std::function<void( int, int, int, int )>> RavenApp::OnKey = {};
-std::vector<std::function<void( unsigned int )>> RavenApp::OnChar = {};
+#include <iostream>
+#include <thread>
+#include <vector>
+
 std::vector<std::function<void( int, int )>> RavenApp::OnWindowResized = {};
 
 RavenApp::RavenApp()
-	: window( nullptr )
+	: _pWindow( nullptr )
 	, imguiVulkan( nullptr )
 	, updateFrameIndex( 0 )
 	, _RenderThread()
@@ -45,7 +39,7 @@ RavenApp::~RavenApp()
 
 	GraphicsDevice::Instance().Finalize();
 
-	glfwDestroyWindow( window );
+	glfwDestroyWindow( _pWindow );
 
 	glfwTerminate();
 }
@@ -69,7 +63,7 @@ bool RavenApp::Initialize()
 		glfwWindowHint( GLFW_CLIENT_API, GLFW_NO_API );
 		glfwWindowHint( GLFW_RESIZABLE, GLFW_TRUE );
 
-		window = glfwCreateWindow( 1280, 720, "Vulkan window", nullptr, nullptr );
+		_pWindow = glfwCreateWindow( 1280, 720, "Vulkan window", nullptr, nullptr );
 	}
 
 	if ( glfwVulkanSupported() == GLFW_TRUE )
@@ -101,13 +95,14 @@ bool RavenApp::Initialize()
 		std::cout << windowExtensionsNeeded[ i ] << " extension is available." << std::endl;
 	}
 
-	glfwSetWindowUserPointer( window, this );
+	glfwSetWindowUserPointer( _pWindow, this );
 
-	glfwSetWindowSizeCallback( window, RavenApp::WindowResizedCallback );
-	glfwSetMouseButtonCallback( window, RavenApp::MouseButtonCallback );
-	glfwSetScrollCallback( window, RavenApp::ScrollCallback );
-	glfwSetKeyCallback( window, RavenApp::KeyCallback );
-	glfwSetCharCallback( window, RavenApp::CharCallback );
+	glfwSetWindowSizeCallback( _pWindow, RavenApp::WindowResizedCallback );
+
+	glfwSetMouseButtonCallback( _pWindow, InputEvent::MouseButtonCallback );
+	glfwSetScrollCallback( _pWindow, InputEvent::ScrollCallback );
+	glfwSetKeyCallback( _pWindow, InputEvent::KeyCallback );
+	glfwSetCharCallback( _pWindow, InputEvent::CharCallback );
 
 	GraphicsContext::VulkanInstance->CreateInstance( windowExtensionsNeeded );
 	GraphicsContext::VulkanInstance->HookDebugCallback();
@@ -117,7 +112,7 @@ bool RavenApp::Initialize()
 
 	GraphicsContext::GlobalAllocator.PrintStats();
 	VkResult result = glfwCreateWindowSurface( GraphicsContext::VulkanInstance->GetNative(),
-											   window,
+											   _pWindow,
 											   vulkanSwapChain->GetSurface().AllocationCallbacks(),
 											   vulkanSwapChain->GetSurface().Replace() );
 	assert( result == VK_SUCCESS );
@@ -131,7 +126,7 @@ bool RavenApp::Initialize()
 	imguiVulkan = new IMGUIVulkan();
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext( nullptr );
-	imguiVulkan->Init( window, true );
+	imguiVulkan->Init( _pWindow, true );
 
 	std::shared_ptr<Model> model = std::make_shared<Model>( "cesiumman" );
 	models.push_back( model );
@@ -154,7 +149,7 @@ void RavenApp::Run()
 	//float scale = 0.025;
 	float scale = 1;
 
-	while ( !glfwWindowShouldClose( window ) )
+	while ( !glfwWindowShouldClose( _pWindow ) )
 	{
 		//update
 		glfwPollEvents();
@@ -166,7 +161,7 @@ void RavenApp::Run()
 		bool DoUpdate = true;
 
 		{
-			//std::unique_lock<std::mutex> lock( _RenderThread.AccessNotificationMutex() );
+			//std::unique_lock<CMutex> lock( _RenderThread.AccessNotificationMutex() );
 
 			//The condition will take the lock and will wait for to be notified and will continue
 			//only if were stopping (stop == true) or if there are tasks to do, else it will keep waiting.
@@ -179,7 +174,7 @@ void RavenApp::Run()
 			}
 		}
 
-		float delta = std::chrono::duration<float, std::chrono::seconds::period>( std::chrono::high_resolution_clock::now() - previousTime ).count();
+		Frame::DeltaTime = std::chrono::duration<float, std::chrono::seconds::period>( std::chrono::high_resolution_clock::now() - previousTime ).count();
 
 		if ( DoUpdate )
 		{
@@ -194,14 +189,14 @@ void RavenApp::Run()
 				float time = std::chrono::duration<float, std::chrono::seconds::period>( currentTime - startTime ).count();
 
 				if ( autoRotate )
-					rotation -= delta * 45.0f;
+					rotation -= Frame::DeltaTime * 45.0f;
 
 				if ( rotation < 0 )
 					rotation = 360.0f;
 
 				for ( std::shared_ptr<Model>& pModel : models )
 				{
-					pModel->Update( delta );
+					pModel->Update( );
 
 					auto RenderCallback = [&]( CommandBuffer* pBuffer ) {
 						pModel->Render( pBuffer );
@@ -209,7 +204,7 @@ void RavenApp::Run()
 
 					_RenderThread.QueueRender( RenderCallback );
 
-					CameraUBO& camera = pModel->AccessUBO();
+					Camera::Buffer& camera = pModel->AccessUBO();
 
 					camera.model = glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, translationY, 0.0f ) );
 					camera.model = glm::rotate( camera.model, glm::radians( rotation ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
@@ -222,7 +217,7 @@ void RavenApp::Run()
 				}
 			}
 
-			imguiVulkan->NewFrame( delta );
+			imguiVulkan->NewFrame( Frame::DeltaTime );
 
 			if ( imguiVulkan->IsReady() )
 			{
@@ -237,6 +232,7 @@ void RavenApp::Run()
 
 				DebugUI UI;
 				UI.ListGameObjects();
+				UI.TimingGraph( Frame::DeltaTime, _RenderThread._TotalTimer.GetTimeInSeconds() );
 
 				auto RenderCallback = [&]( CommandBuffer* pBuffer ) {
 					imguiVulkan->Render( pBuffer );
@@ -245,7 +241,7 @@ void RavenApp::Run()
 				_RenderThread.QueueRender( RenderCallback );
 			}
 
-			statsTimer += delta;
+			statsTimer += Frame::DeltaTime;
 
 			if ( statsTimer > 30.0f )
 			{
@@ -266,9 +262,9 @@ void RavenApp::Run()
 
 		Sleep( 1 );
 
-		std::string windowTitle = std::string( "delta time: " ) + Helpers::ValueToString( delta * 1000.0f );
+		std::string windowTitle = std::string( "delta time: " ) + Helpers::ValueToString( Frame::DeltaTime * 1000.0f );
 
-		glfwSetWindowTitle( window, windowTitle.c_str() );
+		glfwSetWindowTitle( _pWindow, windowTitle.c_str() );
 	}
 
 	run = false;
@@ -302,37 +298,5 @@ void RavenApp::WindowResizedCallback( GLFWwindow* window, int width, int height 
 	for ( std::shared_ptr<Model> pModel : app->models )
 	{
 		pModel->WindowResized( width, height );
-	}
-}
-
-void RavenApp::MouseButtonCallback( GLFWwindow* window, int button, int action, int mods )
-{
-	for ( size_t i = 0; i < OnMouseButton.size(); i++ )
-	{
-		OnMouseButton[ i ]( button, action, mods );
-	}
-}
-
-void RavenApp::ScrollCallback( GLFWwindow* window, double xoffset, double yoffset )
-{
-	for ( size_t i = 0; i < OnMouseScroll.size(); i++ )
-	{
-		OnMouseScroll[ i ]( xoffset, yoffset );
-	}
-}
-
-void RavenApp::KeyCallback( GLFWwindow* window, int key, int scancode, int action, int mods )
-{
-	for ( size_t i = 0; i < OnKey.size(); i++ )
-	{
-		OnKey[ i ]( key, scancode, action, mods );
-	}
-}
-
-void RavenApp::CharCallback( GLFWwindow* window, unsigned int c )
-{
-	for ( size_t i = 0; i < OnChar.size(); i++ )
-	{
-		OnChar[ i ]( c );
 	}
 }

@@ -4,17 +4,15 @@ AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: false
 AlignEscapedNewlines: Left
 AlignOperands: true
-AllowShortFunctionsOnASingleLine: InlineOnly
-AllowShortIfStatementsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: Never
 AlwaysBreakTemplateDeclarations: true
 BinPackArguments: false
-BinPackParameters: true
+BinPackParameters : false
 BreakBeforeBraces: Allman
 CompactNamespaces: false
 Language: Cpp
+PenaltyBreakAssignment: 10000
 PointerAlignment: Left
-SortIncludes: true
-SortUsingDeclarations: true
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements
 SpacesInParentheses: true
@@ -22,15 +20,29 @@ SpacesInSquareBrackets: true
 TabWidth: 4
 UseTab: Always
 IndentCaseLabels: true
-BreakConstructorInitializersBeforeComma: true
-BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: AfterColon
 BreakBeforeInheritanceComma: true
 NamespaceIndentation: All
 ColumnLimit: 160
-AllowAllArgumentsOnNextLine: false
-AllowShortLambdasOnASingleLine: Empty
 ReflowComments: false
 AlignConsecutiveDeclarations: false
 AllowShortFunctionsOnASingleLine : InlineOnly
+AllowShortLambdasOnASingleLine : Inline
+AllowAllArgumentsOnNextLine : false
+AllowAllParametersOfDeclarationOnNextLine : false
+SpaceBeforeCtorInitializerColon: true
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerAllOnOneLineOrOnePerLine : false
+MaxEmptyLinesToKeep: 3
+SortIncludes: true
+SortUsingDeclarations: true
+IncludeBlocks: Regroup
+IncludeCategories:
+# Matches common headers first, but sorts them after project includes
+- Regex: '^\"'
+  Priority: 1000
+- Regex: '^<.*/.*'
+  Priority: 4000
+- Regex: '^<[^/]*>'
+  Priority: 5000
 ...

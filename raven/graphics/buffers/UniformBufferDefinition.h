@@ -1,14 +1,5 @@
 #pragma once
 
-
-
-struct CameraUBO
-{
-	glm::mat4 model = {};
-	glm::mat4 view = {};
-	glm::mat4 proj = {};
-};
-
 struct SkinnedMeshBuffer
 {
 	glm::mat4 model = {};

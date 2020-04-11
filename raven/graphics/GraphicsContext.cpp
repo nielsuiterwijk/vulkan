@@ -17,7 +17,7 @@ QueueFamilyIndices GraphicsContext::FamilyIndices = {};
 
 VkEvent GraphicsContext::TransportEvent = {};
 VulkanSemaphore* GraphicsContext::TransportSemaphore = nullptr;
-std::mutex GraphicsContext::QueueLock = {};
+Mutex GraphicsContext::QueueLock = {};
 
 VkQueue GraphicsContext::TransportQueue = {};
 VkQueue GraphicsContext::GraphicsQueue = {};
