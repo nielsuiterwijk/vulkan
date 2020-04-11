@@ -17,7 +17,7 @@
 #include <GLFW/glfw3native.h>
 #endif
 
-IMGUIVulkan::IMGUIVulkan() :
+IMGUIVulkan::IMGUIVulkan( GLFWwindow* pWindow ) :
 	psoBasic2D(),
 	_MousePressed(),
 	mouseCursors(),
@@ -28,9 +28,9 @@ IMGUIVulkan::IMGUIVulkan() :
 	sampler( nullptr ),
 	imguiFont( nullptr ),
 	vulkanUbo( nullptr ),
-	window( nullptr ),
+	_pWindow( pWindow ),
 	sizeOfVertexBuffer( 0 ),
-	sizeOfIndexBuffer( 0 ),
+	sizeOfIndexBuffer( 0 ), 
 	indexBuffer( nullptr ),
 	vertexBuffer( nullptr )
 
@@ -42,10 +42,8 @@ IMGUIVulkan::~IMGUIVulkan()
 	Shutdown();
 }
 
-bool IMGUIVulkan::Init( GLFWwindow* window, bool installCallbacks )
+bool IMGUIVulkan::Initialize(  )
 {
-	this->window = window;
-
 	ImGuiIO& io = ImGui::GetIO();
 	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors; // We can honor GetMouseCursor() values (optional)
 
@@ -73,9 +71,9 @@ bool IMGUIVulkan::Init( GLFWwindow* window, bool installCallbacks )
 
 	io.SetClipboardTextFn = IMGUIVulkan::SetClipboardText;
 	io.GetClipboardTextFn = IMGUIVulkan::GetClipboardText;
-	io.ClipboardUserData = window;
+	io.ClipboardUserData = _pWindow;
 #ifdef _WIN32
-	io.ImeWindowHandle = glfwGetWin32Window( window );
+	io.ImeWindowHandle = glfwGetWin32Window( _pWindow );
 #endif
 
 	// Load cursors
@@ -90,11 +88,9 @@ bool IMGUIVulkan::Init( GLFWwindow* window, bool installCallbacks )
 	mouseCursors[ ImGuiMouseCursor_ResizeNESW ] = glfwCreateStandardCursor( GLFW_ARROW_CURSOR );
 	mouseCursors[ ImGuiMouseCursor_ResizeNWSE ] = glfwCreateStandardCursor( GLFW_ARROW_CURSOR );
 
-	if ( installCallbacks )
 	{
 		using namespace std::placeholders;
 
-		//TODO: Use event system instead
 		InputEvent::OnMouseButton.push_back( std::bind( &IMGUIVulkan::MouseButtonCallback, this, _1, _2, _3 ) );
 		InputEvent::OnMouseScroll.push_back( std::bind( &IMGUIVulkan::ScrollCallback, this, _1, _2 ) );
 		InputEvent::OnKey.push_back( std::bind( &IMGUIVulkan::KeyCallback, this, _1, _2, _3, _4 ) );
@@ -191,8 +187,8 @@ void IMGUIVulkan::NewFrame( float deltaTime )
 	// Setup display size (every frame to accommodate for window resizing)
 	int w, h;
 	int display_w, display_h;
-	glfwGetWindowSize( window, &w, &h );
-	glfwGetFramebufferSize( window, &display_w, &display_h );
+	glfwGetWindowSize( _pWindow, &w, &h );
+	glfwGetFramebufferSize( _pWindow, &display_w, &display_h );
 	io.DisplaySize = ImVec2( (float)w, (float)h );
 	io.DisplayFramebufferScale = ImVec2( w > 0 ? ( (float)display_w / w ) : 0, h > 0 ? ( (float)display_h / h ) : 0 );
 
@@ -201,10 +197,10 @@ void IMGUIVulkan::NewFrame( float deltaTime )
 
 	// Setup inputs
 	// (we already got mouse wheel, keyboard keys & characters from glfw callbacks polled in glfwPollEvents())
-	if ( glfwGetWindowAttrib( window, GLFW_FOCUSED ) )
+	if ( glfwGetWindowAttrib( _pWindow, GLFW_FOCUSED ) )
 	{
 		double mouse_x, mouse_y;
-		glfwGetCursorPos( window, &mouse_x, &mouse_y );
+		glfwGetCursorPos( _pWindow, &mouse_x, &mouse_y );
 		io.MousePos = ImVec2( (float)mouse_x, (float)mouse_y );
 	}
 	else
@@ -224,12 +220,12 @@ void IMGUIVulkan::NewFrame( float deltaTime )
 		ImGuiMouseCursor cursor = ImGui::GetMouseCursor();
 		if ( io.MouseDrawCursor || cursor == ImGuiMouseCursor_None )
 		{
-			glfwSetInputMode( window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN );
+			glfwSetInputMode( _pWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN );
 		}
 		else
 		{
-			glfwSetCursor( window, mouseCursors[ cursor ] ? mouseCursors[ cursor ] : mouseCursors[ ImGuiMouseCursor_Arrow ] );
-			glfwSetInputMode( window, GLFW_CURSOR, GLFW_CURSOR_NORMAL );
+			glfwSetCursor( _pWindow, mouseCursors[ cursor ] ? mouseCursors[ cursor ] : mouseCursors[ ImGuiMouseCursor_Arrow ] );
+			glfwSetInputMode( _pWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL );
 		}
 	}
 

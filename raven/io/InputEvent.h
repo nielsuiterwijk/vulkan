@@ -1,5 +1,16 @@
 #pragma once
 
+/*
+	The way this class works, it provides static functions to get direct input stuff. 
+	But it requires an instance of it somewhere that can update the underlying static data.
+*/
+
+enum class MouseButton
+{
+	Left,
+	Right,
+	Middle
+};
 
 class InputEvent
 {
@@ -10,38 +21,19 @@ public:
 	static std::vector<std::function<void( unsigned int )>> OnChar;
 
 
+	static glm::ivec2 MousePosition();
+	static bool IsMouseButtonDown( MouseButton Button );
+	static bool IsKeyDown( int32_t Key );
+
+public:
+	void Update( GLFWwindow* pWindow, float DeltaTime );
 public:
 
-	static void InputEvent::MouseButtonCallback( GLFWwindow* window, int button, int action, int mods )
-	{
-		for ( size_t i = 0; i < OnMouseButton.size(); i++ )
-		{
-			OnMouseButton[ i ]( button, action, mods );
-		}
-	}
+	static void MouseButtonCallback( GLFWwindow* window, int button, int action, int mods );
 
-	static void InputEvent::ScrollCallback( GLFWwindow* window, double xoffset, double yoffset )
-	{
-		for ( size_t i = 0; i < OnMouseScroll.size(); i++ )
-		{
-			OnMouseScroll[ i ]( xoffset, yoffset );
-		}
-	}
+	static void ScrollCallback( GLFWwindow* window, double xoffset, double yoffset );
 
-	static void InputEvent::KeyCallback( GLFWwindow* window, int key, int scancode, int action, int mods )
-	{
-		for ( size_t i = 0; i < OnKey.size(); i++ )
-		{
-			OnKey[ i ]( key, scancode, action, mods );
-		}
-	}
+	static void KeyCallback( GLFWwindow* window, int key, int scancode, int action, int mods );
 
-	static void InputEvent::CharCallback( GLFWwindow* window, unsigned int c )
-	{
-		for ( size_t i = 0; i < OnChar.size(); i++ )
-		{
-			OnChar[ i ]( c );
-		}
-	}
-
+	static void CharCallback( GLFWwindow* window, unsigned int c );
 };

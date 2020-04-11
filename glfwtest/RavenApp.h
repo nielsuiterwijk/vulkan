@@ -40,14 +40,14 @@ private:
 
 private:
 	GLFWwindow* _pWindow;
-	bool run;
+	bool _Run;
 
 	uint64_t updateFrameIndex;
 
 	//objects..
 	std::vector<std::shared_ptr<Model>> models;
 
-	IMGUIVulkan* imguiVulkan;
+	IMGUIVulkan* _pImguiVulkan = nullptr;
 
 	InputEvent _InputEvent;
 	CRenderThread _RenderThread;

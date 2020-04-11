@@ -1,5 +1,6 @@
 #include "RavenApp.h"
 
+#include "core/Frame.h"
 #include "graphics/GraphicsDevice.h"
 #include "graphics/VulkanInstance.h"
 #include "graphics/memory/GPUAllocator.h"
@@ -13,7 +14,7 @@
 #include "helpers/Helpers.h"
 #include "imgui/imgui.h"
 #include "raven/DebugUI.h"
-#include "core/Frame.h"
+#include "core/FirstPersonCamera.h"
 
 #include <iostream>
 #include <thread>
@@ -23,7 +24,7 @@ std::vector<std::function<void( int, int )>> RavenApp::OnWindowResized = {};
 
 RavenApp::RavenApp()
 	: _pWindow( nullptr )
-	, imguiVulkan( nullptr )
+	, _pImguiVulkan( nullptr )
 	, updateFrameIndex( 0 )
 	, _RenderThread()
 {
@@ -33,7 +34,7 @@ RavenApp::~RavenApp()
 {
 	models.clear();
 
-	delete imguiVulkan;
+	delete _pImguiVulkan;
 
 	_RenderThread.Destroy();
 
@@ -123,10 +124,10 @@ bool RavenApp::Initialize()
 
 	_RenderThread.Initialize();
 
-	imguiVulkan = new IMGUIVulkan();
+	_pImguiVulkan = new IMGUIVulkan( _pWindow );
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext( nullptr );
-	imguiVulkan->Init( _pWindow, true );
+	_pImguiVulkan->Initialize( );
 
 	std::shared_ptr<Model> model = std::make_shared<Model>( "cesiumman" );
 	models.push_back( model );
@@ -136,7 +137,7 @@ bool RavenApp::Initialize()
 
 void RavenApp::Run()
 {
-	run = true;
+	_Run = true;
 
 #if MULTITHREADED_RENDERING
 	GraphicsContext::GlobalAllocator.PrintStats();
@@ -148,6 +149,8 @@ void RavenApp::Run()
 	float translationY = -1;
 	//float scale = 0.025;
 	float scale = 1;
+
+	FirstPersonCamera FPVCamera;
 
 	while ( !glfwWindowShouldClose( _pWindow ) )
 	{
@@ -179,14 +182,14 @@ void RavenApp::Run()
 		if ( DoUpdate )
 		{
 			previousTime = std::chrono::high_resolution_clock::now();
+
+			_InputEvent.Update( _pWindow, Frame::DeltaTime );
+
 			//std::cout << "Start of frame " << app->updateFrameIndex << " update " << std::endl;
 
 			//if (renderobject->standardMaterial != nullptr)
 			{
-				static auto startTime = std::chrono::high_resolution_clock::now();
-
-				auto currentTime = std::chrono::high_resolution_clock::now();
-				float time = std::chrono::duration<float, std::chrono::seconds::period>( currentTime - startTime ).count();
+				FPVCamera.Update();
 
 				if ( autoRotate )
 					rotation -= Frame::DeltaTime * 45.0f;
@@ -196,7 +199,7 @@ void RavenApp::Run()
 
 				for ( std::shared_ptr<Model>& pModel : models )
 				{
-					pModel->Update( );
+					pModel->Update();
 
 					auto RenderCallback = [&]( CommandBuffer* pBuffer ) {
 						pModel->Render( pBuffer );
@@ -207,19 +210,20 @@ void RavenApp::Run()
 					Camera::Buffer& camera = pModel->AccessUBO();
 
 					camera.model = glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, translationY, 0.0f ) );
-					camera.model = glm::rotate( camera.model, glm::radians( rotation ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+					camera.model = glm::rotate( camera.model, glm::radians( rotation ), Camera::Up );
 					camera.model = glm::scale( camera.model, glm::vec3( scale, scale, scale ) );
 
-					camera.view = glm::lookAt( glm::vec3( 2, 1, 2 ), glm::vec3( 0.0f, 0, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+					//camera.view = glm::lookAt( glm::vec3( 2, 1, 2 ), glm::vec3( 0.0f, 0, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+					camera.view = FPVCamera.Data().view;
 
-					camera.proj = glm::perspective( glm::radians( 45.0f ), 16.0f / 9.0f, 0.01f, 100.0f );
+					camera.proj = FPVCamera.Data().proj;
 					camera.proj[ 1 ][ 1 ] *= -1;
 				}
 			}
 
-			imguiVulkan->NewFrame( Frame::DeltaTime );
+			_pImguiVulkan->NewFrame( Frame::DeltaTime );
 
-			if ( imguiVulkan->IsReady() )
+			if ( _pImguiVulkan->IsReady() )
 			{
 				ImGui::Begin( "Model" );
 
@@ -235,7 +239,7 @@ void RavenApp::Run()
 				UI.TimingGraph( Frame::DeltaTime, _RenderThread._TotalTimer.GetTimeInSeconds() );
 
 				auto RenderCallback = [&]( CommandBuffer* pBuffer ) {
-					imguiVulkan->Render( pBuffer );
+					_pImguiVulkan->Render( pBuffer );
 				};
 
 				_RenderThread.QueueRender( RenderCallback );
@@ -267,7 +271,7 @@ void RavenApp::Run()
 		glfwSetWindowTitle( _pWindow, windowTitle.c_str() );
 	}
 
-	run = false;
+	_Run = false;
 
 	//updateThread.join();                // pauses until first finishes
 #if MULTITHREADED_RENDERING

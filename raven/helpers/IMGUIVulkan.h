@@ -24,10 +24,10 @@ private:
 	};
 
 public:
-	IMGUIVulkan();
+	IMGUIVulkan( GLFWwindow* pWindow );
 	~IMGUIVulkan();
 
-	bool Init( GLFWwindow* window, bool installCallbacks );
+	bool Initialize( );
 	void Shutdown();
 	void NewFrame( float deltaTime );
 	void Render( CommandBuffer* commandBuffer );
@@ -77,7 +77,7 @@ private:
 
 	bool didRender;
 
-	GLFWwindow* window;
+	GLFWwindow* _pWindow;
 
 	VkVertexInputBindingDescription binding_desc = {};
 	std::vector<VkVertexInputAttributeDescription> attribute_desc;
