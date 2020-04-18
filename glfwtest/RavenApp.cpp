@@ -150,7 +150,7 @@ void RavenApp::Run()
 	//float scale = 0.025;
 	float scale = 1;
 
-	float StatsTimer = 0.0f;
+	float StatsTimer = 29.0f;
 	bool DoUpdate = true;
 	bool DoQuit = false;
 
@@ -158,6 +158,8 @@ void RavenApp::Run()
 	Timer UpdateTimer;
 	UpdateTimer.Start();
 
+	std::string MemoryStats1 = {};
+	std::string MemoryStats2 = {};
 
 	while ( !DoQuit )
 	{
@@ -181,7 +183,8 @@ void RavenApp::Run()
 
 		if ( StatsTimer > 30.0f )
 		{
-			GraphicsContext::GlobalAllocator.PrintStats();
+			MemoryStats1 = "CPU Memory: " + Helpers::MemorySizeToString( GraphicsContext::GlobalAllocator.BytesAllocated() ); ;
+			MemoryStats2 = "GPU Memory: " + Helpers::MemorySizeToString( GraphicsContext::DeviceAllocator->BytesAllocated() );
 			StatsTimer = 0;
 		}
 
@@ -244,6 +247,17 @@ void RavenApp::Run()
 				DebugUI UI;
 				UI.ListGameObjects();
 				UI.TimingGraph( Frame::DeltaTime, _RenderThread._TotalTimer.GetTimeInSeconds() );
+
+				ImGui::Begin( "MemoryStats" );
+
+				for ( std::string& Line : MemoryStats1 )
+				{
+					ImGui::TextWrapped( Line.c_str() );
+				}
+
+				ImGui::TextWrapped( MemoryStats2.c_str() );
+
+				ImGui::End();
 
 				auto RenderCallback = [&]( CommandBuffer* pBuffer ) {
 					_pImguiVulkan->Render( pBuffer );

@@ -54,7 +54,7 @@ static std::string MemorySizeToString( int64_t value )
 	}
 
 	double size_d = (float)value + (float)rem / 1024.0;
-	return ValueToString( RoundToTwoDecimals( size_d ) ) + " " + sizes[ div ];
+	return ValueToString( RoundToTwoDecimals( size_d ) ) + "" + sizes[ div ];
 }
 
 static void PadString( std::string& text, size_t num, char paddingChar = ' ' )

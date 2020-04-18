@@ -21,6 +21,14 @@ GPUAllocator::~GPUAllocator()
 	_Allocator = nullptr;
 }
 
+int64_t GPUAllocator::BytesAllocated() const
+{
+	VmaStats Stats;
+	vmaCalculateStats( _Allocator, &Stats );
+
+	return Stats.total.usedBytes;
+}
+
 //The out parameter should probably be `std::unique_ptr`
 bool GPUAllocator::AllocateBuffer( VkBufferCreateInfo* pCreateInfo, VmaMemoryUsage UsageFlag, SAllocatedBuffer& Out )
 {

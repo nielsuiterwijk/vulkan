@@ -77,9 +77,25 @@ public:
 		std::cout << "~Vulkan CPU Allocator" << std::endl;
 	}
 
+	int64_t BytesAllocated() const
+	{
+		int64_t VulkanMemoryUsage = 0;
+
+
+		for ( size_t i = 0; i < trackers.size(); i++ )
+		{
+			int64_t memoryAllocated = trackers[ i ].totalMemoryAllocated;
+
+			VulkanMemoryUsage += memoryAllocated;
+		}
+
+		return VulkanMemoryUsage;
+	}
+
 	void PrintStats()
 	{
 		int64_t vulkanMemoryUsage = 0;
+
 
 		for ( size_t i = 0; i < trackers.size(); i++ )
 		{
@@ -125,6 +141,7 @@ public:
 		std::cout << "[Vulkan] total memory usage: " << Helpers::MemorySizeToString( vulkanMemoryUsage ) << "." << std::endl;
 		std::cout << "" << std::endl;
 	}
+
 
 	VkAllocationCallbacks* Get()
 	{

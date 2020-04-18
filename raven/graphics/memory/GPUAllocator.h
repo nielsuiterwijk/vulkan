@@ -27,6 +27,8 @@ public:
 
 	bool AllocateImage( VkImageCreateInfo* pImageInfo, VmaMemoryUsage UsageFlag, SAllocatedImage& Out );
 
+	int64_t BytesAllocated() const;
+
 	VmaAllocator Get() const { return _Allocator; }
 
 private:
