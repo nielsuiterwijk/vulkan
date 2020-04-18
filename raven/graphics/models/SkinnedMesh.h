@@ -31,6 +31,7 @@ struct SkinInfo
 	std::vector<glm::mat4> inverseBindMatrices = {};
 };
 
+//TODO: Don't make this inherit from mesh, better to make a 'SkinComponent' and a 'Animation' component
 class SkinnedMesh : public Mesh
 {
 	friend class MeshFileLoader;

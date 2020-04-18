@@ -63,7 +63,7 @@ private:
 	PipelineStateObject psoBasic2D;
 
 	VulkanBuffer* indexBuffer;
-	VulkanBuffer* vertexBuffer;
+	VulkanBuffer* vertexBuffer; //TODO: unique_ptr?
 
 	ImDrawVert* cpuVertex; // = new ImDrawVert[draw_data->TotalVtxCount];
 	size_t sizeOfVertexBuffer;

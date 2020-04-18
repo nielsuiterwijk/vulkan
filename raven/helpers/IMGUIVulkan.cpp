@@ -255,17 +255,15 @@ void IMGUIVulkan::Render(CommandBuffer* commandBuffer )
 		return;
 
 	// Create the Vertex Buffer:
-	size_t vertex_size = draw_data->TotalVtxCount * sizeof( ImDrawVert );
-	if ( vertexBuffer == nullptr || vertexBuffer->GetSize() < vertex_size )
+	size_t VertexBufferSize = draw_data->TotalVtxCount * sizeof( ImDrawVert );
+	if ( vertexBuffer == nullptr || vertexBuffer->GetSize() < VertexBufferSize )
 	{
 		delete vertexBuffer;
 
-		constexpr int memoryAlignment = 256;
-		VkDeviceSize vertex_buffer_size = ( ( vertex_size - 1 ) / memoryAlignment + 1 ) * memoryAlignment;
-
-		size_t dif = vertex_buffer_size - vertex_size;
-
-		vertexBuffer = new VulkanBuffer( VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, BufferType::Dynamic, nullptr, vertex_buffer_size );
+		constexpr int MemoryAlignment = 256;
+		VkDeviceSize AlignedVertexBufferSize = ( ( VertexBufferSize - 1 ) / MemoryAlignment + 1 ) * MemoryAlignment;
+		
+		vertexBuffer = new VulkanBuffer( VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, BufferType::Dynamic, nullptr, AlignedVertexBufferSize );
 		assert( vertexBuffer != nullptr );
 	}
 
@@ -314,7 +312,7 @@ void IMGUIVulkan::Render(CommandBuffer* commandBuffer )
 			idx_dst += cmd_list->IdxBuffer.Size;
 		}
 
-		vertexBuffer->Map( (void*)cpuVertex, vertex_size );
+		vertexBuffer->Map( (void*)cpuVertex, VertexBufferSize );
 		indexBuffer->Map( (void*)cpuIndex, index_size );
 	}
 

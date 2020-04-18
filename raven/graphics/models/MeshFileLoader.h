@@ -29,6 +29,8 @@ public:
 	static std::shared_ptr<Mesh> Static( const std::string& fileName );
 	static std::shared_ptr<Mesh> Skinned( const std::string& fileName );
 
+	static std::shared_ptr<Mesh> Dynamic( const std::string& fileName ); //Will load either skinned or static based on file extension
+
 private:
 	static void FileLoaded( std::vector<char> fileData, std::shared_ptr<Mesh> mesh, MeshFileType::Enum fileType );
 

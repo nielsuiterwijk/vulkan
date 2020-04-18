@@ -8,7 +8,7 @@
 #include "graphics/textures/Texture2D.h"
 #include "graphics/textures/TextureSampler.h"
 
-static constexpr int32_t VULKAN_NUM_SETS_PER_POOL = 16;
+static constexpr int32_t VULKAN_NUM_SETS_PER_POOL = 90;
 
 VulkanDescriptorPool::VulkanDescriptorPool() :
 	descriptorPool( GraphicsContext::LogicalDevice, vkDestroyDescriptorPool, GraphicsContext::GlobalAllocator.Get() ),

@@ -42,16 +42,27 @@ void DebugUI::TimingGraph( float CpuTimeInSeconds, float FrameTimeInSeconds ) //
 	static std::vector<float> CPUFrames; //TODO: Use a circular buffer?
 	static std::vector<float> GPUFrames;
 
+	float CPUAverage = 0.0f;
+	float GPUAverage = 0.0f;
+
 	if ( CPUFrames.size() >= 100 ) //Max seconds to show
 	{
 		for ( size_t i = 1; i < CPUFrames.size(); i++ )
 		{
 			CPUFrames[ i - 1 ] = CPUFrames[ i ];
 			GPUFrames[ i - 1 ] = GPUFrames[ i ];
+			CPUAverage += CPUFrames[ i - 1 ]; 
+			GPUAverage += GPUFrames[ i - 1 ];
 		}
 
 		CPUFrames[ CPUFrames.size() - 1 ] = CpuTimeInSeconds * 1000;
 		GPUFrames[ GPUFrames.size() - 1 ] = FrameTimeInSeconds * 1000;
+
+		CPUAverage += CPUFrames[ CPUFrames.size() - 1 ];
+		GPUAverage += GPUFrames[ GPUFrames.size() - 1 ];
+
+		CPUAverage /= CPUFrames.size();
+		GPUAverage /= GPUFrames.size();
 	}
 	else
 	{
@@ -63,10 +74,10 @@ void DebugUI::TimingGraph( float CpuTimeInSeconds, float FrameTimeInSeconds ) //
 
 	char text[ 20 ];
 
-	sprintf_s( text, 20, "CPU: %.03f", CpuTimeInSeconds * 1000 );
-	ImGui::PlotLines( text, &CPUFrames[ 0 ], CPUFrames.size(), 0, nullptr, 0.0f, 50.0f, ImVec2( 100, 50 ) );
+	sprintf_s( text, 20, "CPU: %.03f", CPUAverage );
+	ImGui::PlotLines( text, &CPUFrames[ 0 ], CPUFrames.size(), 0, nullptr, 0.0f, 33.0f, ImVec2( 100, 50 ) );
 
-	sprintf_s( text, 20, "GPU: %.03f", FrameTimeInSeconds * 1000 ); //Technically not GPU, but RenderFrame time..
+	sprintf_s( text, 20, "GPU: %.03f", GPUAverage ); //Technically not GPU, but RenderFrame time..
 	ImGui::PlotLines( text, &GPUFrames[ 0 ], GPUFrames.size(), 0, nullptr, 0.0f, 33.0f, ImVec2( 100, 50 ) );
 
 	ImGui::End();

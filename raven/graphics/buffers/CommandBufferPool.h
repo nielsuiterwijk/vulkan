@@ -2,9 +2,14 @@
 
 #include "graphics\buffers\CommandBuffer.h"
 #include "graphics\helpers\InstanceWrapper.h"
+#include "threading\Mutex.h"
 
-//public std::enable_shared_from_this<Foo>
-class CommandBufferPool : public std::enable_shared_from_this<CommandBufferPool>
+
+/*
+This object stays alive until end of program. Internally it contains VkCommandBufferPool objects, one per thread using thread_local storage.
+In it's deconstructor it will clean up the created objects, the thread_local objects will keep pointing to, now invalid, VkCommandBufferPool objects
+*/
+class CommandBufferPool
 {
 public:
 	CommandBufferPool( VkCommandPoolCreateFlags createFlags );
@@ -21,10 +26,16 @@ public:
 	void FreeAll();
 	void RecreateAll();
 
-	const InstanceWrapper<VkCommandPool>& GetNative() const;
+	VkCommandPool GetNative() const;
 
 private:
-	InstanceWrapper<VkCommandPool> commandPool;
+	//This function will setup the thread_local command pool
+	VkCommandPool AccessOrCreateCommandPool();
+
+private:
+	VkCommandPoolCreateFlags _CreateFlags;
+	Mutex _Mutex;
+	std::vector<VkCommandPool> _AllCommandPools;
 
 	std::vector<std::unique_ptr<CommandBuffer>> commandBuffers;
 };

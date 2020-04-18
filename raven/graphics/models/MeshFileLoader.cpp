@@ -26,6 +26,16 @@ namespace std
 		size_t operator()( Vertex const& vertex ) const { return ( ( hash<glm::vec3>()( vertex.pos ) ^ ( hash<glm::vec4>()( vertex.color ) << 1 ) ) >> 1 ) ^ ( hash<glm::vec2>()( vertex.texCoords ) << 1 ) ^ ( hash<glm::vec3>()( vertex.normal ) << 1 ); }
 	};
 }
+//Will load either skinned or static based on file extension
+std::shared_ptr<Mesh> MeshFileLoader::Dynamic( const std::string& fileName )
+{
+	std::string extension = Helpers::GetFileExtension( fileName );
+
+	if ( extension == "gltf" || extension == "glb" )
+		return MeshFileLoader::Skinned( fileName );
+	else
+		return MeshFileLoader::Static( fileName );
+}
 
 std::shared_ptr<Mesh> MeshFileLoader::Static( const std::string& fileName )
 {
@@ -147,11 +157,11 @@ void MeshFileLoader::LoadNode( BoneInfo* parent, uint32_t nodeIndex, const tinyg
 void MeshFileLoader::LoadGLTF( std::vector<char>& fileData, std::shared_ptr<Mesh> meshDestination )
 {
 	tinygltf::Model model;
-	tinygltf::TinyGLTF loader;
+	tinygltf::TinyGLTF GLTFLoader;
 	std::string err;
 	std::string warning;
 
-	bool ret = loader.LoadBinaryFromMemory( &model, &err, &warning, reinterpret_cast<unsigned char*>( fileData.data() ), static_cast<unsigned int>( fileData.size() ) );
+	bool ret = GLTFLoader.LoadBinaryFromMemory( &model, &err, &warning, reinterpret_cast<unsigned char*>( fileData.data() ), static_cast<unsigned int>( fileData.size() ) );
 	//bool ret = loader.LoadBinaryFromFile(&model, &err, argv[1]); // for binary glTF(.glb)
 	if ( !err.empty() )
 	{

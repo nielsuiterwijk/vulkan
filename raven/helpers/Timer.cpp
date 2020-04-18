@@ -2,30 +2,19 @@
 
 #include <atomic>
 
-Timer::Timer()
-{
-	QueryPerformanceCounter( &_FrameDelay );
-	QueryPerformanceCounter( &_CurrentTicks );
-	QueryPerformanceFrequency( &_TicksPerSecond ); 
-}
-
-Timer::~Timer()
-{
-}
-
 void Timer::Start()
 {
-	QueryPerformanceCounter( &_CurrentTicks );
+	_Start = std::chrono::high_resolution_clock::now();
 }
 
 void Timer::Stop()
 {
-	QueryPerformanceCounter( &_FrameDelay );
+	_Stop = std::chrono::high_resolution_clock::now();
 }
 
 float Timer::GetTimeInSeconds()
 {
-	return (float)( _FrameDelay.QuadPart - _CurrentTicks.QuadPart ) / ( (float)_TicksPerSecond.QuadPart );
+	return std::chrono::duration<float>( _Stop - _Start ).count();
 }
 
 

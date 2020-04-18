@@ -5,6 +5,12 @@
 FirstPersonCamera::FirstPersonCamera()
 {
 	CalculateProjection( 45.0f );
+
+	_Position = { 2.72741079, 1.29396248, 2.77101159 };
+	_Horizontal = -43.3333168;
+	_Vertical = 15.499;
+	CalculateOrientation( _Horizontal, _Vertical );
+
 	CalculateView();
 }
 
@@ -21,11 +27,11 @@ void FirstPersonCamera::Update()
 
 	if ( InputEvent::IsMouseButtonDown( MouseButton::Left ) )
 	{
-		Hor += Delta.x * Speed.x;
-		Vert += Delta.y * Speed.y;
+		_Horizontal += Delta.x * Speed.x;
+		_Vertical += Delta.y * Speed.y;
 		//Rotate( Delta.x * Speed.x, Camera::Up ); //Yaw
 		//Rotate( Delta.y * Speed.y, Camera::Right ); //Pitch
-		CalculateOrientation( Hor, Vert );
+		CalculateOrientation( _Horizontal, _Vertical );
 	}
 
 	if ( InputEvent::IsKeyDown( 'S' ) )

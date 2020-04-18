@@ -3,33 +3,57 @@
 #include "graphics\GraphicsContext.h"
 #include "graphics\GraphicsDevice.h"
 
+
+thread_local VkCommandPool tl_CommandPool = nullptr;
+
 CommandBufferPool::CommandBufferPool( VkCommandPoolCreateFlags createFlags ) :
-	commandPool( GraphicsContext::LogicalDevice, vkDestroyCommandPool, GraphicsContext::GlobalAllocator.Get() )
+	_CreateFlags( createFlags )
 {
-	VkCommandPoolCreateInfo poolInfo = {};
-	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	poolInfo.queueFamilyIndex = GraphicsContext::FamilyIndices.graphicsFamily;
-	poolInfo.flags = createFlags; // Optional
-
-	/*
-		VK_COMMAND_POOL_CREATE_TRANSIENT_BIT: Hint that command buffers are rerecorded with new commands very often (may change memory allocation behavior)
-		VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT: Allow command buffers to be rerecorded individually, without this flag they all have to be reset together
-	*/
-
-	if ( vkCreateCommandPool( GraphicsContext::LogicalDevice, &poolInfo, GraphicsContext::GlobalAllocator.Get(), commandPool.Replace() ) != VK_SUCCESS )
-	{
-		throw std::runtime_error( "failed to create command pool!" );
-	}
+	
 }
 
 CommandBufferPool::~CommandBufferPool()
 {
-	commandPool = nullptr;
+	for ( VkCommandPool Pool : _AllCommandPools )
+	{
+		vkDestroyCommandPool( GraphicsContext::LogicalDevice, Pool, GraphicsContext::GlobalAllocator.Get() );
+	}
 }
 
-const InstanceWrapper<VkCommandPool>& CommandBufferPool::GetNative() const
+VkCommandPool CommandBufferPool::AccessOrCreateCommandPool()
 {
-	return commandPool;
+	if ( tl_CommandPool == nullptr )
+	{
+		VkCommandPoolCreateInfo poolInfo = {};
+		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		poolInfo.queueFamilyIndex = GraphicsContext::FamilyIndices.graphicsFamily;
+		poolInfo.flags = _CreateFlags; // Optional
+
+		/*
+			VK_COMMAND_POOL_CREATE_TRANSIENT_BIT: Hint that command buffers are rerecorded with new commands very often (may change memory allocation behavior)
+			VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT: Allow command buffers to be rerecorded individually, without this flag they all have to be reset together
+		*/
+
+		if ( vkCreateCommandPool( GraphicsContext::LogicalDevice, &poolInfo, GraphicsContext::GlobalAllocator.Get(), &tl_CommandPool ) != VK_SUCCESS )
+		{
+			throw std::runtime_error( "failed to create command pool!" );
+		}
+		else
+		{
+			std::scoped_lock<Mutex> Lock( _Mutex );
+
+			_AllCommandPools.push_back( tl_CommandPool );
+		}
+
+	}
+
+	return tl_CommandPool;
+}
+
+VkCommandPool CommandBufferPool::GetNative() const
+{
+	assert( tl_CommandPool != nullptr );
+	return tl_CommandPool;
 }
 
 /*
@@ -41,6 +65,7 @@ VK_COMMAND_BUFFER_LEVEL_SECONDARY :
 
 void CommandBufferPool::Create( std::vector<CommandBuffer*>& result, int count )
 {
+	result.reserve( count );
 	for ( size_t i = 0; i < count; i++ )
 	{
 		result.push_back( Create() );
@@ -49,7 +74,9 @@ void CommandBufferPool::Create( std::vector<CommandBuffer*>& result, int count )
 
 CommandBuffer* CommandBufferPool::Create()
 {
+	AccessOrCreateCommandPool();
 	//Note: needs to be synchronized as it can be called from multiple threads.
+	std::scoped_lock<Mutex> Lock( _Mutex );
 	commandBuffers.emplace_back( std::make_unique<CommandBuffer>( this ) );
 
 	return commandBuffers.back().get();
@@ -57,11 +84,13 @@ CommandBuffer* CommandBufferPool::Create()
 
 void CommandBufferPool::Clear()
 {
+	std::scoped_lock<Mutex> Lock( _Mutex );
 	commandBuffers.clear();
 }
 //TODO: Fix this coupling, its ugly.
 void CommandBufferPool::Free( CommandBuffer* commandBuffer )
 {
+	std::scoped_lock<Mutex> Lock( _Mutex );
 	for ( size_t i = 0; i < commandBuffers.size(); i++ )
 	{
 		if ( commandBuffers[ i ].get() == commandBuffer )
@@ -74,6 +103,7 @@ void CommandBufferPool::Free( CommandBuffer* commandBuffer )
 
 void CommandBufferPool::FreeAll()
 {
+	std::scoped_lock<Mutex> Lock( _Mutex );
 	for ( size_t i = 0; i < commandBuffers.size(); i++ )
 	{
 		commandBuffers[ i ]->Finalize();
@@ -82,6 +112,7 @@ void CommandBufferPool::FreeAll()
 
 void CommandBufferPool::RecreateAll()
 {
+	std::scoped_lock<Mutex> Lock( _Mutex );
 	for ( size_t i = 0; i < commandBuffers.size(); i++ )
 	{
 		commandBuffers[ i ]->Initialize();

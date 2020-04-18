@@ -32,8 +32,8 @@ void Model::FileLoaded( std::vector<char> fileData )
 
 	std::string meshFileName = jsonObject[ "mesh" ];
 	std::string materialFileName = jsonObject[ "material" ];
-
-	mesh = std::static_pointer_cast<SkinnedMesh>( MeshFileLoader::Skinned( meshFileName ) );
+	
+	mesh = MeshFileLoader::Dynamic( meshFileName );
 	material = std::make_shared<Material>( materialFileName );
 	material->AddUniformBuffer( new UniformBuffer( { static_cast<void*>( &camera ), sizeof( Camera::Buffer ) } ) );
 
@@ -92,7 +92,11 @@ void Model::Update( )
 	if ( !material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded() )
 		return;
 
-	mesh->Update( Frame::DeltaTime );
+	if ( mesh->GetMeshType() == MeshType::Skinned )
+	{
+		std::shared_ptr<SkinnedMesh> pSkinnedMesh = std::static_pointer_cast<SkinnedMesh>( mesh );
+		pSkinnedMesh->Update( Frame::DeltaTime );
+	}
 }
 
 void Model::Render( CommandBuffer* commandBuffer )
@@ -103,9 +107,13 @@ void Model::Render( CommandBuffer* commandBuffer )
 	if ( !material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded() )
 		return;
 
-	if ( material->GetUniformBuffers().size() != 2 )
+	if ( mesh->GetMeshType() == MeshType::Skinned )
 	{
-		material->AddUniformBuffer( mesh->AccessUBO() );
+		std::shared_ptr<SkinnedMesh> pSkinnedMesh = std::static_pointer_cast<SkinnedMesh>( mesh );
+		if ( material->GetUniformBuffers().size() != 2 )
+		{
+			material->AddUniformBuffer( pSkinnedMesh->AccessUBO() );
+		}
 	}
 
 	material->UpdateUniformBuffers();

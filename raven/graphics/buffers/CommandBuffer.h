@@ -23,5 +23,5 @@ public:
 private:
 	VkCommandBuffer commandBuffer;
 
-	CommandBufferPool* commandBufferPool;
+	CommandBufferPool* _pCommandBufferPool;
 };

@@ -16,10 +16,11 @@ void CRenderThread::Initialize()
 	VkResult result = vkCreateFence( GraphicsContext::LogicalDevice, &FenceInfo, GraphicsContext::GlobalAllocator.Get(), &_RenderFence );
 	assert( result == VK_SUCCESS );
 
-	_pRenderSemaphore.reset( new VulkanSemaphore() );
-		
+	_pRenderSemaphore.reset( new VulkanSemaphore() );		
 
+#if MULTITHREADED_RENDERING == 0
 	GraphicsContext::CommandBufferPool->Create( _CommandBuffers, GraphicsContext::SwapChain->GetAmountOfFrameBuffers() );
+#endif
 }
 
 void CRenderThread::Stop()
@@ -38,6 +39,7 @@ void CRenderThread::Destroy()
 void CRenderThread::ThreadRunner()
 {
 #if MULTITHREADED_RENDERING == 1
+	GraphicsContext::CommandBufferPool->Create( _CommandBuffers, GraphicsContext::SwapChain->GetAmountOfFrameBuffers() );
 	while ( _ShouldRun )
 	{
 		if ( GraphicsContext::LogicalDevice == nullptr )
@@ -104,6 +106,7 @@ void CRenderThread::DoFrame()
 		{
 
 			//std::cout << "current index: " << GraphicsContext::DescriptorPool->GetCurrentIndex() << std::endl;
+			//vkResetCommandBuffer( pCommandBuffer->GetNative(), 0 );
 
 			{
 				pCommandBuffer->StartRecording( VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT );
@@ -134,9 +137,7 @@ void CRenderThread::DoFrame()
 			}
 
 			_Callbacks.clear();
-
-			//app->imguiVulkan->Render( commandBuffer );
-
+			
 			{
 				vkCmdEndRenderPass( pCommandBuffer->GetNative() );
 				pCommandBuffer->StopRecording();

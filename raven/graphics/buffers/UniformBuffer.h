@@ -24,13 +24,13 @@ public:
 	template <class T>
 	const T* Get() const
 	{
-		return static_cast<T*>( dataBlock.data );
+		return static_cast<T*>( _DataBlock.data );
 	}
 
 	const VkDescriptorBufferInfo& GetDescriptorInfo() const { return bufferInfo; }
 
 private:
-	DataBlock dataBlock;
+	DataBlock _DataBlock;
 
 	VulkanBuffer _VulkanBuffer;
 	VkDescriptorBufferInfo bufferInfo;

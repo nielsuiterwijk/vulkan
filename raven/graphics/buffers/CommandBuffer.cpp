@@ -7,22 +7,26 @@
 
 
 CommandBuffer::CommandBuffer( CommandBufferPool* commandBufferPool ) :
-	commandBufferPool( commandBufferPool )
+	_pCommandBufferPool( commandBufferPool )
 {
+	
 	Initialize();
 }
 
 CommandBuffer::~CommandBuffer()
 {
 	Finalize();
-	commandBufferPool = nullptr;
+	_pCommandBufferPool = nullptr;
 }
 
 void CommandBuffer::Initialize()
 {
+	assert( _pCommandBufferPool != nullptr );
+	assert( _pCommandBufferPool->GetNative() != nullptr );
+
 	VkCommandBufferAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.commandPool = commandBufferPool->GetNative();
+	allocInfo.commandPool = _pCommandBufferPool->GetNative();
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandBufferCount = 1;
 
@@ -34,7 +38,7 @@ void CommandBuffer::Initialize()
 
 void CommandBuffer::Finalize()
 {
-	vkFreeCommandBuffers( GraphicsContext::LogicalDevice, commandBufferPool->GetNative(), 1, &commandBuffer );
+	vkFreeCommandBuffers( GraphicsContext::LogicalDevice, _pCommandBufferPool->GetNative(), 1, &commandBuffer );
 }
 
 void CommandBuffer::StartRecording( VkCommandBufferUsageFlagBits flag )

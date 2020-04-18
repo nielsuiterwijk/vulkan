@@ -5,8 +5,8 @@
 class Timer
 {
 public:
-	Timer();
-	~Timer();
+	Timer() = default;
+	~Timer() = default;
 
 	void Start();
 	void Stop();
@@ -14,9 +14,8 @@ public:
 	float GetTimeInSeconds();
 
 private:
-	LARGE_INTEGER _TicksPerSecond;
-	LARGE_INTEGER _CurrentTicks;
-	LARGE_INTEGER _FrameDelay;
+	std::chrono::time_point<std::chrono::high_resolution_clock> _Start = {};
+	std::chrono::time_point<std::chrono::high_resolution_clock> _Stop = {};
 };
 
 

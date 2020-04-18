@@ -72,6 +72,7 @@ public:
 	const T* operator&() const { return &_VulkanObject; }
 
 	operator T() const { return _VulkanObject; }
+	operator bool() const { return _VulkanObject != nullptr; }
 
 	T* Replace()
 	{

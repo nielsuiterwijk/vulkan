@@ -1,19 +1,22 @@
 #include "UniformBuffer.h"
 
 UniformBuffer::UniformBuffer( DataBlock block ) :
-	dataBlock( block ),
-	_VulkanBuffer( VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, BufferType::Dynamic, dataBlock.data, dataBlock.size ),
+	_DataBlock( block ),
+	_VulkanBuffer( VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, BufferType::Dynamic, block.data, block.size ),
 	bufferInfo()
 {
 	bufferInfo.buffer = _VulkanBuffer.GetNative();
 	bufferInfo.offset = 0;
-	bufferInfo.range = static_cast<VkDeviceSize>( dataBlock.size );
+	bufferInfo.range = static_cast<VkDeviceSize>( _DataBlock.size );
 }
 UniformBuffer::~UniformBuffer()
 {
+	_DataBlock.data = nullptr;
+	_DataBlock.size = -1;
 }
 
 void UniformBuffer::Upload()
 {
-	_VulkanBuffer.Map( dataBlock.data, dataBlock.size );
+	assert( _DataBlock.data != nullptr );
+	_VulkanBuffer.Map( _DataBlock.data, _DataBlock.size );
 }

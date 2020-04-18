@@ -12,6 +12,6 @@ public:
 private:
 	glm::ivec2 _PrevMousePosition = { FLT_MAX, FLT_MAX };
 
-	float Hor = 0;
-	float Vert = 0;
+	float _Horizontal = 0;
+	float _Vertical = 0;
 };

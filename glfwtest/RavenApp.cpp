@@ -129,7 +129,7 @@ bool RavenApp::Initialize()
 	ImGui::CreateContext( nullptr );
 	_pImguiVulkan->Initialize( );
 
-	std::shared_ptr<Model> model = std::make_shared<Model>( "cesiumman" );
+	std::shared_ptr<Model> model = std::make_shared<Model>( "boy" ); //"cesiumman"
 	models.push_back( model );
 
 	return true;
@@ -150,38 +150,45 @@ void RavenApp::Run()
 	//float scale = 0.025;
 	float scale = 1;
 
+	float StatsTimer = 0.0f;
+	bool DoUpdate = true;
+	bool DoQuit = false;
+
 	FirstPersonCamera FPVCamera;
+	Timer UpdateTimer;
+	UpdateTimer.Start();
 
-	while ( !glfwWindowShouldClose( _pWindow ) )
+
+	while ( !DoQuit )
 	{
-		//update
+		//update		
 		glfwPollEvents();
+		DoQuit = glfwWindowShouldClose( _pWindow );
+			   
 
-		static auto previousTime = std::chrono::high_resolution_clock::now();
-
-		float statsTimer = 0.0f;
-
-		bool DoUpdate = true;
-
+		while ( updateFrameIndex > _RenderThread.GetRenderFrame() )
 		{
-			//std::unique_lock<CMutex> lock( _RenderThread.AccessNotificationMutex() );
-
-			//The condition will take the lock and will wait for to be notified and will continue
-			//only if were stopping (stop == true) or if there are tasks to do, else it will keep waiting.
-			//_UpdateThreadWait.wait(lock);
-			//ASSERT( updateFrameIndex == renderFrameIndex );
-			while ( updateFrameIndex > _RenderThread.GetRenderFrame() )
-			{
-				_RenderThread.AccessRunCondition().notify_one();
-				Sleep( 0 );
-			}
+			_RenderThread.AccessRunCondition().notify_one();
+			Sleep( 0 );
 		}
 
-		Frame::DeltaTime = std::chrono::duration<float, std::chrono::seconds::period>( std::chrono::high_resolution_clock::now() - previousTime ).count();
+		UpdateTimer.Stop();
+		Frame::DeltaTime = UpdateTimer.GetTimeInSeconds();
+		UpdateTimer.Start();
+		
+
+		StatsTimer += Frame::DeltaTime;
+
+		if ( StatsTimer > 30.0f )
+		{
+			GraphicsContext::GlobalAllocator.PrintStats();
+			StatsTimer = 0;
+		}
+
+		//std::cout << "End of frame " << app->updateFrameIndex << " update " << std::endl;
 
 		if ( DoUpdate )
 		{
-			previousTime = std::chrono::high_resolution_clock::now();
 
 			_InputEvent.Update( _pWindow, Frame::DeltaTime );
 
@@ -245,16 +252,6 @@ void RavenApp::Run()
 				_RenderThread.QueueRender( RenderCallback );
 			}
 
-			statsTimer += Frame::DeltaTime;
-
-			if ( statsTimer > 30.0f )
-			{
-				GraphicsContext::GlobalAllocator.PrintStats();
-				statsTimer = 0;
-			}
-
-			//std::cout << "End of frame " << app->updateFrameIndex << " update " << std::endl;
-
 			++updateFrameIndex;
 
 			_RenderThread.AccessRunCondition().notify_one();
@@ -263,9 +260,6 @@ void RavenApp::Run()
 #if !MULTITHREADED_RENDERING
 		_RenderThread.DoFrame();
 #endif
-
-		Sleep( 1 );
-
 		std::string windowTitle = std::string( "delta time: " ) + Helpers::ValueToString( Frame::DeltaTime * 1000.0f );
 
 		glfwSetWindowTitle( _pWindow, windowTitle.c_str() );

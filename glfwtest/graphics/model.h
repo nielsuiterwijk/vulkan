@@ -7,7 +7,7 @@
 #include "graphics/shaders/Material.h"
 #include "graphics/Camera.h"
 
-class SkinnedMesh;
+class Mesh;
 
 class Model
 {
@@ -33,7 +33,7 @@ private:
 	PipelineStateObject pso;
 
 	Camera::Buffer camera;
-	std::shared_ptr<SkinnedMesh> mesh;
+	std::shared_ptr<Mesh> mesh;
 	std::shared_ptr<Material> material;
 
 	std::vector<std::shared_ptr<Texture2D>> textures;
