@@ -38,7 +38,7 @@ bool GPUAllocator::AllocateBuffer( VkBufferCreateInfo* pCreateInfo, VmaMemoryUsa
 	VmaAllocationInfo Info;
 	if ( vmaCreateBuffer( _Allocator, pCreateInfo, &AllocInfo, &Out.Buffer, &Out.Allocation, &Info ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to allocate buffer memory!" );
+		ASSERT_FAIL( "failed to allocate buffer memory!" );
 		return false;
 	}
 
@@ -56,7 +56,7 @@ bool GPUAllocator::AllocateImage( VkImageCreateInfo* pImageInfo, VmaMemoryUsage 
 	VmaAllocationInfo Info;
 	if ( vmaCreateImage( _Allocator, pImageInfo, &AllocInfo, &Out.Image, &Out.Allocation, &Info ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to allocate image memory!" );
+		ASSERT_FAIL( "failed to allocate image memory!" );
 		return false;
 	}
 	std::cout << "Allocated " << Helpers::MemorySizeToString( Info.size ) << " for image" << std::endl;

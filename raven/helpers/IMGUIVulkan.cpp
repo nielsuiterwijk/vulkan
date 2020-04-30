@@ -166,7 +166,7 @@ void IMGUIVulkan::NewFrame( float deltaTime )
 
 	if ( material->IsLoaded() && psoBasic2D.IsDirty() )
 	{
-		assert( shaderStages.size() == 0 );
+		ASSERT( shaderStages.size() == 0 );
 		shaderStages.push_back( material->GetVertex()->GetShaderStageCreateInfo() );
 		shaderStages.push_back( material->GetFragment()->GetShaderStageCreateInfo() );
 
@@ -264,7 +264,7 @@ void IMGUIVulkan::Render(CommandBuffer* commandBuffer )
 		VkDeviceSize AlignedVertexBufferSize = ( ( VertexBufferSize - 1 ) / MemoryAlignment + 1 ) * MemoryAlignment;
 		
 		vertexBuffer = new VulkanBuffer( VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, BufferType::Dynamic, nullptr, AlignedVertexBufferSize );
-		assert( vertexBuffer != nullptr );
+		ASSERT( vertexBuffer != nullptr );
 	}
 
 	if ( sizeOfVertexBuffer < draw_data->TotalVtxCount )
@@ -272,7 +272,7 @@ void IMGUIVulkan::Render(CommandBuffer* commandBuffer )
 		delete cpuVertex;
 		sizeOfVertexBuffer = draw_data->TotalVtxCount;
 		cpuVertex = new ImDrawVert[ sizeOfVertexBuffer ];
-		assert( cpuVertex != nullptr );
+		ASSERT( cpuVertex != nullptr );
 	}
 
 	// Create the Index Buffer:
@@ -287,7 +287,7 @@ void IMGUIVulkan::Render(CommandBuffer* commandBuffer )
 		size_t dif = index_buffer_size - index_size;
 
 		indexBuffer = new VulkanBuffer( VK_BUFFER_USAGE_INDEX_BUFFER_BIT, BufferType::Dynamic, nullptr, index_buffer_size );
-		assert( indexBuffer != nullptr );
+		ASSERT( indexBuffer != nullptr );
 	}
 
 	if ( sizeOfIndexBuffer < draw_data->TotalIdxCount )
@@ -295,7 +295,7 @@ void IMGUIVulkan::Render(CommandBuffer* commandBuffer )
 		delete cpuIndex;
 		sizeOfIndexBuffer = draw_data->TotalIdxCount;
 		cpuIndex = new ImDrawIdx[ sizeOfIndexBuffer ];
-		assert( cpuIndex != nullptr );
+		ASSERT( cpuIndex != nullptr );
 	}
 
 	// Upload Vertex and index Data:

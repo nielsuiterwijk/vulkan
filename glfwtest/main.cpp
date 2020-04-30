@@ -83,11 +83,62 @@ void PrintStats(const char* label, std::vector<STimePoint>& timings)
 
 static_assert(sizeof(STimePoint) == 64, "unexpected size");
 
+#include "ecs/ComponentInterface.h"
+#include "ecs/World.h"
+#include "ecs/Entity.h"
+#include "ecs/SystemInterface.h"
+
+struct Position
+{
+	float X;
+	float Y;
+};
+
+struct Position2
+{
+	float X;
+	float Y;
+};
+
+class BounceSystem : public Ecs::SystemInterface
+{
+	void Tick( Ecs::World& World ) final
+	{
+		//Iterator<Position> Start = World.Access<Position>();
+		//
+		//while ( Start )
+		//{
+		//	Position& Pos = *Start++;
+		//}
+	}
+};
+
 int main()
 {
 #if DEBUG
 	_CrtSetDbgFlag(_CRTDBG_CHECK_ALWAYS_DF);
 #endif
+
+	{
+		Ecs::World World;
+
+		Ecs::Entity Entity = World.Create();
+		World.Assign<Position>( Entity );
+		const Position* pPos = World.raw<Position>();
+
+		World.Assign<Position2>( Entity, Position2 { 13, 37 } );
+
+		Ecs::Entity Entity2 = World.Create();
+		World.Assign<Position>( Entity2 );
+		World.Assign<Position2>( Entity2, Position2 { 13, 37 } );
+
+		BounceSystem Bounce;
+
+	}
+
+	/*Component: 0 with id: -551705722
+Component: 0 with id: 928072754*/
+
 	
 
 	FileSystem::Start();

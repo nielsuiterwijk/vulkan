@@ -129,7 +129,6 @@ void CRenderThread::DoFrame()
 			}
 
 			//TODO: Make the prepare threadsafe by doing a copy?
-			//TODO: dont pass the mesh, it should be owned / held by the renderObject: app->renderobject->PrepareDraw(commandBuffer);
 			
 			for ( RenderCallback& Callback : _Callbacks)
 			{

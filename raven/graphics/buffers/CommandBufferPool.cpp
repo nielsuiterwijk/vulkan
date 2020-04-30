@@ -36,7 +36,7 @@ VkCommandPool CommandBufferPool::AccessOrCreateCommandPool()
 
 		if ( vkCreateCommandPool( GraphicsContext::LogicalDevice, &poolInfo, GraphicsContext::GlobalAllocator.Get(), &tl_CommandPool ) != VK_SUCCESS )
 		{
-			throw std::runtime_error( "failed to create command pool!" );
+			ASSERT_FAIL( "failed to create command pool!" );
 		}
 		else
 		{
@@ -52,7 +52,7 @@ VkCommandPool CommandBufferPool::AccessOrCreateCommandPool()
 
 VkCommandPool CommandBufferPool::GetNative() const
 {
-	assert( tl_CommandPool != nullptr );
+	ASSERT( tl_CommandPool != nullptr );
 	return tl_CommandPool;
 }
 

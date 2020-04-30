@@ -15,7 +15,7 @@ void PoolAllocator::Initialize( size_t objectSize, size_t objectAlignment, size_
 {
 	Allocator::Initialize( size, mem );
 
-	assert( objectSize >= MemoryStatusOffset );
+	ASSERT( objectSize >= MemoryStatusOffset );
 
 	this->objectSize = objectSize;
 	this->objectAlignment = objectAlignment;
@@ -47,7 +47,7 @@ void PoolAllocator::Initialize( size_t objectSize, size_t objectAlignment, size_
 
 void* PoolAllocator::Allocate( size_t size, size_t alignment )
 {
-	assert( size <= objectSize && alignment <= objectAlignment );
+	ASSERT( size <= objectSize && alignment <= objectAlignment );
 
 	std::lock_guard<Mutex> guard( _Mutex );
 
@@ -60,7 +60,7 @@ void* PoolAllocator::Allocate( size_t size, size_t alignment )
 
 	freeList = (void**)( *freeList );
 
-	assert( ( reinterpret_cast<uintptr_t>( address ) & ( objectAlignment - 1 ) ) == 0 );
+	ASSERT( ( reinterpret_cast<uintptr_t>( address ) & ( objectAlignment - 1 ) ) == 0 );
 
 	_UsedMemory += objectSize;
 	_NumAllocations++;

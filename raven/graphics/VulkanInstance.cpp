@@ -17,7 +17,7 @@ VulkanInstance::VulkanInstance() :
 
 	if ( enableValidationLayers && !CheckValidationLayers() )
 	{
-		throw std::runtime_error( "validation layers requested, but not available!" );
+		ASSERT_FAIL( "validation layers requested, but not available!" );
 	}
 }
 
@@ -69,7 +69,7 @@ void VulkanInstance::CreateInstance( std::vector<std::string> requiredExtensions
 
 	if ( result != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to create instance!" );
+		ASSERT_FAIL( "failed to create instance!" );
 	}
 }
 
@@ -87,7 +87,7 @@ void VulkanInstance::HookDebugCallback()
 
 	if ( VulkanDebug::CreateDebugReportCallbackEXT( applicationInfo, &createInfo, debugCallback.AllocationCallbacks(), debugCallback.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to set up debug callback!" );
+		ASSERT_FAIL( "failed to set up debug callback!" );
 	}
 }
 

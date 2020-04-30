@@ -42,7 +42,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
 
 	std::cerr << "validation layer: " << msg << std::endl;
 
-	assert( false );
+	ASSERT( false );
 
 	return VK_FALSE;
 }

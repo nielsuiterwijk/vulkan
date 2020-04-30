@@ -11,6 +11,7 @@
 
 #include "helpers/Singleton.h"
 #include "helpers/Helpers.h"
+#include "strings/string_utils.h"
 
 class VulkanAllocator
 {
@@ -99,43 +100,51 @@ public:
 
 		for ( size_t i = 0; i < trackers.size(); i++ )
 		{
-			int64_t memoryAllocated = trackers[ i ].totalMemoryAllocated;
+			int64_t MemoryAllocated = trackers[ i ].totalMemoryAllocated;
 			int64_t previousMemoryAllocated = trackers[ i ].previousTotalMemoryAllocated;
 			int64_t previousTotalAllocations = trackers[ i ].previousTotalAllocations;
 			int64_t previousTotalReallocations = trackers[ i ].previousTotalReallocations;
 
+			std::string DeltaAllocatedString;
+			std::string AllocCount;
+			std::string ReallocCount;
+				
+			{
+				int32_t Delta = static_cast<int32_t>( MemoryAllocated - previousMemoryAllocated );
+				StringUtils::StringFormat<256> Tmp( "%s%d", ( Delta ) > 0 ? "+" : "", Delta );
+				DeltaAllocatedString = Tmp;
+			}
+			
+			{
+				int32_t Delta = static_cast<int32_t>( trackers[ i ].totalAllocations - previousTotalAllocations );
+				StringUtils::StringFormat<256> DeltaTotal( "%s%d", ( Delta ) > 0 ? "+" : "", Delta );
+				StringUtils::StringFormat<256> Tmp( "allocs: %d (%s)", trackers[ i ].totalAllocations, DeltaTotal.c_str() );
+				AllocCount = Tmp;
+			}
+
+			{
+				int32_t Delta = static_cast<int32_t>( trackers[ i ].totalReallocations - previousTotalReallocations );
+				StringUtils::StringFormat<256> DeltaTotal( "%s%d", ( Delta ) > 0 ? "+" : "", Delta );
+				StringUtils::StringFormat<256> Tmp( "reallocs: %d (%s)", trackers[ i ].totalReallocations, DeltaTotal.c_str() );
+				ReallocCount = Tmp;
+			}
+
 			std::stringstream ss;
-			ss << ( memoryAllocated - previousMemoryAllocated );
-			std::string deltaAllocatedString = ( memoryAllocated - previousMemoryAllocated ) > 0 ? "+" + ss.str() : ss.str();
-			ss.str( std::string() );
-
-			ss << ( trackers[ i ].totalAllocations - previousTotalAllocations );
-			std::string deltaTotalAllocations = ( trackers[ i ].totalAllocations - previousTotalAllocations ) > 0 ? "+" + ss.str() : ss.str();
-			ss.str( std::string() );
-
-			ss << ( trackers[ i ].totalReallocations - previousTotalReallocations );
-			std::string deltaTotalReallocations = ( trackers[ i ].totalReallocations - previousTotalReallocations ) > 0 ? "+" + ss.str() : ss.str();
-			ss.str( std::string() );
-
+			
 			std::string allocName = std::string( Vulkan::GetAllocationScopeName( trackers[ i ].scope ) ) + " allocated: ";
 			ss << std::setw( 23 ) << allocName;
 			allocName = ss.str();
-
-			ss.str( std::string() );
-			ss << trackers[ i ].totalAllocations;
-			std::string allocCount = "allocs: " + ss.str() + ( " (" + deltaTotalAllocations + ")" );
-
-			ss.str( std::string() );
-			ss << trackers[ i ].totalReallocations;
-			std::string reallocCount = "reallocs: " + ss.str() + ( " (" + deltaTotalReallocations + ")" );
-
-			std::cout << "[Vulkan] " << allocName << std::left << std::setw( 28 ) << Helpers::MemorySizeToString( memoryAllocated ) + ( " (" + deltaAllocatedString + " bytes.)" ) << std::left << std::setw( 18 ) << allocCount << std::left << std::setw( 18 ) << reallocCount << std::endl;
+			
+			std::cout << "[Vulkan] " << allocName << std::left << std::setw( 28 ) << 
+				Helpers::MemorySizeToString( MemoryAllocated ) + ( " (" + DeltaAllocatedString + " bytes.)" ) << std::left << std::setw( 18 ) << 
+				AllocCount << std::left << std::setw( 18 ) << 
+				ReallocCount << std::endl;
 
 			trackers[ i ].previousTotalMemoryAllocated = trackers[ i ].totalMemoryAllocated;
 			trackers[ i ].previousTotalAllocations = trackers[ i ].totalAllocations;
 			trackers[ i ].previousTotalReallocations = trackers[ i ].totalReallocations;
 
-			vulkanMemoryUsage += memoryAllocated;
+			vulkanMemoryUsage += MemoryAllocated;
 		}
 
 		std::cout << "[Vulkan] total memory usage: " << Helpers::MemorySizeToString( vulkanMemoryUsage ) << "." << std::endl;

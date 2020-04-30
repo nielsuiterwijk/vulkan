@@ -1,48 +1,60 @@
 ﻿---
 BasedOnStyle: WebKit
+Language: Cpp
+TabWidth: 4
+UseTab: Always
+ColumnLimit: 210
+ 
+SortIncludes: true
+SortUsingDeclarations: true
+ 
+
 AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignOperands: false
 AlignEscapedNewlines: Left
-AlignOperands: true
-AllowShortIfStatementsOnASingleLine: Never
-AlwaysBreakTemplateDeclarations: true
-BinPackArguments: false
-BinPackParameters : false
-BreakBeforeBraces: Allman
-CompactNamespaces: false
-Language: Cpp
-PenaltyBreakAssignment: 10000
 PointerAlignment: Left
+ 
+AllowShortIfStatementsOnASingleLine: Never
+ 
+AlwaysBreakTemplateDeclarations: true
+ 
+BinPackArguments: false
+BinPackParameters: false
+PenaltyBreakAssignment: 10000
+ 
+BreakBeforeBraces: Allman
+ 
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements
 SpacesInParentheses: true
 SpacesInSquareBrackets: true
-TabWidth: 4
-UseTab: Always
+ 
 IndentCaseLabels: true
-BreakInheritanceList: AfterColon
-BreakBeforeInheritanceComma: true
 NamespaceIndentation: All
-ColumnLimit: 160
+MaxEmptyLinesToKeep: 3
+ 
+CompactNamespaces: false
+BreakInheritanceList: AfterColon
 ReflowComments: false
-AlignConsecutiveDeclarations: false
-AllowShortFunctionsOnASingleLine : InlineOnly
-AllowShortLambdasOnASingleLine : Inline
-AllowAllArgumentsOnNextLine : false
-AllowAllParametersOfDeclarationOnNextLine : false
+ 
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortLambdasOnASingleLine: All
+ 
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+ 
 SpaceBeforeCtorInitializerColon: true
 BreakConstructorInitializers: BeforeComma
-ConstructorInitializerAllOnOneLineOrOnePerLine : false
-MaxEmptyLinesToKeep: 3
-SortIncludes: true
-SortUsingDeclarations: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+ 
 IncludeBlocks: Regroup
 IncludeCategories:
-# Matches common headers first, but sorts them after project includes
-- Regex: '^\"'
-  Priority: 1000
-- Regex: '^<.*/.*'
-  Priority: 4000
 - Regex: '^<[^/]*>'
-  Priority: 5000
+  Priority: 10
+- Regex: '^<.*/.*'
+  Priority: 20
+- Regex: '^\"'
+  Priority: 30
 ...

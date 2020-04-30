@@ -10,7 +10,7 @@ Allocator::Allocator() :
 
 Allocator::~Allocator()
 {
-	assert( _NumAllocations == 0 && _UsedMemory == 0 );
+	ASSERT( _NumAllocations == 0 && _UsedMemory == 0 );
 
 	start = nullptr;
 	size = 0;
@@ -18,7 +18,7 @@ Allocator::~Allocator()
 
 void Allocator::Initialize( size_t size, void* start )
 {
-	assert( this->start == nullptr && "Already initialized allocator" );
+	ASSERT( this->start == nullptr && "Already initialized allocator" );
 	this->start = start;
 	this->size = size;
 }

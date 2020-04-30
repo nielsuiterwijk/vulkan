@@ -27,9 +27,9 @@ VulkanDescriptorPool::~VulkanDescriptorPool()
 
 VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( std::shared_ptr<Material> material, Texture2D* texture, TextureSampler* sampler )
 {
-	assert( material != nullptr );
-	assert( texture != nullptr );
-	assert( sampler != nullptr );
+	ASSERT( material != nullptr );
+	ASSERT( texture != nullptr );
+	ASSERT( sampler != nullptr );
 
 	std::shared_ptr<VertexShader> pVertexShader = material->GetVertex();
 	std::shared_ptr<FragmentShader> pFragmentShader = material->GetFragment();
@@ -40,13 +40,13 @@ VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( std::shared_ptr<Mat
 	std::vector<VkWriteDescriptorSet> sets;
 	sets.reserve( pVertexShader->GetResourceLayout().size() + pFragmentShader->GetResourceLayout().size() );
 
-	assert( pVertexShader->GetResourceLayout().size() == material->GetUniformBuffers().size() );
+	ASSERT( pVertexShader->GetResourceLayout().size() == material->GetUniformBuffers().size() );
 	for ( int32_t i = 0; i < pVertexShader->GetResourceLayout().size(); i++ )
 	{
 		const ResourceLayout& resourceLayout = pVertexShader->GetResourceLayout()[ i ];
 
 		const UniformBuffer* pUbo = material->GetUniformBuffers()[ i ];
-		assert( pUbo->GetDescriptorInfo().range == pVertexShader->GetBufferDescriptors()[ i ].range );
+		ASSERT( pUbo->GetDescriptorInfo().range == pVertexShader->GetBufferDescriptors()[ i ].range );
 
 		VkWriteDescriptorSet writeDescriptorSet = {};
 		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -59,7 +59,7 @@ VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( std::shared_ptr<Mat
 		sets.push_back( writeDescriptorSet );
 	}
 
-	assert( pFragmentShader->GetResourceLayout().size() == 1 );
+	ASSERT( pFragmentShader->GetResourceLayout().size() == 1 );
 	for ( int32_t i = 0; i < pFragmentShader->GetResourceLayout().size(); i++ )
 	{
 		const ResourceLayout& resourceLayout = pFragmentShader->GetResourceLayout()[ i ];
@@ -125,7 +125,7 @@ void VulkanDescriptorPool::SetupBindings( std::shared_ptr<VertexShader> pVertexS
 												   &info,
 												   descriptorSetLayout.AllocationCallbacks(),
 												   descriptorSetLayout.Replace() );
-	assert( result == VK_SUCCESS );
+	ASSERT( result == VK_SUCCESS );
 
 	// https://www.khronos.org/registry/vulkan/specs/1.0/man/html/VkPipelineLayout.html
 	//`a pipeline layout object which describes the complete set of resources that CAN be accessed by a pipeline.`
@@ -141,7 +141,7 @@ void VulkanDescriptorPool::SetupBindings( std::shared_ptr<VertexShader> pVertexS
 										 &pipelineLayoutCreateInfo,
 										 pipelineLayout.AllocationCallbacks(),
 										 pipelineLayout.Replace() );
-		assert( result == VK_SUCCESS );
+		ASSERT( result == VK_SUCCESS );
 	}
 
 	CreatePoolAndSets();
@@ -161,7 +161,7 @@ void VulkanDescriptorPool::CreatePoolAndSets()
 											  &descriptorPoolInfo,
 											  descriptorPool.AllocationCallbacks(),
 											  descriptorPool.Replace() );
-	assert( result == VK_SUCCESS );
+	ASSERT( result == VK_SUCCESS );
 
 	descriptorSets.resize( VULKAN_NUM_SETS_PER_POOL );
 
@@ -176,5 +176,5 @@ void VulkanDescriptorPool::CreatePoolAndSets()
 	result = vkAllocateDescriptorSets( GraphicsContext::LogicalDevice,
 									   &allocInfo,
 									   descriptorSets.data() );
-	assert( result == VK_SUCCESS );
+	ASSERT( result == VK_SUCCESS );
 }

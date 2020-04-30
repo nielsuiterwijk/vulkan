@@ -25,10 +25,10 @@ SubMesh::~SubMesh()
 
 bool SubMesh::AllocateBuffers( void* vertexData, const uint64_t& vertexDataSize, void* indexData, const uint64_t& indexDataSize )
 {
-	assert( vertexBuffer == nullptr );
+	ASSERT( vertexBuffer == nullptr );
 	vertexBuffer = new VulkanBuffer( VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, BufferType::Static, vertexData, vertexDataSize );
 
-	assert( indexBuffer == nullptr );
+	ASSERT( indexBuffer == nullptr );
 	indexBuffer = new VulkanBuffer( VK_BUFFER_USAGE_INDEX_BUFFER_BIT, BufferType::Static, indexData, indexDataSize );
 
 	return true;

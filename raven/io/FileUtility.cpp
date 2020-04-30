@@ -1,6 +1,5 @@
 #include "FileUtility.h"
 
-#include <assert.h>
 #include <filesystem>
 #include <iostream>
 
@@ -38,7 +37,7 @@ void IO::ListFiles( const std::string& Directory, std::vector<std::string>& File
 		}
 		else
 		{
-			assert( false && "invalid file" );
+			ASSERT_FAIL( "invalid file" );
 		}
 	}
 }

@@ -14,7 +14,7 @@ ThreadPool* FileSystem::threadPool = nullptr;
 
 void FileSystem::Start()
 {
-	assert( !threadStarted );
+	ASSERT( !threadStarted );
 
 	std::cout << "[FileSystem] starting thread.." << std::endl;
 
@@ -47,7 +47,7 @@ std::vector<char> FileSystem::ReadFile( const std::string& filename )
 	if ( !file.is_open() )
 	{
 		std::cout << "[FileSystem] Failed loading " << filename.c_str() << std::endl;
-		throw std::runtime_error( "failed to open file!" );
+		ASSERT_FAIL( "failed to open file!" );
 		return buffer;
 	}
 
@@ -75,8 +75,8 @@ std::vector<char> FileSystem::ReadFile( const std::string& filename )
 
 void FileSystem::LoadFileAsync( const std::string& fileName, std::function<void( std::vector<char> )> callback )
 {
-	assert( threadStarted );
-	assert( fileName.length() != 0 );
+	ASSERT( threadStarted );
+	ASSERT( fileName.length() != 0 );
 
 	std::cout << "[FileSystem] Queuing loading " << fileName.c_str() << std::endl;
 

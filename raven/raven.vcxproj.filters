@@ -52,6 +52,7 @@
     <ClCompile Include="memory\BlockAllocator.cpp" />
     <ClCompile Include="graphics\memory\VulkanMemoryAllocator.cpp" />
     <ClCompile Include="io\InputEvent.cpp" />
+    <ClCompile Include="ecs\Entity.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -180,5 +181,12 @@
     <ClInclude Include="include\vma\vk_mem_alloc_fwd.h" />
     <ClInclude Include="threading\Mutex.h" />
     <ClInclude Include="io\InputEvent.h" />
+    <ClInclude Include="ecs\ComponentInterface.h" />
+    <ClInclude Include="strings\string_utils.h" />
+    <ClInclude Include="ecs\World.h" />
+    <ClInclude Include="ecs\SystemInterface.h" />
+    <ClInclude Include="helpers\Murmur3.h" />
+    <ClInclude Include="ecs\Entity.h" />
+    <ClInclude Include="ecs\Types.h" />
   </ItemGroup>
 </Project>

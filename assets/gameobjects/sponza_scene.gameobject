@@ -1,5 +1,5 @@
 {
-	"mesh" : "boy.obj",
+	"mesh" : "sponza.obj",
 	"material" : "boy",
 	"textures" : [
       "boy/Boy_yifu_color.jpg",

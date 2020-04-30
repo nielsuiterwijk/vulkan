@@ -54,7 +54,7 @@ std::shared_ptr<Mesh> MeshFileLoader::Static( const std::string& fileName )
 	else
 	{
 		std::cout << "Unhandled file extension: " << extension << std::endl;
-		assert( false );
+		ASSERT( false );
 	}
 
 	FileSystem::LoadFileAsync( "models/" + fileName, std::bind( MeshFileLoader::FileLoaded, std::placeholders::_1, mesh, fileType ) );
@@ -77,7 +77,7 @@ std::shared_ptr<Mesh> MeshFileLoader::Skinned( const std::string& fileName )
 	else
 	{
 		std::cout << "Unhandled file extension: " << extension << std::endl;
-		assert( false );
+		ASSERT( false );
 	}
 
 	FileSystem::LoadFileAsync( "models/" + fileName, std::bind( MeshFileLoader::FileLoaded, std::placeholders::_1, mesh, fileType ) );
@@ -121,7 +121,7 @@ void MeshFileLoader::LoadNode( BoneInfo* parent, uint32_t nodeIndex, const tinyg
 {
 	if ( parent != nullptr )
 	{
-		assert( std::find( parent->children.begin(), parent->children.end(), nodeIndex ) != parent->children.end() );
+		ASSERT( std::find( parent->children.begin(), parent->children.end(), nodeIndex ) != parent->children.end() );
 	}
 
 	const tinygltf::Node& node = model.nodes[ nodeIndex ];
@@ -242,7 +242,7 @@ void MeshFileLoader::LoadGLTF( std::vector<char>& fileData, std::shared_ptr<Mesh
 			const std::vector<tinygltf::AnimationChannel>& channels = gltfAnimation.channels;
 			const std::vector<tinygltf::AnimationSampler>& samplers = gltfAnimation.samplers;
 
-			assert( ( gltfAnimation.channels.size() % 3 ) == 0 );
+			ASSERT( ( gltfAnimation.channels.size() % 3 ) == 0 );
 
 			std::vector<float> keyFrames;
 			std::vector<BoneAnimation> boneAnimations;
@@ -259,7 +259,7 @@ void MeshFileLoader::LoadGLTF( std::vector<char>& fileData, std::shared_ptr<Mesh
 
 				const tinygltf::Accessor& timePointAccessor = model.accessors[ sampler.input ];
 				const tinygltf::Accessor& frameValueAccessor = model.accessors[ sampler.output ];
-				assert( timePointAccessor.count == frameValueAccessor.count );
+				ASSERT( timePointAccessor.count == frameValueAccessor.count );
 
 				const tinygltf::BufferView& inputBufferView = model.bufferViews[ timePointAccessor.bufferView ];
 				const tinygltf::BufferView& outputBufferView = model.bufferViews[ frameValueAccessor.bufferView ];
@@ -308,7 +308,7 @@ void MeshFileLoader::LoadGLTF( std::vector<char>& fileData, std::shared_ptr<Mesh
 					else if (sampler.interpolation.find("CUBICSPLINE") != std::string::npos)
 						animation->interpolationMode = Interpolation::CubicSpline;*/
 					else
-						assert( false && "Unsupported interpolation method" );
+						ASSERT_FAIL( "Unsupported interpolation method" );
 				}
 
 				if ( channel.target_path.find( "translation" ) != std::string::npos )
@@ -342,7 +342,7 @@ void MeshFileLoader::LoadGLTF( std::vector<char>& fileData, std::shared_ptr<Mesh
 				}
 				else
 				{
-					assert( false && "Unsupported target path" );
+					ASSERT_FAIL( "Unsupported target path" );
 				}
 			}
 
@@ -368,7 +368,7 @@ void MeshFileLoader::LoadGLTF( std::vector<char>& fileData, std::shared_ptr<Mesh
 			//std::vector<int32_t> boneOrder;
 			//boneOrder.reserve(source.joints.size());
 			//TraverseBones(source.skeleton, skinnedMesh->bones, boneOrder);
-			//assert(boneOrder == source.joints);
+			//ASSERT(boneOrder == source.joints);
 
 			// Get inverse bind matrices from buffer
 			if ( source.inverseBindMatrices > -1 )
@@ -419,14 +419,14 @@ void MeshFileLoader::GLTFStaticMesh( const tinygltf::Model* model, std::shared_p
 			const uint16_t* bufferJoints = nullptr;
 			const float* bufferWeights = nullptr;
 
-			assert( primitive.attributes.find( "POSITION" ) != primitive.attributes.end() );
+			ASSERT( primitive.attributes.find( "POSITION" ) != primitive.attributes.end() );
 
 			{
 				const tinygltf::Accessor& posAccessor = model->accessors[ primitive.attributes.find( "POSITION" )->second ];
 				const tinygltf::BufferView& posView = model->bufferViews[ posAccessor.bufferView ];
 				bufferPos = reinterpret_cast<const float*>( &( model->buffers[ posView.buffer ].data[ posAccessor.byteOffset + posView.byteOffset ] ) );
 				vertexCount = static_cast<int32_t>( posAccessor.count );
-				assert( posAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT );
+				ASSERT( posAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT );
 			}
 
 			if ( primitive.attributes.find( "NORMAL" ) != primitive.attributes.end() )
@@ -434,7 +434,7 @@ void MeshFileLoader::GLTFStaticMesh( const tinygltf::Model* model, std::shared_p
 				const tinygltf::Accessor& normAccessor = model->accessors[ primitive.attributes.find( "NORMAL" )->second ];
 				const tinygltf::BufferView& normView = model->bufferViews[ normAccessor.bufferView ];
 				bufferNormals = reinterpret_cast<const float*>( &( model->buffers[ normView.buffer ].data[ normAccessor.byteOffset + normView.byteOffset ] ) );
-				assert( normAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT );
+				ASSERT( normAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT );
 			}
 
 			if ( primitive.attributes.find( "TEXCOORD_0" ) != primitive.attributes.end() )
@@ -442,7 +442,7 @@ void MeshFileLoader::GLTFStaticMesh( const tinygltf::Model* model, std::shared_p
 				const tinygltf::Accessor& uvAccessor = model->accessors[ primitive.attributes.find( "TEXCOORD_0" )->second ];
 				const tinygltf::BufferView& uvView = model->bufferViews[ uvAccessor.bufferView ];
 				bufferTexCoords = reinterpret_cast<const float*>( &( model->buffers[ uvView.buffer ].data[ uvAccessor.byteOffset + uvView.byteOffset ] ) );
-				assert( uvAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT );
+				ASSERT( uvAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT );
 			}
 
 			if ( primitive.attributes.find( "JOINTS_0" ) != primitive.attributes.end() )
@@ -451,7 +451,7 @@ void MeshFileLoader::GLTFStaticMesh( const tinygltf::Model* model, std::shared_p
 				const tinygltf::BufferView& jointView = model->bufferViews[ jointAccessor.bufferView ];
 				bufferJoints = reinterpret_cast<const uint16_t*>( &( model->buffers[ jointView.buffer ].data[ jointAccessor.byteOffset + jointView.byteOffset ] ) );
 
-				assert( jointAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT );
+				ASSERT( jointAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT );
 			}
 
 			if ( primitive.attributes.find( "WEIGHTS_0" ) != primitive.attributes.end() )
@@ -460,7 +460,7 @@ void MeshFileLoader::GLTFStaticMesh( const tinygltf::Model* model, std::shared_p
 				const tinygltf::BufferView& weightView = model->bufferViews[ weightAccessor.bufferView ];
 				bufferWeights = reinterpret_cast<const float*>( &( model->buffers[ weightView.buffer ].data[ weightAccessor.byteOffset + weightView.byteOffset ] ) );
 
-				assert( weightAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT );
+				ASSERT( weightAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT );
 			}
 
 			bool hasSkin = ( bufferJoints && bufferWeights );
@@ -543,7 +543,7 @@ void MeshFileLoader::LoadOBJ( std::vector<char>& fileData, std::shared_ptr<Mesh>
 
 	if ( !tinyobj::LoadObj( &attrib, &shapes, &materials, &err, &is ) )
 	{
-		throw std::runtime_error( err );
+		ASSERT_FAIL( err );
 	}
 
 	int colorIndex = 0;

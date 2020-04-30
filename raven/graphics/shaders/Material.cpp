@@ -58,7 +58,7 @@ void Material::FileLoaded( std::vector<char> fileData )
 
 void Material::AddUniformBuffer( UniformBuffer* pUniformBuffer )
 {
-	assert( pUniformBuffer != nullptr );
+	ASSERT( pUniformBuffer != nullptr );
 	uniformBuffers.push_back( pUniformBuffer );
 }
 

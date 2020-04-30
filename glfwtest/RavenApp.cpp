@@ -129,7 +129,7 @@ bool RavenApp::Initialize()
 	ImGui::CreateContext( nullptr );
 	_pImguiVulkan->Initialize( );
 
-	std::shared_ptr<Model> model = std::make_shared<Model>( "boy" ); //"cesiumman"
+	std::shared_ptr<Model> model = std::make_shared<Model>( "cesiumman" ); //"boy"
 	models.push_back( model );
 
 	return true;
@@ -249,12 +249,8 @@ void RavenApp::Run()
 				UI.TimingGraph( Frame::DeltaTime, _RenderThread._TotalTimer.GetTimeInSeconds() );
 
 				ImGui::Begin( "MemoryStats" );
-
-				for ( std::string& Line : MemoryStats1 )
-				{
-					ImGui::TextWrapped( Line.c_str() );
-				}
-
+				
+				ImGui::TextWrapped( MemoryStats1.c_str() );
 				ImGui::TextWrapped( MemoryStats2.c_str() );
 
 				ImGui::End();

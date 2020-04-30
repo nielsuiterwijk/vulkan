@@ -10,9 +10,8 @@ layout(set=0, binding = 0) uniform CameraBuffer
 
 layout(set=0, binding = 1) uniform Bones 
 {
-    mat4 model;
+    mat4 rootTransform;
     mat4 bones[64];
-    vec4 lightPos;
 } skeletal;
 
 layout(location = 0) in vec3 inPosition;
@@ -36,13 +35,13 @@ out gl_PerVertex
 
 mat4 boneTransform() 
 {
-  mat4 ret;
+	mat4 ret;
 
-  // Weight normalization factor
-  float normalizationFactor = 1.0 / (inWeights.x + inWeights.y + inWeights.z + inWeights.w);
-  debugInfo.x = normalizationFactor;
+	// Weight normalization factor
+	float normalizationFactor = 1.0 / (inWeights.x + inWeights.y + inWeights.z + inWeights.w);
+	debugInfo.x = normalizationFactor;
 
-  // Weight1 * Bone1 + Weight2 * Bone2  
+	// Weight1 * Bone1 + Weight2 * Bone2  
 	ret = normalizationFactor * inWeights.x * skeletal.bones[int(inJoints.x)];
 	ret += normalizationFactor * inWeights.y * skeletal.bones[int(inJoints.y)];
 	ret += normalizationFactor * inWeights.z * skeletal.bones[int(inJoints.z)];
@@ -55,10 +54,12 @@ void main()
 {
 	mat4 boneTransform = boneTransform();
 
-	vec4 locPos = camera.model * skeletal.model * boneTransform * vec4(inPosition, 1.0);	
+	vec4 locPos = camera.model * skeletal.rootTransform * boneTransform * vec4(inPosition, 1.0);	
 	
 	vertexPosition = locPos.xyz / locPos.w;	
-	vertexNormal = normalize( transpose( inverse( mat3(camera.model * skeletal.model * boneTransform) ) ) * inNormal);
+	mat3 baseVertexNormal = mat3(camera.model * skeletal.rootTransform * boneTransform);
+	mat3 inverseVertexNormal = inverse( baseVertexNormal );
+	vertexNormal = normalize( transpose( inverseVertexNormal ) * inNormal);
 	
     fragColor = inColor;
 	fragTexCoord = inTexCoord;	

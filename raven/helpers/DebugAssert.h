@@ -40,6 +40,7 @@
 #if defined( _WIN32 )
 
 #define ASSERT( x ) ASSERT_IMPL( x, "Assertion failed:\n\"" #x "\"" )
+#define ASSERT_FAIL( x ) ASSERT_IMPL( false, "Assertion failed:\n\"" #x "\"" )
 #define ASSERT_MSG( x, msg ) ASSERT_IMPL( x, "Assertion failed: \"" #x "\"\nMessage: " msg )
 
 #else
@@ -50,11 +51,11 @@
 		if ( ( x ) == false )                         \
 		{                                             \
 			printf( "%s(%d)\n", __FILE__, __LINE__ ); \
-			assert( x );                              \
+			ASSERT( x );                              \
 		}                                             \
 	} while ( 0 )
 #define ASSERT( x ) ASSERT_IMPL2( x )
-#define ASSERT_MSG( x, msg ) assert( ( x ) && msg )
+#define ASSERT_MSG( x, msg ) ASSERT( ( x ) && msg )
 
 #endif
 
@@ -62,5 +63,5 @@
 
 namespace Debug
 {
-int HandleAssert( const char* msg, int line, const char* file );
+	int HandleAssert( const char* msg, int line, const char* file );
 }

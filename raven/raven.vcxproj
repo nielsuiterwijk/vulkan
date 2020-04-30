@@ -197,6 +197,7 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <DiagnosticsFormat>Column</DiagnosticsFormat>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -222,6 +223,8 @@
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
       <PrecompiledHeaderFile>standard.h</PrecompiledHeaderFile>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -268,6 +271,8 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>standard.h</PrecompiledHeaderFile>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -279,6 +284,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ecs\Entity.cpp" />
     <ClCompile Include="events\EventSystem.cpp" />
     <ClCompile Include="graphics\animations\Animation.cpp" />
     <ClCompile Include="graphics\buffers\CommandBuffer.cpp" />
@@ -326,6 +332,11 @@
     <ClCompile Include="graphics\VulkanInstance.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ecs\ComponentInterface.h" />
+    <ClInclude Include="ecs\Entity.h" />
+    <ClInclude Include="ecs\SystemInterface.h" />
+    <ClInclude Include="ecs\Types.h" />
+    <ClInclude Include="ecs\World.h" />
     <ClInclude Include="events\EventSystem.h" />
     <ClInclude Include="graphics\animations\Animation.h" />
     <ClInclude Include="graphics\buffers\CommandBuffer.h" />
@@ -338,6 +349,7 @@
     <ClInclude Include="graphics\FrameBuffer.h" />
     <ClInclude Include="graphics\GraphicsContext.h" />
     <ClInclude Include="graphics\helpers\Color.h" />
+    <ClInclude Include="helpers\Murmur3.h" />
     <ClInclude Include="helpers\SystemInfo.h" />
     <ClInclude Include="helpers\Utility.h" />
     <ClInclude Include="graphics\memory\VulkanAllocator.h" />
@@ -383,6 +395,7 @@
     <ClInclude Include="memory\MemoryUtils.h" />
     <ClInclude Include="memory\PoolAllocator.h" />
     <ClInclude Include="physics\aabb.h" />
+    <ClInclude Include="strings\string_utils.h" />
     <ClInclude Include="threading\Mutex.h" />
     <ClInclude Include="threading\Task.h" />
     <ClInclude Include="threading\TaskSystem.h" />

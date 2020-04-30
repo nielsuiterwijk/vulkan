@@ -6,7 +6,7 @@ void STL::ReadBinary( const std::vector<char>& fileData, STLModel& STLData )
 
 	if ( memcmp( header, "solid", sizeof( uint8_t ) * 5 ) == 0 )
 	{
-		assert( false && "This file is an ASCII STL file and not supported" );
+		ASSERT_FAIL( "This file is an ASCII STL file and not supported" );
 		return;
 	}
 

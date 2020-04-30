@@ -79,7 +79,7 @@ void VulkanSwapChain::Connect( const glm::u32vec2& windowSize, const QueueFamily
 
 	if ( vkCreateSwapchainKHR( GraphicsContext::LogicalDevice, &createInfo, swapChain.AllocationCallbacks(), swapChain.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to create swap chain!" );
+		ASSERT_FAIL( "failed to create swap chain!" );
 	}
 
 	//The implementation is allowed to create more images, which is why we need to explicitly query the amount again.
@@ -138,8 +138,8 @@ int32_t VulkanSwapChain::PrepareBackBuffer()
 		return -1;
 	}
 
-	assert( result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR );
-	assert( imageIndex == nextBackBufferIndex ); //imageIndex should be the same as backBufferIndex
+	ASSERT( result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR );
+	ASSERT( imageIndex == nextBackBufferIndex ); //imageIndex should be the same as backBufferIndex
 
 	nextBackBufferIndex = ( nextBackBufferIndex + 1 ) % backBuffers.size();
 

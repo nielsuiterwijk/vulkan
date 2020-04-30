@@ -229,13 +229,13 @@ void PipelineStateObject::SetShader( const std::vector<VkPipelineShaderStageCrea
 
 const InstanceWrapper<VkPipeline>& PipelineStateObject::GetPipeLine() const
 {
-	assert( !isDirty );
+	ASSERT( !isDirty );
 	return _GraphicsPipeline;
 }
 
 void PipelineStateObject::Build( std::shared_ptr<Material> pMaterial )
 {
-	assert( isDirty );
+	ASSERT( isDirty );
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
 	pipelineInfo.pInputAssemblyState = &inputAssembly;
@@ -260,7 +260,7 @@ void PipelineStateObject::Build( std::shared_ptr<Material> pMaterial )
 
 	if ( vkCreateGraphicsPipelines( GraphicsContext::LogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, _GraphicsPipeline.AllocationCallbacks(), _GraphicsPipeline.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to create graphics pipeline!" );
+		ASSERT_FAIL( "failed to create graphics pipeline!" );
 	}
 
 	isDirty = false;

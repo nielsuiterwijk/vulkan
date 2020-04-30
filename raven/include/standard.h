@@ -9,11 +9,9 @@
 #include <windows.h>
 
 #include <array>
-#include <assert.h>
 #include <chrono>
 #include <filesystem>
 #include <functional>
-#include <future>
 #include <iostream>
 #include <memory>
 #include <mutex>

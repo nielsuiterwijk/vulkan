@@ -39,7 +39,7 @@ void TextureLoader::FileLoaded( std::vector<char> fileData, std::shared_ptr<Text
 
 	if ( !pixels )
 	{
-		throw std::runtime_error( "failed to load texture image!" );
+		ASSERT_FAIL( "failed to load texture image!" );
 	}
 
 	uint32_t imageSizeWithMipMaps = static_cast<uint32_t>( imageSize * 1.33334f );

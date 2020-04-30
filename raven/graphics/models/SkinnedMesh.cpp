@@ -1,4 +1,5 @@
 #include "SkinnedMesh.h"
+
 #include "graphics/buffers/UniformBuffer.h"
 
 SkinnedMesh::SkinnedMesh()
@@ -17,7 +18,7 @@ glm::mat4 SkinnedMesh::localMatrix( const BoneInfo& bone )
 	return glm::translate( glm::mat4( 1.0f ), bone.translation ) * glm::toMat4( bone.rotation ) * glm::scale( glm::mat4( 1.0f ), bone.scale ) * bone.localTransform;
 }
 
-glm::mat4 SkinnedMesh::getMatrix( const BoneInfo& bone ) //Note: very efficient calculation of the bones over and over again
+glm::mat4 SkinnedMesh::getMatrix( const BoneInfo& bone ) //Note: not very efficient calculation of the bones over and over again
 {
 	glm::mat4 returnValue = localMatrix( bone );
 
@@ -38,7 +39,7 @@ void SkinnedMesh::Update( float delta )
 {
 	if ( animations.size() == 0 || skins.size() == 0 )
 		return;
-	
+
 	constexpr float TicksPerSecond = 25.0f; //todo read from gltf
 	constexpr float Duration = 2.0f; //todo read from gltf
 
@@ -47,12 +48,12 @@ void SkinnedMesh::Update( float delta )
 
 	time += delta;
 
-	while (time > Duration)
+	while ( time > Duration )
 	{
 		time -= Duration;
 	}
 
-	float AnimationTime = time;// (time / Duration)* TicksPerSecond;
+	float AnimationTime = time; // (time / Duration)* TicksPerSecond;
 
 	//Run animation
 	animation.ReadNodeHierarchy( AnimationTime, skin.rootBone, bones );

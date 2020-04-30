@@ -29,7 +29,7 @@ void VertexShader::ShaderLoaded( std::vector<char> fileData )
 
 	if ( vkCreateShaderModule( GraphicsContext::LogicalDevice, &createInfo, shaderModule.AllocationCallbacks(), shaderModule.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to create shader module!" );
+		ASSERT_FAIL( "failed to create shader module!" );
 	}
 
 	shaderInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

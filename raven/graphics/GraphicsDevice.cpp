@@ -73,7 +73,7 @@ void GraphicsDevice::Initialize( const glm::u32vec2& windowSize, std::shared_ptr
 		eventInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
 
 		VkResult result = vkCreateEvent( GraphicsContext::LogicalDevice, &eventInfo, GraphicsContext::GlobalAllocator.Get(), &GraphicsContext::TransportEvent );
-		assert( result == VK_SUCCESS );
+		ASSERT( result == VK_SUCCESS );
 	}
 
 
@@ -187,7 +187,7 @@ void GraphicsDevice::CreateLogicalDevice()
 
 	if ( vkCreateDevice( GraphicsContext::PhysicalDevice, &createInfo, GraphicsContext::LogicalDevice.AllocationCallbacks(), GraphicsContext::LogicalDevice.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to create logical device!" );
+		ASSERT_FAIL( "failed to create logical device!" );
 	}
 }
 
@@ -198,7 +198,7 @@ void GraphicsDevice::CreatePhysicalDevice( const InstanceWrapper<VkSurfaceKHR>& 
 
 	if ( deviceCount == 0 )
 	{
-		throw std::runtime_error( "failed to find GPUs with Vulkan support!" );
+		ASSERT_FAIL( "failed to find GPUs with Vulkan support!" );
 	}
 
 	std::vector<VkPhysicalDevice> devices( deviceCount );
@@ -239,7 +239,7 @@ void GraphicsDevice::CreatePhysicalDevice( const InstanceWrapper<VkSurfaceKHR>& 
 
 	if ( GraphicsContext::PhysicalDevice == VK_NULL_HANDLE )
 	{
-		throw std::runtime_error( "failed to find a suitable GPU!" );
+		ASSERT_FAIL( "failed to find a suitable GPU!" );
 	}
 }
 

@@ -25,10 +25,10 @@ Texture2D::~Texture2D()
 void Texture2D::AllocateImage( uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlagBits imageUsage,
 							   VmaMemoryUsage Usage )
 {
-	assert( width < 16384 );
-	assert( height < 16384 );
-	assert( mipLevels < 14 );
-	assert( format != VK_FORMAT_UNDEFINED );
+	ASSERT( width < 16384 );
+	ASSERT( height < 16384 );
+	ASSERT( mipLevels < 14 );
+	ASSERT( format != VK_FORMAT_UNDEFINED );
 
 	this->_Width = width;
 	this->_Height = height;
@@ -60,7 +60,7 @@ void Texture2D::AllocateImage( uint32_t width, uint32_t height, uint32_t mipLeve
 void Texture2D::SetupView( VkFormat format, VkImageAspectFlags aspectFlags )
 {
 	this->_Format = format;
-	assert( format != VK_FORMAT_UNDEFINED );
+	ASSERT( format != VK_FORMAT_UNDEFINED );
 
 	VkImageViewCreateInfo viewInfo = {};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -83,14 +83,14 @@ void Texture2D::SetupView( VkFormat format, VkImageAspectFlags aspectFlags )
 
 	if ( vkCreateImageView( GraphicsContext::LogicalDevice, &viewInfo, _View.AllocationCallbacks(), _View.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to create texture image view!" );
+		ASSERT_FAIL( "failed to create texture image view!" );
 	}
 }
 
 //TODO: this function is in a bit of an odd place
 void Texture2D::Transition( VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout )
 {
-	assert( format != VK_FORMAT_UNDEFINED );
+	ASSERT( format != VK_FORMAT_UNDEFINED );
 
 	CommandBuffer* commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
 
@@ -159,7 +159,7 @@ void Texture2D::Transition( VkFormat format, VkImageLayout oldLayout, VkImageLay
 		}
 		else
 		{
-			throw std::invalid_argument( "unsupported layout transition!" );
+			ASSERT_FAIL( "unsupported layout transition!" );
 		}
 
 		vkCmdPipelineBarrier( commandBuffer->GetNative(), sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier );
@@ -174,9 +174,9 @@ void Texture2D::Transition( VkFormat format, VkImageLayout oldLayout, VkImageLay
 
 	GraphicsContext::QueueLock.lock();
 	VkResult result = vkQueueSubmit( GraphicsContext::TransportQueue, 1, &submitInfo, VK_NULL_HANDLE );
-	assert( result == VK_SUCCESS );
+	ASSERT( result == VK_SUCCESS );
 	result = vkQueueWaitIdle( GraphicsContext::TransportQueue );
-	assert( result == VK_SUCCESS );
+	ASSERT( result == VK_SUCCESS );
 	GraphicsContext::QueueLock.unlock();
 
 	GraphicsContext::CommandBufferPoolTransient->Free( commandBuffer );
@@ -306,10 +306,10 @@ void Texture2D::GenerateMipMaps()
 
 		GraphicsContext::QueueLock.lock();
 		VkResult result = vkQueueSubmit( GraphicsContext::TransportQueue, 1, &submitInfo, VK_NULL_HANDLE );
-		assert( result == VK_SUCCESS );
+		ASSERT( result == VK_SUCCESS );
 		result = vkQueueWaitIdle( GraphicsContext::TransportQueue );
 		GraphicsContext::QueueLock.unlock();
-		assert( result == VK_SUCCESS );
+		ASSERT( result == VK_SUCCESS );
 
 		GraphicsContext::CommandBufferPoolTransient->Free( commandBuffer );
 	}

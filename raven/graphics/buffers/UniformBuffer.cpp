@@ -17,6 +17,6 @@ UniformBuffer::~UniformBuffer()
 
 void UniformBuffer::Upload()
 {
-	assert( _DataBlock.data != nullptr );
+	ASSERT( _DataBlock.data != nullptr );
 	_VulkanBuffer.Map( _DataBlock.data, _DataBlock.size );
 }

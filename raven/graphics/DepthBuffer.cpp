@@ -42,7 +42,9 @@ VkFormat DepthBuffer::FindSupportedFormat( const std::vector<VkFormat>& candidat
 		}
 	}
 
-	throw std::runtime_error( "failed to find supported format!" );
+	ASSERT_FAIL( "failed to find supported format!" );
+
+	return VK_FORMAT_UNDEFINED;
 }
 
 VkFormat DepthBuffer::FindDepthFormat()

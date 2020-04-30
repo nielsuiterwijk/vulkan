@@ -24,7 +24,7 @@ void FrameBuffer::Destroy()
 void FrameBuffer::InitializeImageView( VkFormat imageFormat, VkImage image )
 {
 	format = imageFormat;
-	assert( format != VK_FORMAT_UNDEFINED );
+	ASSERT( format != VK_FORMAT_UNDEFINED );
 
 	VkImageViewCreateInfo viewInfo = {};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -45,7 +45,7 @@ void FrameBuffer::InitializeImageView( VkFormat imageFormat, VkImage image )
 
 	if ( vkCreateImageView( GraphicsContext::LogicalDevice, &viewInfo, imageView.AllocationCallbacks(), imageView.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to create texture image view!" );
+		ASSERT_FAIL( "failed to create texture image view!" );
 	}
 }
 
@@ -69,6 +69,6 @@ void FrameBuffer::InitializeFrameBuffer( uint32_t width, uint32_t height, DepthB
 
 	if ( vkCreateFramebuffer( GraphicsContext::LogicalDevice, &framebufferInfo, framebuffer.AllocationCallbacks(), framebuffer.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to create framebuffer!" );
+		ASSERT_FAIL( "failed to create framebuffer!" );
 	}
 }

@@ -1578,14 +1578,14 @@ For details see [Finding out if memory is mappable](@ref memory_mapping_finding_
 
 Please check "CONFIGURATION SECTION" in the code to find macros that you can define
 before each include of this file or change directly in this file to provide
-your own implementation of basic facilities like assert, `min()` and `max()` functions,
+your own implementation of basic facilities like ASSERT, `min()` and `max()` functions,
 mutex, atomic etc.
 The library uses its own implementation of containers by default, but you can switch to using
 STL containers instead.
 
 For example, define `VMA_ASSERT(expr)` before including the library to provide
-custom implementation of the assertion, compatible with your project.
-By default it is defined to standard C `assert(expr)` in `_DEBUG` configuration
+custom implementation of the ASSERTion, compatible with your project.
+By default it is defined to standard C `ASSERT(expr)` in `_DEBUG` configuration
 and empty otherwise.
 
 \section config_Vulkan_functions Pointers to Vulkan functions
@@ -3868,7 +3868,7 @@ Library has its own container implementation.
 Following headers are used in this CONFIGURATION section only, so feel free to
 remove them if not needed.
 */
-#include <cassert> // for assert
+#include <cASSERT> // for ASSERT
 #include <algorithm> // for min, max
 #include <mutex>
 
@@ -3911,16 +3911,16 @@ void *aligned_alloc(size_t alignment, size_t size)
 
 //#include <malloc.h>
 
-// Normal assert to check for programmer's errors, especially in Debug configuration.
+// Normal ASSERT to check for programmer's errors, especially in Debug configuration.
 #ifndef VMA_ASSERT
    #ifdef NDEBUG
        #define VMA_ASSERT(expr)
    #else
-       #define VMA_ASSERT(expr)         assert(expr)
+       #define VMA_ASSERT(expr)         ASSERT(expr)
    #endif
 #endif
 
-// Assert that will be called very often, like inside data structures e.g. operator[].
+// ASSERT that will be called very often, like inside data structures e.g. operator[].
 // Making it non-empty can make program slow.
 #ifndef VMA_HEAVY_ASSERT
    #ifdef NDEBUG
@@ -5806,8 +5806,8 @@ public:
       makes it lost by setting LastUseFrameIndex = VMA_FRAME_INDEX_LOST and returns true.
     - Else, returns false.
     
-    If hAllocation is already lost, assert - you should not call it then.
-    If hAllocation was not created with CAN_BECOME_LOST_BIT, assert.
+    If hAllocation is already lost, ASSERT - you should not call it then.
+    If hAllocation was not created with CAN_BECOME_LOST_BIT, ASSERT.
     */
     bool MakeLost(uint32_t currentFrameIndex, uint32_t frameInUseCount);
 
@@ -11916,7 +11916,7 @@ void VmaDeviceMemoryBlock::Init(
 
 void VmaDeviceMemoryBlock::Destroy(VmaAllocator allocator)
 {
-    // This is the most important assert in the entire library.
+    // This is the most important ASSERT in the entire library.
     // Hitting it means you have some memory leak - unreleased VmaAllocation objects.
     VMA_ASSERT(m_pMetadata->IsEmpty() && "Some allocations were not freed before destruction of this memory block!");
 

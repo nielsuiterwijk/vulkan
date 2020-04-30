@@ -31,7 +31,7 @@ VulkanBuffer::VulkanBuffer( VkBufferUsageFlags Flags, BufferType BufferType, voi
 		Map( BufferData );
 		break;
 	default:
-		assert( false && "Not implemented." );
+		ASSERT_FAIL( "Not implemented." );
 		break;
 	}
 }
@@ -93,7 +93,7 @@ void VulkanBuffer::SetupStagingBuffer()
 
 void VulkanBuffer::CopyToBufferAndClear( VulkanBuffer& Destination )
 {
-	assert( Destination.GetType() != BufferType::Staging );
+	ASSERT( Destination.GetType() != BufferType::Staging );
 
 	auto commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
 
@@ -172,7 +172,7 @@ void VulkanBuffer::Map( void* bufferData, VkDeviceSize sizeToMap ) const //TODO:
 	if ( sizeToMap == -1 )
 		sizeToMap = _Size;
 
-	assert( sizeToMap <= _Size );
+	ASSERT( sizeToMap <= _Size );
 
 	VkResult result = VK_SUCCESS;
 	void* vulkanVirtualMappedMemoryAddress;
@@ -185,17 +185,17 @@ void VulkanBuffer::Map( void* bufferData, VkDeviceSize sizeToMap ) const //TODO:
 	case BufferType::Staging:
 	case BufferType::Dynamic:
 		/*result = vkMapMemory( GraphicsContext::LogicalDevice, _StagingMemory, 0, sizeToMap, 0, &vulkanVirtualMappedMemoryAddress );
-		assert( result == VK_SUCCESS );
+		ASSERT( result == VK_SUCCESS );
 		memcpy( vulkanVirtualMappedMemoryAddress, bufferData, sizeToMap );
 		vkUnmapMemory( GraphicsContext::LogicalDevice, _StagingMemory );*/
 		result = vmaMapMemory( DeviceAllocator, _NativeBuffer.Allocation, &vulkanVirtualMappedMemoryAddress );
-		assert( result == VK_SUCCESS );
+		ASSERT( result == VK_SUCCESS );
 		memcpy( vulkanVirtualMappedMemoryAddress, bufferData, sizeToMap );
 		vmaUnmapMemory( DeviceAllocator, _NativeBuffer.Allocation );
 
 		break;
 	default:
-		assert( false && "Not implemented." );
+		ASSERT_FAIL( "Not implemented." );
 		break;
 	}
 }

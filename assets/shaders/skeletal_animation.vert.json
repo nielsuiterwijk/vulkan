@@ -10,7 +10,7 @@
             "name" : "Bones",
             "members" : [
                 {
-                    "name" : "model",
+                    "name" : "rootTransform",
                     "type" : "mat4",
                     "offset" : 0
                 },
@@ -21,11 +21,6 @@
                         64
                     ],
                     "offset" : 64
-                },
-                {
-                    "name" : "lightPos",
-                    "type" : "vec4",
-                    "offset" : 4160
                 }
             ]
         },
@@ -49,7 +44,7 @@
                 }
             ]
         },
-        "_199" : {
+        "_204" : {
             "name" : "gl_PerVertex",
             "members" : [
                 {
@@ -122,7 +117,7 @@
         {
             "type" : "_49",
             "name" : "Bones",
-            "block_size" : 4176,
+            "block_size" : 4160,
             "set" : 0,
             "binding" : 1
         },

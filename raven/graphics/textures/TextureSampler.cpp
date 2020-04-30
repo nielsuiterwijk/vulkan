@@ -35,6 +35,6 @@ void TextureSampler::Initialize( VkFilter min, VkFilter mag, VkSamplerMipmapMode
 
 	if ( vkCreateSampler( GraphicsContext::LogicalDevice, &samplerInfo, sampler.AllocationCallbacks(), sampler.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to create texture sampler!" );
+		ASSERT_FAIL( "failed to create texture sampler!" );
 	}
 }

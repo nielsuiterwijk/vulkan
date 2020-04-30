@@ -13,7 +13,7 @@ FreeListAllocator::~FreeListAllocator()
 void FreeListAllocator::Initialize( size_t size, void* start )
 {
 	Allocator::Initialize( size, start );
-	assert( size > sizeof( FreeBlock ) );
+	ASSERT( size > sizeof( FreeBlock ) );
 
 	freeBlocks = (FreeBlock*)start;
 
@@ -23,7 +23,7 @@ void FreeListAllocator::Initialize( size_t size, void* start )
 
 void* FreeListAllocator::Allocate( size_t size, size_t alignment )
 {
-	assert( size != 0 );
+	ASSERT( size != 0 );
 
 	std::lock_guard<Mutex> guard( _Mutex );
 
@@ -83,14 +83,14 @@ void* FreeListAllocator::Allocate( size_t size, size_t alignment )
 
 		AllocationHeader* header = (AllocationHeader*)( alignedAddress - sizeof( AllocationHeader ) );
 		header->size = totalSize;
-		assert( alignment <= 0xffff && adjustment <= 0xffff ); //assert when alignment or adjustment does not fit in 16 bits.
+		ASSERT( alignment <= 0xffff && adjustment <= 0xffff ); //ASSERT when alignment or adjustment does not fit in 16 bits.
 		header->alignment = (uint16_t)alignment;
 		header->adjustment = (uint16_t)adjustment;
 
 		_UsedMemory += totalSize;
 		_NumAllocations++;
 
-		assert( ( alignedAddress & ( alignment - 1 ) ) == 0 );
+		ASSERT( ( alignedAddress & ( alignment - 1 ) ) == 0 );
 
 		return (void*)alignedAddress;
 	}

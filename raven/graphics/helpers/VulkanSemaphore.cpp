@@ -10,7 +10,7 @@ VulkanSemaphore::VulkanSemaphore() :
 
 	if ( vkCreateSemaphore( GraphicsContext::LogicalDevice, &semaphoreInfo, semaphore.AllocationCallbacks(), semaphore.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to create semaphores!" );
+		ASSERT_FAIL( "failed to create semaphores!" );
 	}
 }
 

@@ -21,8 +21,8 @@ CommandBuffer::~CommandBuffer()
 
 void CommandBuffer::Initialize()
 {
-	assert( _pCommandBufferPool != nullptr );
-	assert( _pCommandBufferPool->GetNative() != nullptr );
+	ASSERT( _pCommandBufferPool != nullptr );
+	ASSERT( _pCommandBufferPool->GetNative() != nullptr );
 
 	VkCommandBufferAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -32,7 +32,7 @@ void CommandBuffer::Initialize()
 
 	if ( vkAllocateCommandBuffers( GraphicsContext::LogicalDevice, &allocInfo, &commandBuffer ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to allocate command buffers!" );
+		ASSERT_FAIL( "failed to allocate command buffers!" );
 	}
 }
 
@@ -57,7 +57,7 @@ void CommandBuffer::StopRecording()
 
 	if ( vkEndCommandBuffer( commandBuffer ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to record command buffer!" );
+		ASSERT_FAIL( "failed to record command buffer!" );
 	}
 }
 

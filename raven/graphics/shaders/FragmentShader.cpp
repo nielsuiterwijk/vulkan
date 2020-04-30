@@ -1,23 +1,23 @@
 #include "FragmentShader.h"
-#include "io\FileSystem.h"
 
 #include <functional>
 #include <string>
 
-FragmentShader::FragmentShader( const std::string& fileName ) :
-	Shader(),
-	filesLeft( 2 )
+#include "io\FileSystem.h"
+
+FragmentShader::FragmentShader( const std::string& fileName )
+	: Shader()
+	, _FilesLeft( 2 )
 {
-	auto ShaderLoadedLambda = [&](std::vector<char> fileData)
-	{
+	auto ShaderLoadedLambda = [&]( std::vector<char> fileData ) {
 		VkShaderModuleCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		createInfo.codeSize = fileData.size();
-		createInfo.pCode = reinterpret_cast<const uint32_t*>(fileData.data());
+		createInfo.pCode = reinterpret_cast<const uint32_t*>( fileData.data() );
 
-		if (vkCreateShaderModule(GraphicsContext::LogicalDevice, &createInfo, shaderModule.AllocationCallbacks(), shaderModule.Replace()) != VK_SUCCESS)
+		if ( vkCreateShaderModule( GraphicsContext::LogicalDevice, &createInfo, shaderModule.AllocationCallbacks(), shaderModule.Replace() ) != VK_SUCCESS )
 		{
-			throw std::runtime_error("failed to create shader module!");
+			ASSERT_FAIL( "failed to create shader module!" );
 		}
 
 		shaderInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -25,11 +25,11 @@ FragmentShader::FragmentShader( const std::string& fileName ) :
 		shaderInfo.module = shaderModule;
 		shaderInfo.pName = "main";
 
-		filesLeft.fetch_sub(1, std::memory_order_relaxed);
+		_FilesLeft.fetch_sub( 1, std::memory_order_relaxed );
 	};
 
 
-	FileSystem::LoadFileAsync("shaders/" + fileName + ".frag.spv", ShaderLoadedLambda);// std::bind(&FragmentShader::ShaderLoaded, this, std::placeholders::_1) );
+	FileSystem::LoadFileAsync( "shaders/" + fileName + ".frag.spv", ShaderLoadedLambda ); // std::bind(&FragmentShader::ShaderLoaded, this, std::placeholders::_1) );
 	FileSystem::LoadFileAsync( "shaders/" + fileName + ".frag.json", std::bind( &FragmentShader::MetaLoaded, this, std::placeholders::_1 ) );
 }
 
@@ -46,7 +46,7 @@ void FragmentShader::ShaderLoaded( std::vector<char> fileData )
 
 	if ( vkCreateShaderModule( GraphicsContext::LogicalDevice, &createInfo, shaderModule.AllocationCallbacks(), shaderModule.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to create shader module!" );
+		ASSERT_FAIL( "failed to create shader module!" );
 	}
 
 	shaderInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -54,7 +54,7 @@ void FragmentShader::ShaderLoaded( std::vector<char> fileData )
 	shaderInfo.module = shaderModule;
 	shaderInfo.pName = "main";
 
-	filesLeft.fetch_sub( 1, std::memory_order_relaxed );
+	_FilesLeft.fetch_sub( 1, std::memory_order_relaxed );
 
 	//materialQueueMutex.lock();
 	//while (!materialQueue.empty())
@@ -94,5 +94,5 @@ void FragmentShader::MetaLoaded( std::vector<char> fileData )
 		resourceLayouts[ i ].ShaderStage = VK_SHADER_STAGE_FRAGMENT_BIT;
 	}
 
-	filesLeft.fetch_sub( 1, std::memory_order_relaxed );
+	_FilesLeft.fetch_sub( 1, std::memory_order_relaxed );
 }

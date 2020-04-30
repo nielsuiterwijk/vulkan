@@ -64,7 +64,7 @@ RenderPass::RenderPass( VkFormat frameBufferFormat, VkFormat depthFormat ) :
 
 	if ( vkCreateRenderPass( GraphicsContext::LogicalDevice, &renderPassInfo, renderPass.AllocationCallbacks(), renderPass.Replace() ) != VK_SUCCESS )
 	{
-		throw std::runtime_error( "failed to create render pass!" );
+		ASSERT_FAIL( "failed to create render pass!" );
 	}
 }
 
