@@ -79,41 +79,5 @@ namespace Ecs
 	constexpr IdType ToPrimitive( const Entity id ) { return static_cast<std::underlying_type_t<Entity>>( id ); }
 
 
-	/*class Entity
-	{
-
-	public:
-		Entity() = delete;
-		Entity( World& World );
-
-		template <typename ComponentT>
-		ComponentT& Uses()
-		{
-			return Uses< ComponentT>( ComponentT() );
-		}
-		
-		template <typename ComponentT>
-		ComponentT& Uses( ComponentT& Default )
-		{
-			static_assert( std::is_same_v<ComponentT, std::decay_t<ComponentT>> );
-
-			if constexpr ( has_type_index_v<ComponentT> )
-			{
-				const IndexType Index = GetTypeIndex<ComponentT>::value();
-				const IdType Id = GetTypeInfo<ComponentT>::id();
-
-				std::cout << "Component: " << Index << " with id: " << Id << std::endl;
-			}
-			else
-			{
-				ASSERT_FAIL( "Component does not have type available" );
-			}
-
-			return Default;
-		}
-
-
-	private:
-		//World& _World;
-	};*/
+	inline constexpr auto NullEntity = Null {};
 }

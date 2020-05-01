@@ -334,8 +334,10 @@
   <ItemGroup>
     <ClInclude Include="ecs\ComponentInterface.h" />
     <ClInclude Include="ecs\Entity.h" />
+    <ClInclude Include="ecs\Storage.h" />
     <ClInclude Include="ecs\SystemInterface.h" />
     <ClInclude Include="ecs\Types.h" />
+    <ClInclude Include="ecs\View.h" />
     <ClInclude Include="ecs\World.h" />
     <ClInclude Include="events\EventSystem.h" />
     <ClInclude Include="graphics\animations\Animation.h" />

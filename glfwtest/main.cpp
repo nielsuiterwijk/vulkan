@@ -126,11 +126,13 @@ int main()
 		World.Assign<Position>( Entity );
 		const Position* pPos = World.raw<Position>();
 
-		World.Assign<Position2>( Entity, Position2 { 13, 37 } );
 
 		Ecs::Entity Entity2 = World.Create();
 		World.Assign<Position>( Entity2 );
 		World.Assign<Position2>( Entity2, Position2 { 13, 37 } );
+
+		auto SingleView = World.View<Position>();
+		auto MultipleView = World.View<Position, Position2>();
 
 		BounceSystem Bounce;
 

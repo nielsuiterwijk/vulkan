@@ -188,5 +188,7 @@
     <ClInclude Include="helpers\Murmur3.h" />
     <ClInclude Include="ecs\Entity.h" />
     <ClInclude Include="ecs\Types.h" />
+    <ClInclude Include="ecs\View.h" />
+    <ClInclude Include="ecs\Storage.h" />
   </ItemGroup>
 </Project>

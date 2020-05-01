@@ -5,6 +5,8 @@
 
 #include "ComponentInterface.h"
 #include "Entity.h"
+#include "Storage.h"
+#include "View.h"
 
 
 /*
@@ -54,31 +56,10 @@ namespace Ecs
 		virtual void Deallocate( void* pAddress ) = 0;
 	};
 
-
-	class Pool
-	{
-	};
-
-	template <typename ComponentT>
-	class Storage : public Pool
-	{
-	public:
-		template <typename... ArgsT>
-		ComponentT& Emplace( ArgsT&&... Args )
-		{
-			return _Storage.emplace_back( std::forward<ArgsT>( Args )... );
-		}
-
-		const ComponentT* raw() const { return _Storage.data(); }
-
-		std::vector<ComponentT> _Storage;
-	};
-
-
 	struct PoolWrapper
 	{
 		IdType _ComponentId;
-		std::unique_ptr<Pool> _Pool;
+		std::unique_ptr<Ecs::SparseSet<Entity>> _Pool;
 	};
 
 
@@ -110,7 +91,7 @@ namespace Ecs
 		template <typename ComponentT>
 		const ComponentT* raw() const
 		{
-			return GetOrCreatePool<ComponentT>().raw();
+			return GetOrCreatePool<ComponentT>().GetData();
 		}
 
 	public:
@@ -130,13 +111,13 @@ namespace Ecs
 		ComponentT& Assign( const EntityType Entity, ArgsT&&... Args )
 		{
 			ASSERT( IsValid( Entity ) );
-			Storage<ComponentT>& Storage = GetOrCreatePool<ComponentT>(); // .emplace( *this, entity, std::forward<Args>( args )... );
+			Storage<EntityType, ComponentT>& Storage = GetOrCreatePool<ComponentT>(); // .emplace( *this, entity, std::forward<Args>( args )... );
 
-			return Storage.Emplace( std::forward<ArgsT>( Args )... );
+			return Storage.Emplace( Entity, std::forward<ArgsT>( Args )... );
 		}
 
 		template <typename ComponentT>
-		Storage<ComponentT>& GetOrCreatePool() const
+		Ecs::Storage<EntityType, ComponentT>& GetOrCreatePool() const
 		{
 			static_assert( std::is_same_v<ComponentT, std::decay_t<ComponentT>> );
 
@@ -151,14 +132,14 @@ namespace Ecs
 
 				if ( It != _Storage.end() )
 				{
-					return static_cast<Storage<ComponentT>&>( *It->second._Pool );
+					return static_cast<Storage<EntityType, ComponentT>&>( *It->second._Pool );
 				}
 				else
 				{
 					PoolWrapper& Pool = _Storage[ Id ];
 					Pool._ComponentId = Id;
-					Pool._Pool.reset( new Storage<ComponentT>() );
-					return static_cast<Storage<ComponentT>&>( *Pool._Pool );
+					Pool._Pool.reset( new Storage<EntityType, ComponentT>() );
+					return static_cast<Storage<EntityType, ComponentT>&>( *Pool._Pool );
 				}
 			}
 			else
@@ -170,10 +151,17 @@ namespace Ecs
 		}
 
 
+		template <class... ComponentsT>
+		Ecs::View<EntityType, ComponentsT...> View()
+		{
+			static_assert( sizeof...( ComponentsT ) > 0 );
+			return { *this, GetOrCreatePool<ComponentsT>()... };
+		}
+
 	private:
 		//TODO: Implement own map for fun.
 
 		std::vector<EntityType> _Entities;
 		mutable std::unordered_map<IdType, PoolWrapper> _Storage;
 	};
-}
+};
