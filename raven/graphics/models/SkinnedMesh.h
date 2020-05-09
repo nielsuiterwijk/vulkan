@@ -6,6 +6,9 @@
 
 #include "graphics/buffers/UniformBufferDefinition.h"
 
+#include "ecs/SystemInterface.h"
+#include "ecs/Entity.h"
+
 class UniformBuffer;
 
 // Stores information on a single bone
@@ -31,39 +34,49 @@ struct SkinInfo
 	std::vector<glm::mat4> inverseBindMatrices = {};
 };
 
+
+struct SkinnedMeshComponent
+{
+	std::vector<BoneInfo> _Bones;
+	std::vector<SkinInfo> _Skins;
+
+	SkinnedMeshBuffer _ResultBuffer = {};
+};
+
+struct AnimationComponent
+{
+	std::vector<Animation> _Animations;
+	Animation* _pSelectedAnimation = nullptr; //Will be pointing to the object in _Animations
+	float _Time;
+};
+
+class AnimationSystem : Ecs::SystemInterface
+{
+public:
+	virtual void Tick( Ecs::World& World, float Delta ) final;
+};
+
 //TODO: Don't make this inherit from mesh, better to make a 'SkinComponent' and a 'Animation' component
 class SkinnedMesh : public Mesh
 {
 	friend class MeshFileLoader;
 
 public:
-	virtual MeshType GetMeshType() const { return MeshType::Skinned; }
+	virtual MeshType GetMeshType() const final { return MeshType::Skinned; }
 
 	SkinnedMesh();
 	virtual ~SkinnedMesh();
+	
+	virtual Ecs::Entity CreateEntity( Ecs::World& World ) const final;
 
-	void Update( float delta );
-
+private:
 	void AddBone( BoneInfo boneInfo ) { bones.emplace_back( boneInfo ); }
 	void AddSkin( SkinInfo skinInfo ) { skins.emplace_back( skinInfo ); }
 
 	void SetAnimation( const std::vector<Animation>& newAnimations ) { animations = newAnimations; }
 
-	UniformBuffer* AccessUBO() { return localMeshUniformBuffer; }
-
-private:
-	glm::mat4 localMatrix( const BoneInfo& bone );
-	glm::mat4 getMatrix( const BoneInfo& bone );
-
 private:
 	std::vector<BoneInfo> bones;
 	std::vector<SkinInfo> skins;
 	std::vector<Animation> animations;
-
-	Animation* selectedAnimation = nullptr;
-
-	SkinnedMeshBuffer skinnedMeshBuffer = {};
-	UniformBuffer* localMeshUniformBuffer = nullptr;
-
-	float time = 0;
 };

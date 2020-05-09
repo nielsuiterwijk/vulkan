@@ -45,7 +45,7 @@ private:
 	uint64_t updateFrameIndex;
 
 	//objects..
-	std::vector<std::shared_ptr<Model>> models;
+	std::vector<std::shared_ptr<Model>> _Models;
 
 	IMGUIVulkan* _pImguiVulkan = nullptr;
 

@@ -100,9 +100,34 @@ struct Position2
 	float Y;
 };
 
+struct ComplexComponent
+{
+	ComplexComponent()
+	{
+
+	}
+
+	ComplexComponent( ComplexComponent& Other )
+	{
+		*this = Other;
+	}
+
+	ComplexComponent& operator=( ComplexComponent& other )
+	{
+		std::cout << "copy assignment of ComplexComponent\n";
+		return *this;
+	}
+
+	std::string _FileName;
+	int32_t _LineNumber;
+
+	void* _pBuffer;
+	int32_t _Size;
+};
+
 class BounceSystem : public Ecs::SystemInterface
 {
-	void Tick( Ecs::World& World ) final
+	void Tick( Ecs::World& World, float Delta ) final
 	{
 		//Iterator<Position> Start = World.Access<Position>();
 		//
@@ -113,30 +138,87 @@ class BounceSystem : public Ecs::SystemInterface
 	}
 };
 
+void EcsExample()
+{
+	Ecs::World World;
+
+	Ecs::Entity Entity = World.Create();
+	World.Assign<Position>( Entity );
+	const Position* pPos = World.raw<Position>();
+
+
+	Ecs::Entity Entity2 = World.Create();
+	World.Assign<Position>( Entity2, Position { 37, 13 } );
+	World.Assign<Position2>( Entity2, Position2 { 13, 37 } );
+
+	World.Assign<ComplexComponent>( Entity2 );
+
+	auto SingleView = World.View<Position>(); //Returns all entities that have a Position component
+	auto MultipleView = World.View<Position, Position2>(); //Returns all entities that have a Position AND a Position2 component
+
+	auto MultipleView2 = World.View<Position, ComplexComponent>(); //Returns all entities that have a Position AND a Position2 component
+
+	float x1 = 0;
+	for ( const Ecs::Entity Entity : SingleView )
+	{
+		Position& Pos = SingleView.Get<Position>( Entity );
+		x1 += Pos.X;
+
+		//Compile time knows if component is contained in view or not
+		//Position2& Pos2 = SingleView.Get<Position2>( Entity );
+		//x1 += Pos2.X;
+	}
+
+	for ( const Ecs::Entity Entity : MultipleView )
+	{
+		Position& Pos = MultipleView.Get<Position>( Entity );
+		x1 += Pos.X;
+		Position2& Pos2 = MultipleView.Get<Position2>( Entity );
+		x1 += Pos2.X;
+
+		std::tuple<Position&, Position2&> Both = MultipleView.Get<Position, Position2>( Entity );
+		Position& Pos1 = std::get<Position&>( Both );
+		Pos1.X -= 1;
+		x1 += Pos1.X;
+
+		Position& Pos3 = MultipleView.Get<Position>( Entity );
+		x1 += Pos3.X;
+
+		Pos.X -= 1;
+
+		std::tuple<Position, Position2> Both2 = MultipleView.Get<Position, Position2>( Entity );
+		Position& Pos12 = std::get<Position>( Both2 );
+		Pos12.X -= 1;
+		x1 += Pos12.X;
+	}
+
+	for ( const Ecs::Entity Entity : MultipleView2 )
+	{
+		Position& Pos = MultipleView.Get<Position>( Entity );
+		x1 += Pos.X;
+		ComplexComponent& Pos2 = MultipleView2.Get<ComplexComponent>( Entity );
+
+		std::tuple<Position&, ComplexComponent&> Both = MultipleView2.Get<Position, ComplexComponent>( Entity );
+		Position& Pos1 = std::get<Position&>( Both );
+		Pos1.X -= 1;
+		x1 += Pos1.X;
+
+		std::tuple<Position, ComplexComponent> Both2 = MultipleView2.Get<Position, ComplexComponent>( Entity );
+		Position& Pos12 = std::get<Position>( Both2 );
+		Pos12.X -= 1;
+		x1 += Pos12.X;
+	}
+
+	BounceSystem Bounce;
+}
+
 int main()
 {
 #if DEBUG
 	_CrtSetDbgFlag(_CRTDBG_CHECK_ALWAYS_DF);
 #endif
 
-	{
-		Ecs::World World;
-
-		Ecs::Entity Entity = World.Create();
-		World.Assign<Position>( Entity );
-		const Position* pPos = World.raw<Position>();
-
-
-		Ecs::Entity Entity2 = World.Create();
-		World.Assign<Position>( Entity2 );
-		World.Assign<Position2>( Entity2, Position2 { 13, 37 } );
-
-		auto SingleView = World.View<Position>();
-		auto MultipleView = World.View<Position, Position2>();
-
-		BounceSystem Bounce;
-
-	}
+	EcsExample();
 
 	/*Component: 0 with id: -551705722
 Component: 0 with id: 928072754*/

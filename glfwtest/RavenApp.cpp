@@ -16,6 +16,10 @@
 #include "raven/DebugUI.h"
 #include "core/FirstPersonCamera.h"
 
+
+#include "graphics/models/SkinnedMesh.h"
+#include "ecs/World.h"
+
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -32,7 +36,7 @@ RavenApp::RavenApp()
 
 RavenApp::~RavenApp()
 {
-	models.clear();
+	_Models.clear();
 
 	delete _pImguiVulkan;
 
@@ -130,7 +134,7 @@ bool RavenApp::Initialize()
 	_pImguiVulkan->Initialize( );
 
 	std::shared_ptr<Model> model = std::make_shared<Model>( "cesiumman" ); //"boy"
-	models.push_back( model );
+	_Models.push_back( model );
 
 	return true;
 }
@@ -154,12 +158,21 @@ void RavenApp::Run()
 	bool DoUpdate = true;
 	bool DoQuit = false;
 
+	AnimationSystem AnimationUpdater;
+
+	Ecs::World World;
+
 	FirstPersonCamera FPVCamera;
 	Timer UpdateTimer;
 	UpdateTimer.Start();
 
 	std::string MemoryStats1 = {};
 	std::string MemoryStats2 = {};
+
+	Sleep( 1000 );
+
+	Ecs::Entity ModelEntity = _Models[ 0 ]->GetMesh()->CreateEntity( World );
+
 
 	while ( !DoQuit )
 	{
@@ -195,6 +208,8 @@ void RavenApp::Run()
 
 			_InputEvent.Update( _pWindow, Frame::DeltaTime );
 
+			AnimationUpdater.Tick( World, Frame::DeltaTime );
+
 			//std::cout << "Start of frame " << app->updateFrameIndex << " update " << std::endl;
 
 			//if (renderobject->standardMaterial != nullptr)
@@ -207,7 +222,7 @@ void RavenApp::Run()
 				if ( rotation < 0 )
 					rotation = 360.0f;
 
-				for ( std::shared_ptr<Model>& pModel : models )
+				for ( std::shared_ptr<Model>& pModel : _Models )
 				{
 					pModel->Update();
 
@@ -303,7 +318,7 @@ void RavenApp::WindowResizedCallback( GLFWwindow* window, int width, int height 
 
 	RavenApp* app = reinterpret_cast<RavenApp*>( glfwGetWindowUserPointer( window ) );
 
-	for ( std::shared_ptr<Model> pModel : app->models )
+	for ( std::shared_ptr<Model> pModel : app->_Models )
 	{
 		pModel->WindowResized( width, height );
 	}

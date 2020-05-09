@@ -21,6 +21,9 @@ public:
 
 	void Render( CommandBuffer* commandBuffer );
 
+
+	std::shared_ptr<Mesh> GetMesh() const { return mesh; }
+
 	const Camera::Buffer& GetUBO() const { return camera; }
 	Camera::Buffer& AccessUBO() { return camera; }
 

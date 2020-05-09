@@ -4,7 +4,7 @@
 #include "graphics/models/SkinnedMesh.h"
 
 // Get node hierarchy for current animation time
-void Animation::ReadNodeHierarchy( float AnimationTime, int32_t targetBone, std::vector<BoneInfo>& bones ) const
+void Animation::CalculateBones( float AnimationTime, int32_t targetBone, std::vector<BoneInfo>& bones ) const
 {
 	BoneInfo& boneInfo = bones[ targetBone ];
 
@@ -16,7 +16,7 @@ void Animation::ReadNodeHierarchy( float AnimationTime, int32_t targetBone, std:
 
 	for ( uint32_t i = 0; i < boneInfo.children.size(); i++ )
 	{
-		ReadNodeHierarchy( AnimationTime, boneInfo.children[ i ], bones );
+		CalculateBones( AnimationTime, boneInfo.children[ i ], bones );
 	}
 }
 

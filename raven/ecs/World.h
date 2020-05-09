@@ -103,7 +103,7 @@ namespace Ecs
 
 		bool IsValid( const EntityType Entity ) const
 		{
-			const IdType Index = ToPrimitive( Entity ) & TraitsType::entity_mask;
+			const IdType Index = ToPrimitive( Entity ) & TraitsType::index_mask;
 			return Index < _Entities.size() && _Entities[ Index ] == Entity;
 		}
 

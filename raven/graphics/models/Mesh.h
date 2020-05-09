@@ -3,6 +3,8 @@
 #include "graphics/PipelineStateObject.h"
 #include "graphics/buffers/CommandBuffer.h"
 
+#include "ecs/World.h"
+
 
 class VulkanBuffer;
 class Material;
@@ -69,6 +71,7 @@ public:
 	bool IsLoaded() const;
 
 	virtual MeshType GetMeshType() const { return MeshType::Static; }
+	virtual Ecs::Entity CreateEntity( Ecs::World& World ) const { return {}; };
 
 protected:
 	SubMesh* AllocateBuffers( void* vertexData, const uint64_t& vertexDataSize, void* indexData, const uint64_t& indexDataSize, uint32_t triangles );

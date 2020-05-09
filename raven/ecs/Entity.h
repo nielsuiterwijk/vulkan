@@ -17,10 +17,10 @@ namespace Ecs
 		/*! @brief Underlying version type. */
 		using version_type = uint32_t;
 		/*! @brief Difference type. */
-		using difference_type = int64_t;
+		using difference_type = int32_t;
 
 		/*! @brief Mask to use to get the entity number out of an identifier. */
-		static constexpr uint64_t entity_mask = 0xFFFFFFFF;
+		static constexpr uint64_t index_mask = 0xFFFFFFFF;
 		/*! @brief Mask to use to get the version out of an identifier. */
 		static constexpr uint64_t version_mask = 0xFFFFFFFF;
 		/*! @brief Extent of the entity number within an identifier. */
@@ -37,7 +37,7 @@ namespace Ecs
 		template <typename Entity>
 		constexpr operator Entity() const
 		{
-			return Entity { TraitsType<Entity>::entity_mask };
+			return Entity { TraitsType<Entity>::index_mask };
 		}
 
 		constexpr bool operator==( Null ) const { return true; }
@@ -47,7 +47,7 @@ namespace Ecs
 		template <typename Entity>
 		constexpr bool operator==( const Entity entity ) const
 		{
-			return ( ToPrimitive( entity ) & TraitsType<Entity>::entity_mask ) == ToPrimitive( static_cast<Entity>( *this ) );
+			return ( ToPrimitive( entity ) & TraitsType<Entity>::index_mask ) == ToPrimitive( static_cast<Entity>( *this ) );
 		}
 
 		template <typename Entity>
@@ -75,6 +75,7 @@ namespace Ecs
 	enum class Entity : IdType
 	{
 	};
+
 	//This can be used to cast the enum class to its primitive type
 	constexpr IdType ToPrimitive( const Entity id ) { return static_cast<std::underlying_type_t<Entity>>( id ); }
 

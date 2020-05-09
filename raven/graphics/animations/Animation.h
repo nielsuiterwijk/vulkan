@@ -35,7 +35,7 @@ public:
 	}
 
 	// Get node hierarchy for current animation time
-	void ReadNodeHierarchy( float AnimationTime, int32_t rootBone, std::vector<BoneInfo>& bones ) const;
+	void CalculateBones( float AnimationTime, int32_t rootBone, std::vector<BoneInfo>& bones ) const;
 
 	std::vector<BoneAnimation> boneAnimationFrames = {};
 

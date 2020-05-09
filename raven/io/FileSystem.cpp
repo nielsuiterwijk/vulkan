@@ -73,6 +73,7 @@ std::vector<char> FileSystem::ReadFile( const std::string& filename )
 	return buffer;
 }
 
+//TODO: This callback should probably expect some sort of `Result` object which will either contain the data or an error
 void FileSystem::LoadFileAsync( const std::string& fileName, std::function<void( std::vector<char> )> callback )
 {
 	ASSERT( threadStarted );

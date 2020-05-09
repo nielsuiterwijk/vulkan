@@ -36,6 +36,14 @@ void Model::FileLoaded( std::vector<char> fileData )
 	mesh = MeshFileLoader::Dynamic( meshFileName );
 	material = std::make_shared<Material>( materialFileName );
 	material->AddUniformBuffer( new UniformBuffer( { static_cast<void*>( &camera ), sizeof( Camera::Buffer ) } ) );
+	  
+	//TODO: Create ubo for material
+	//if ( mesh->GetMeshType() == MeshType::Skinned )
+	//{
+	//	std::shared_ptr<SkinnedMesh> pSkinnedMesh = std::static_pointer_cast<SkinnedMesh>( mesh );
+	//	material->AddUniformBuffer( pSkinnedMesh->AccessUBO() );
+	//}
+
 
 	std::vector<std::string> texturesJson = jsonObject[ "textures" ];
 
@@ -92,29 +100,20 @@ void Model::Update( )
 	if ( !material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded() )
 		return;
 
-	if ( mesh->GetMeshType() == MeshType::Skinned )
-	{
-		std::shared_ptr<SkinnedMesh> pSkinnedMesh = std::static_pointer_cast<SkinnedMesh>( mesh );
-		pSkinnedMesh->Update( Frame::DeltaTime );
-	}
+	//if ( mesh->GetMeshType() == MeshType::Skinned )
+	//{
+	//	std::shared_ptr<SkinnedMesh> pSkinnedMesh = std::static_pointer_cast<SkinnedMesh>( mesh );
+	//	pSkinnedMesh->Update( Frame::DeltaTime );
+	//}
 }
 
-void Model::Render( CommandBuffer* commandBuffer )
+void Model::Render( CommandBuffer* pCommandBuffer )
 {
 	if ( material == nullptr )
 		return;
 
 	if ( !material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded() )
 		return;
-
-	if ( mesh->GetMeshType() == MeshType::Skinned )
-	{
-		std::shared_ptr<SkinnedMesh> pSkinnedMesh = std::static_pointer_cast<SkinnedMesh>( mesh );
-		if ( material->GetUniformBuffers().size() != 2 )
-		{
-			material->AddUniformBuffer( pSkinnedMesh->AccessUBO() );
-		}
-	}
 
 	material->UpdateUniformBuffers();
 
@@ -128,14 +127,14 @@ void Model::Render( CommandBuffer* commandBuffer )
 		pso.Build( material );
 	}
 
-	vkCmdBindPipeline( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine() );
+	vkCmdBindPipeline( pCommandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine() );
 
 	const std::vector<SubMesh*>& meshes = mesh->GetSubMeshes();
 	for ( int i = 0; i < meshes.size(); i++ )
 	{
 		VkDescriptorSet set = material->AccessDescriptorPool().RetrieveDescriptorSet( material, textures[ i ].get(), material->GetSampler().get() );
-		vkCmdBindDescriptorSets( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, material->AccessDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, nullptr );
+		vkCmdBindDescriptorSets( pCommandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, material->AccessDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, nullptr );
 
-		meshes[ i ]->Draw( commandBuffer );
+		meshes[ i ]->Draw( pCommandBuffer );
 	}
 }
