@@ -12,7 +12,7 @@ struct DataBlock
 	size_t size = 0;
 };
 
-//A small wrapper class that owns the concrete ubo
+//A small wrapper class that owns the concrete ubo. Will not delete referenced data
 class UniformBuffer
 {
 public:

@@ -4,7 +4,6 @@
 #include "graphics\helpers\InstanceWrapper.h"
 #include "threading\Mutex.h"
 
-
 /*
 This object stays alive until end of program. Internally it contains VkCommandBufferPool objects, one per thread using thread_local storage.
 In it's deconstructor it will clean up the created objects, the thread_local objects will keep pointing to, now invalid, VkCommandBufferPool objects
@@ -12,13 +11,13 @@ In it's deconstructor it will clean up the created objects, the thread_local obj
 class CommandBufferPool
 {
 public:
-	CommandBufferPool( VkCommandPoolCreateFlags createFlags );
+	CommandBufferPool(int32_t PoolsRequired );
 	~CommandBufferPool();
 
 	//Give it an empty vector and it will fill it with proper Command Buffers
-	void Create( std::vector<CommandBuffer*>& result, int count );
+	void Create( std::vector<CommandBuffer*>& result, int count, CommandBufferType Type );
 
-	CommandBuffer* Create();
+	CommandBuffer* Create( CommandBufferType Type );
 
 	void Clear();
 	void Free( CommandBuffer* commandBuffer );
@@ -26,16 +25,23 @@ public:
 	void FreeAll();
 	void RecreateAll();
 
-	VkCommandPool GetNative() const;
+	VkCommandPool GetNative( CommandBufferType Type ) const;
 
 private:
 	//This function will setup the thread_local command pool
-	VkCommandPool AccessOrCreateCommandPool();
+	VkCommandPool AccessOrCreateCommandPool( CommandBufferType Type );
 
 private:
-	VkCommandPoolCreateFlags _CreateFlags;
+	struct PoolInfo
+	{
+		VkCommandPool _pPool;
+		VkCommandPoolCreateInfo _Info;
+	};
+
 	Mutex _Mutex;
-	std::vector<VkCommandPool> _AllCommandPools;
+
+	std::vector<std::vector<PoolInfo>> _AllCommandPools;
+	std::vector<std::vector<PoolInfo>> _FreeCommandPools;
 
 	std::vector<std::unique_ptr<CommandBuffer>> commandBuffers;
 };

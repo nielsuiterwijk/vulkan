@@ -22,17 +22,13 @@ public:
 	void SetVertexLayout( const VkVertexInputBindingDescription& input, const std::vector<VkVertexInputAttributeDescription>& descriptions );
 	void SetShader( const std::vector<VkPipelineShaderStageCreateInfo>& shaders );
 
-	const InstanceWrapper<VkPipeline>& GetPipeLine() const;
+	//const InstanceWrapper<VkPipeline>& GetPipeLine() const;
 
-	void Build( std::shared_ptr<Material> pMaterial );
+	VkPipeline Build( std::shared_ptr<Material> pMaterial );
 
 	bool IsDirty() const { return isDirty; }
 
 private:
-	InstanceWrapper<VkPipeline> _GraphicsPipeline;
-
-	std::shared_ptr<Material> _pMaterial;
-
 	bool isDirty;
 
 	VkGraphicsPipelineCreateInfo pipelineInfo;

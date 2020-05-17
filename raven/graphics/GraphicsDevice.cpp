@@ -25,10 +25,7 @@ void GraphicsDevice::Finalize()
 		return;
 
 	GraphicsContext::SwapChain->DestroyFrameBuffers();
-
-	GraphicsContext::CommandBufferPoolTransient->Clear();
-	GraphicsContext::CommandBufferPoolTransient = nullptr;
-
+	
 	GraphicsContext::CommandBufferPool->Clear();
 	GraphicsContext::CommandBufferPool = nullptr;
 
@@ -90,8 +87,7 @@ void GraphicsDevice::Initialize( const glm::u32vec2& windowSize, std::shared_ptr
 		std::cout << "Multiple queue platform" << std::endl;
 	}
 
-	GraphicsContext::CommandBufferPool = std::make_shared<CommandBufferPool>( VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT );
-	GraphicsContext::CommandBufferPoolTransient = std::make_shared<CommandBufferPool>( VK_COMMAND_POOL_CREATE_TRANSIENT_BIT );
+	GraphicsContext::CommandBufferPool = std::make_shared<CommandBufferPool>( 5 );
 
 	GraphicsContext::SwapChain->Connect( GraphicsContext::WindowSize, GraphicsContext::FamilyIndices );
 
@@ -104,7 +100,7 @@ void GraphicsDevice::DestroySwapchain()
 	//destroy Framebuffer
 	GraphicsContext::SwapChain->DestroyFrameBuffers();
 	//Free CommandBuffers
-	GraphicsContext::CommandBufferPool->FreeAll();
+	//GraphicsContext::CommandBufferPool->FreeAll();
 
 	//Destroy Pipeline, Pipeline layout and RenderPass
 	GraphicsContext::RenderPass = nullptr;
@@ -122,7 +118,7 @@ void GraphicsDevice::RebuildSwapchain()
 	GraphicsContext::RenderPass = std::make_shared<RenderPass>( GraphicsContext::SwapChain->GetSurfaceFormat().format, GraphicsContext::SwapChain->GetDepthBuffer().GetFormat() );
 	GraphicsContext::SwapChain->SetupFrameBuffers();
 
-	GraphicsContext::CommandBufferPool->RecreateAll();
+	//GraphicsContext::CommandBufferPool->RecreateAll();
 }
 
 void GraphicsDevice::SwapchainInvalidated()

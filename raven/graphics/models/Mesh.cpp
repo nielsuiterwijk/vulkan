@@ -9,6 +9,14 @@
 #include "helpers/Timer.h"
 #include "tinyobj/tiny_obj_loader.h"
 
+
+void MeshComponent::BuildDescriptors( std::shared_ptr<Material> material )
+{
+	std::shared_ptr<VertexShader> vertexShader = material->GetVertex();
+	vertexShader->GetAttributeDescriptions( attributeDescriptions );
+	vertexShader->GetBindingDescription( bindingDescription );
+}
+
 Mesh::Mesh() :
 	triangleCount( 0 ),
 	vertexFormatFlags( 0 )

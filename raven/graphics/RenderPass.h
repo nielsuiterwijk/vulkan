@@ -12,6 +12,7 @@ public:
 
 	const InstanceWrapper<VkRenderPass>& GetNative() const;
 
+	uint32_t GetHash() const { return _Hash; }
 private:
 	VkAttachmentDescription colorAttachment;
 	VkAttachmentDescription depthAttachment;
@@ -22,4 +23,5 @@ private:
 	VkSubpassDescription subpass;
 
 	InstanceWrapper<VkRenderPass> renderPass;
+	uint32_t _Hash;
 };

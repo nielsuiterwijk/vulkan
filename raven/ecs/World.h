@@ -72,6 +72,10 @@ namespace Ecs
 		AllocatorInterface* pEntityAllocator = nullptr;
 		AllocatorInterface* pComponentPoolAllocator = nullptr;
 
+	public:
+		World() = default;
+		World( World& ) = delete;
+
 	private:
 		template <class T>
 		T* AllocateEntity()
@@ -93,6 +97,7 @@ namespace Ecs
 		{
 			return GetOrCreatePool<ComponentT>().GetData();
 		}
+
 
 	public:
 		EntityType Create( int32_t Num = 1 )
@@ -126,7 +131,6 @@ namespace Ecs
 				const IndexType Index = GetTypeIndex<ComponentT>::value();
 				const IdType Id = GetTypeInfo<ComponentT>::id();
 
-				std::cout << "Component: " << Index << " with id: " << Id << std::endl;
 
 				auto It = _Storage.find( Id );
 
@@ -136,6 +140,8 @@ namespace Ecs
 				}
 				else
 				{
+					std::cout << "Component: " << Index << " with id: " << Id << std::endl;
+
 					PoolWrapper& Pool = _Storage[ Id ];
 					Pool._ComponentId = Id;
 					Pool._Pool.reset( new Storage<EntityType, ComponentT>() );

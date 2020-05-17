@@ -1,4 +1,5 @@
 #include "CommandBuffer.h"
+
 #include "graphics\GraphicsContext.h"
 #include "graphics\GraphicsDevice.h"
 #include "graphics\VulkanSwapChain.h"
@@ -6,10 +7,10 @@
 
 
 
-CommandBuffer::CommandBuffer( CommandBufferPool* commandBufferPool ) :
-	_pCommandBufferPool( commandBufferPool )
+CommandBuffer::CommandBuffer( VkCommandPool commandBufferPool )
+	: _pCommandBufferPool( commandBufferPool )
 {
-	
+
 	Initialize();
 }
 
@@ -22,11 +23,10 @@ CommandBuffer::~CommandBuffer()
 void CommandBuffer::Initialize()
 {
 	ASSERT( _pCommandBufferPool != nullptr );
-	ASSERT( _pCommandBufferPool->GetNative() != nullptr );
 
 	VkCommandBufferAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.commandPool = _pCommandBufferPool->GetNative();
+	allocInfo.commandPool = _pCommandBufferPool;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandBufferCount = 1;
 
@@ -38,7 +38,8 @@ void CommandBuffer::Initialize()
 
 void CommandBuffer::Finalize()
 {
-	vkFreeCommandBuffers( GraphicsContext::LogicalDevice, _pCommandBufferPool->GetNative(), 1, &commandBuffer );
+	//Problem on exit: we dont need to care about freeing, we can just do manually
+	vkFreeCommandBuffers( GraphicsContext::LogicalDevice, _pCommandBufferPool, 1, &commandBuffer );
 }
 
 void CommandBuffer::StartRecording( VkCommandBufferUsageFlagBits flag )

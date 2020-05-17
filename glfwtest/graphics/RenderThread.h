@@ -3,12 +3,15 @@
 #include "graphics/helpers/VulkanSemaphore.h"
 #include "helpers/Timer.h"
 
+#include "ecs/World.h"
 #include <functional>
 
 class CommandBuffer;
 class RavenApp;
 
-typedef std::function<void( CommandBuffer* )> RenderCallback;
+typedef std::function<void( CommandBuffer* )> RawRenderCallback;
+typedef std::function<void( Ecs::Entity Entity, CommandBuffer* )> RenderCallback;
+
 
 class CRenderThread
 {
@@ -29,16 +32,22 @@ public:
 	std::condition_variable_any& AccessRunCondition() { return _RenderRunCondition; }
 	uint64_t GetRenderFrame() const { return _RenderFrame; }
 
-	void QueueRender( RenderCallback Callback ) { _Callbacks.emplace_back( Callback ); }
+	static void QueueRender( RawRenderCallback Callback ) { pInstance->_RawCallbacks.emplace_back( Callback ); }
+	static void QueueRender( RenderCallback Callback ) { pInstance->_Callbacks.emplace_back( Callback ); }
 
 private:
 	void ThreadRunner();
 	void DoFrame();
 
+private:
+
+	static CRenderThread* pInstance;
+
 	std::thread _Thread;
 
 
 	std::vector<CommandBuffer*> _CommandBuffers;
+	std::vector<RawRenderCallback> _RawCallbacks;
 	std::vector<RenderCallback> _Callbacks;
 
 	uint64_t _RenderFrame = 0;

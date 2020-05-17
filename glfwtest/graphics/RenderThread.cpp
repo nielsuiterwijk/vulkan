@@ -1,5 +1,8 @@
 #include "RenderThread.h"
+
 #include "graphics/GraphicsContext.h"
+
+CRenderThread* CRenderThread::pInstance = nullptr;
 
 void CRenderThread::Start()
 {
@@ -8,6 +11,10 @@ void CRenderThread::Start()
 
 void CRenderThread::Initialize()
 {
+	ASSERT( CRenderThread::pInstance == nullptr );
+
+	CRenderThread::pInstance = this;
+
 	VkFenceCreateInfo FenceInfo = {};
 	FenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	FenceInfo.pNext = VK_NULL_HANDLE;
@@ -16,7 +23,7 @@ void CRenderThread::Initialize()
 	VkResult result = vkCreateFence( GraphicsContext::LogicalDevice, &FenceInfo, GraphicsContext::GlobalAllocator.Get(), &_RenderFence );
 	assert( result == VK_SUCCESS );
 
-	_pRenderSemaphore.reset( new VulkanSemaphore() );		
+	_pRenderSemaphore.reset( new VulkanSemaphore() );
 
 #if MULTITHREADED_RENDERING == 0
 	GraphicsContext::CommandBufferPool->Create( _CommandBuffers, GraphicsContext::SwapChain->GetAmountOfFrameBuffers() );
@@ -32,6 +39,8 @@ void CRenderThread::Stop()
 
 void CRenderThread::Destroy()
 {
+	ASSERT( CRenderThread::pInstance != nullptr );
+	CRenderThread::pInstance = nullptr;
 	_pRenderSemaphore = nullptr;
 	vkDestroyFence( GraphicsContext::LogicalDevice, _RenderFence, GraphicsContext::GlobalAllocator.Get() );
 }
@@ -39,7 +48,7 @@ void CRenderThread::Destroy()
 void CRenderThread::ThreadRunner()
 {
 #if MULTITHREADED_RENDERING == 1
-	GraphicsContext::CommandBufferPool->Create( _CommandBuffers, GraphicsContext::SwapChain->GetAmountOfFrameBuffers() );
+	GraphicsContext::CommandBufferPool->Create( _CommandBuffers, GraphicsContext::SwapChain->GetAmountOfFrameBuffers(), CommandBufferType::AutoReset );
 	while ( _ShouldRun )
 	{
 		if ( GraphicsContext::LogicalDevice == nullptr )
@@ -102,7 +111,7 @@ void CRenderThread::DoFrame()
 		_AcquireTimer.Stop();
 		_DrawCallTimer.Start();
 
-		CommandBuffer* pCommandBuffer =  _CommandBuffers[ imageIndex ];
+		CommandBuffer* pCommandBuffer = _CommandBuffers[ imageIndex ];
 		{
 
 			//std::cout << "current index: " << GraphicsContext::DescriptorPool->GetCurrentIndex() << std::endl;
@@ -129,14 +138,19 @@ void CRenderThread::DoFrame()
 			}
 
 			//TODO: Make the prepare threadsafe by doing a copy?
-			
-			for ( RenderCallback& Callback : _Callbacks)
+
+			for ( RawRenderCallback& Callback : _RawCallbacks )
 			{
 				Callback( pCommandBuffer );
 			}
 
-			_Callbacks.clear();
-			
+			//for ( RenderCallback& Callback : _Callbacks )
+			//{
+			//	Callback( (Ecs::Entity)0, pCommandBuffer );
+			//}
+
+			_RawCallbacks.clear();
+
 			{
 				vkCmdEndRenderPass( pCommandBuffer->GetNative() );
 				pCommandBuffer->StopRecording();
@@ -177,7 +191,7 @@ void CRenderThread::DoFrame()
 
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &pCommandBuffer->GetNative();
-		
+
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = RenderSemaphore;
 		GraphicsContext::QueueLock.lock();
@@ -236,8 +250,8 @@ void CRenderThread::DoFrame()
 	{
 		if ( _AccumelatedTime > 2.0f )
 		{
-			std::cout << "a: " << _AcquireTimer.GetTimeInSeconds() << " d: " << _DrawCallTimer.GetTimeInSeconds()
-					  << " q: " << _RenderQueuTimer.GetTimeInSeconds() << " p: " << _PresentTimer.GetTimeInSeconds() << std::endl;
+			std::cout << "a: " << _AcquireTimer.GetTimeInSeconds() << " d: " << _DrawCallTimer.GetTimeInSeconds() << " q: " << _RenderQueuTimer.GetTimeInSeconds() << " p: " << _PresentTimer.GetTimeInSeconds()
+					  << std::endl;
 			_AccumelatedTime -= 2.0f;
 		}
 		//std::cout << "End of frame " << app->renderFrameIndex - 1 << " render " << std::endl;

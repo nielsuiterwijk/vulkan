@@ -53,6 +53,7 @@
     <ClCompile Include="graphics\memory\VulkanMemoryAllocator.cpp" />
     <ClCompile Include="io\InputEvent.cpp" />
     <ClCompile Include="ecs\Entity.cpp" />
+    <ClCompile Include="graphics\PipelineStateCache.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -190,5 +191,6 @@
     <ClInclude Include="ecs\Types.h" />
     <ClInclude Include="ecs\View.h" />
     <ClInclude Include="ecs\Storage.h" />
+    <ClInclude Include="graphics\PipelineStateCache.h" />
   </ItemGroup>
 </Project>

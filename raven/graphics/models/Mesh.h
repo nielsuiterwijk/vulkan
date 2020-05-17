@@ -53,6 +53,25 @@ enum class MeshType
 	Skinned
 };
 
+struct MeshComponent
+{
+	uint32_t triangleCount;
+	uint32_t vertexFormatFlags;
+
+	VkVertexInputBindingDescription bindingDescription;
+	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+
+	std::vector<SubMesh*> subMeshes;
+
+	void BuildDescriptors( std::shared_ptr<Material> material );
+};
+
+class AABBComponent
+{
+	glm::vec3 _Min;
+	glm::vec3 _Max;
+};
+
 class Mesh
 {
 public:
@@ -84,7 +103,4 @@ protected:
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
 	std::vector<SubMesh*> subMeshes;
-
-	glm::vec3 aabbMin;
-	glm::vec3 aabbMax;
 };

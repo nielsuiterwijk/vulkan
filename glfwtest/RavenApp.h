@@ -8,7 +8,7 @@
 
 struct GLFWwindow;
 class Mesh;
-class Model;
+class GameObject;
 
 class RavenApp
 {
@@ -45,7 +45,7 @@ private:
 	uint64_t updateFrameIndex;
 
 	//objects..
-	std::vector<std::shared_ptr<Model>> _Models;
+	std::vector<std::shared_ptr<GameObject>> _GameObjects;
 
 	IMGUIVulkan* _pImguiVulkan = nullptr;
 

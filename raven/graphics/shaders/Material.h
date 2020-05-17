@@ -33,6 +33,8 @@ public:
 
 	bool IsLoaded() const;
 
+	uint32_t Hash() const;
+
 private:
 	void FileLoaded( std::vector<char> fileData );
 
@@ -48,4 +50,12 @@ private:
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
 	std::vector<UniformBuffer*> uniformBuffers;
+};
+
+
+struct MaterialComponent
+{
+	std::shared_ptr<Material> _Material;
+
+	operator std::shared_ptr<Material>() const { return _Material; }
 };

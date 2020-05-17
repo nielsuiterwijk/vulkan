@@ -5,7 +5,6 @@ VkPhysicalDevice GraphicsContext::PhysicalDevice = VK_NULL_HANDLE;
 VulkanAllocator GraphicsContext::GlobalAllocator;
 std::unique_ptr<GPUAllocator> GraphicsContext::DeviceAllocator = nullptr;
 
-std::shared_ptr<CommandBufferPool> GraphicsContext::CommandBufferPoolTransient = nullptr;
 std::shared_ptr<CommandBufferPool> GraphicsContext::CommandBufferPool = nullptr;
 std::shared_ptr<RenderPass> GraphicsContext::RenderPass = nullptr;
 std::shared_ptr<VulkanSwapChain> GraphicsContext::SwapChain = nullptr;

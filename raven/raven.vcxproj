@@ -305,6 +305,7 @@
     <ClCompile Include="graphics\models\MeshFileLoader.cpp" />
     <ClCompile Include="graphics\models\SkinnedMesh.cpp" />
     <ClCompile Include="graphics\models\SubMesh.cpp" />
+    <ClCompile Include="graphics\PipelineStateCache.cpp" />
     <ClCompile Include="graphics\PipelineStateObject.cpp" />
     <ClCompile Include="graphics\RenderPass.cpp" />
     <ClCompile Include="graphics\shaders\FragmentShader.cpp" />
@@ -351,6 +352,7 @@
     <ClInclude Include="graphics\FrameBuffer.h" />
     <ClInclude Include="graphics\GraphicsContext.h" />
     <ClInclude Include="graphics\helpers\Color.h" />
+    <ClInclude Include="graphics\PipelineStateCache.h" />
     <ClInclude Include="helpers\Murmur3.h" />
     <ClInclude Include="helpers\SystemInfo.h" />
     <ClInclude Include="helpers\Utility.h" />

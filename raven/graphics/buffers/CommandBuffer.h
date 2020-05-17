@@ -6,10 +6,19 @@
 
 class CommandBufferPool;
 
+enum class CommandBufferType
+{
+	Transient = 0x01,
+	AutoReset = 0x02
+};
+
+static_assert( (size_t)CommandBufferType::Transient == VK_COMMAND_POOL_CREATE_TRANSIENT_BIT );
+static_assert( (size_t)CommandBufferType::AutoReset == VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT );
+
 class CommandBuffer
 {
 public:
-	CommandBuffer( CommandBufferPool* commandBufferPool );
+	CommandBuffer( VkCommandPool commandBufferPool );
 	~CommandBuffer();
 
 	void Initialize();
@@ -23,5 +32,5 @@ public:
 private:
 	VkCommandBuffer commandBuffer;
 
-	CommandBufferPool* _pCommandBufferPool;
+	VkCommandPool _pCommandBufferPool;
 };

@@ -286,7 +286,7 @@
     <ClCompile Include="core\FirstPersonCamera.cpp" />
     <ClCompile Include="core\Frame.cpp" />
     <ClCompile Include="graphics\Camera.cpp" />
-    <ClCompile Include="graphics\model.cpp" />
+    <ClCompile Include="graphics\GameObject.cpp" />
     <ClCompile Include="graphics\RenderThread.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RavenApp.cpp" />
@@ -296,7 +296,8 @@
     <ClInclude Include="core\FirstPersonCamera.h" />
     <ClInclude Include="core\Frame.h" />
     <ClInclude Include="graphics\Camera.h" />
-    <ClInclude Include="graphics\model.h" />
+    <ClInclude Include="graphics\GameObject.h" />
+    <ClInclude Include="graphics\RenderSystem.h" />
     <ClInclude Include="graphics\RenderThread.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="RavenApp.h" />

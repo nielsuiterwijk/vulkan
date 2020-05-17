@@ -32,7 +32,7 @@ public:
 	void NewFrame( float deltaTime );
 	void Render( CommandBuffer* commandBuffer );
 
-	bool IsReady() const { return !psoBasic2D.IsDirty(); }
+	bool IsReady() const { return _Basic2d != nullptr; }
 
 private:
 	void MouseButtonCallback( int button, int action, int mods );
@@ -56,11 +56,12 @@ private:
 	UniformBuffer* vulkanUbo;
 	ScaleTranslateUBO ubo;
 
-	std::shared_ptr<Material> material;
+	std::shared_ptr<Material> _Material;
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
-	PipelineStateObject psoBasic2D;
+	//PipelineStateObject psoBasic2D;
+	VkPipeline _Basic2d = nullptr;
 
 	VulkanBuffer* indexBuffer;
 	VulkanBuffer* vertexBuffer; //TODO: unique_ptr?
@@ -79,6 +80,4 @@ private:
 
 	GLFWwindow* _pWindow;
 
-	VkVertexInputBindingDescription binding_desc = {};
-	std::vector<VkVertexInputAttributeDescription> attribute_desc;
 };

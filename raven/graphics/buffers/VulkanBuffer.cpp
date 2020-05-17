@@ -95,7 +95,7 @@ void VulkanBuffer::CopyToBufferAndClear( VulkanBuffer& Destination )
 {
 	ASSERT( Destination.GetType() != BufferType::Staging );
 
-	auto commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
+	auto commandBuffer = GraphicsContext::CommandBufferPool->Create( CommandBufferType::Transient );
 
 	commandBuffer->StartRecording( VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT );
 
@@ -119,14 +119,14 @@ void VulkanBuffer::CopyToBufferAndClear( VulkanBuffer& Destination )
 		vkQueueWaitIdle( GraphicsContext::TransportQueue );
 	}
 
-	GraphicsContext::CommandBufferPoolTransient->Free( commandBuffer );
+	GraphicsContext::CommandBufferPool->Free( commandBuffer );
 
 	Free();
 }
 
 void VulkanBuffer::CopyToImageAndClear( VkImage image, uint32_t width, uint32_t height )
 {
-	auto commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
+	auto commandBuffer = GraphicsContext::CommandBufferPool->Create( CommandBufferType::Transient );
 
 	commandBuffer->StartRecording( VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT );
 
@@ -159,7 +159,7 @@ void VulkanBuffer::CopyToImageAndClear( VkImage image, uint32_t width, uint32_t 
 
 	GraphicsContext::QueueLock.unlock();
 
-	GraphicsContext::CommandBufferPoolTransient->Free( commandBuffer );
+	GraphicsContext::CommandBufferPool->Free( commandBuffer );
 
 	Free();
 }

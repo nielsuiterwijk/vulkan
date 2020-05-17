@@ -8,6 +8,8 @@
 #include "graphics/textures/TextureLoader.h"
 #include "graphics/textures/TextureSampler.h"
 
+#include "helpers/Murmur3.h"
+
 #include <iostream>
 #include <thread>
 #include <windows.h>
@@ -37,6 +39,15 @@ Material::~Material()
 	sampler = nullptr;
 
 	std::cout << "Destroyed material" << std::endl;
+}
+
+uint32_t Material::Hash() const
+{
+	ASSERT( IsLoaded() );
+	uint32_t Hash = Murmur3::Hash( vertex->GetFileName() );
+	Hash = Murmur3::Hash( fragment->GetFileName(), Hash );
+
+	return Hash;
 }
 
 void Material::FileLoaded( std::vector<char> fileData )

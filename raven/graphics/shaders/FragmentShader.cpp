@@ -29,6 +29,7 @@ FragmentShader::FragmentShader( const std::string& fileName )
 	};
 
 
+	_ShaderFileName = "shaders/" + fileName;
 	FileSystem::LoadFileAsync( "shaders/" + fileName + ".frag.spv", ShaderLoadedLambda ); // std::bind(&FragmentShader::ShaderLoaded, this, std::placeholders::_1) );
 	FileSystem::LoadFileAsync( "shaders/" + fileName + ".frag.json", std::bind( &FragmentShader::MetaLoaded, this, std::placeholders::_1 ) );
 }

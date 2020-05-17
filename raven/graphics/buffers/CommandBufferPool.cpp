@@ -4,56 +4,96 @@
 #include "graphics\GraphicsDevice.h"
 
 
-thread_local VkCommandPool tl_CommandPool = nullptr;
+//Kinda hard coded atm.
+constexpr int32_t TypesSupported = 2;
 
-CommandBufferPool::CommandBufferPool( VkCommandPoolCreateFlags createFlags ) :
-	_CreateFlags( createFlags )
+VkCommandPool& AccessThreadLocal( CommandBufferType Type )
 {
-	
+	thread_local VkCommandPool tl_CommandPoolPerType[ TypesSupported ];
+
+	int32_t Index = Utility::ctz( static_cast<uint32_t>( Type ) );
+	return tl_CommandPoolPerType[ Index ];
+}
+#define var my_var()
+
+
+/*
+	VK_COMMAND_POOL_CREATE_TRANSIENT_BIT: Hint that command buffers are rerecorded with new commands very often (may change memory allocation behavior)
+	VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT: Allow command buffers to be rerecorded individually, without this flag they all have to be reset together
+*/
+
+CommandBufferPool::CommandBufferPool( int32_t PoolsRequired )
+{
+	_AllCommandPools.reserve( TypesSupported );
+
+	for ( int32_t i = 0; i < TypesSupported; i++ )
+	{
+		VkCommandPoolCreateFlags CreateFlags = 1 << i;
+
+		VkCommandPoolCreateInfo poolInfo = {};
+		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		poolInfo.queueFamilyIndex = GraphicsContext::FamilyIndices.graphicsFamily;
+		poolInfo.flags = CreateFlags;
+
+		_AllCommandPools.push_back( {} );
+		_AllCommandPools[ i ].reserve( PoolsRequired );
+
+		for ( int32_t j = 0; j < PoolsRequired; j++ )
+		{
+
+			VkCommandPool pCommandPool;
+			if ( vkCreateCommandPool( GraphicsContext::LogicalDevice, &poolInfo, GraphicsContext::GlobalAllocator.Get(), &pCommandPool ) != VK_SUCCESS )
+			{
+				ASSERT_FAIL( "failed to create command pool!" );
+			}
+			else
+			{
+				_AllCommandPools[ i ].push_back( { pCommandPool, poolInfo } );
+			}
+		}
+	}
+
+	_FreeCommandPools = _AllCommandPools;
 }
 
 CommandBufferPool::~CommandBufferPool()
 {
-	for ( VkCommandPool Pool : _AllCommandPools )
+	_FreeCommandPools.clear();
+
+	for ( auto& PoolPerType : _AllCommandPools )
 	{
-		vkDestroyCommandPool( GraphicsContext::LogicalDevice, Pool, GraphicsContext::GlobalAllocator.Get() );
+		for ( auto& PoolInfo : PoolPerType )
+		{
+			vkDestroyCommandPool( GraphicsContext::LogicalDevice, PoolInfo._pPool, GraphicsContext::GlobalAllocator.Get() );
+		}
 	}
 }
 
-VkCommandPool CommandBufferPool::AccessOrCreateCommandPool()
+VkCommandPool CommandBufferPool::AccessOrCreateCommandPool( CommandBufferType Type )
 {
-	if ( tl_CommandPool == nullptr )
+	if ( AccessThreadLocal( Type ) == nullptr )
 	{
-		VkCommandPoolCreateInfo poolInfo = {};
-		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		poolInfo.queueFamilyIndex = GraphicsContext::FamilyIndices.graphicsFamily;
-		poolInfo.flags = _CreateFlags; // Optional
+		std::scoped_lock<Mutex> Lock( _Mutex );
 
-		/*
-			VK_COMMAND_POOL_CREATE_TRANSIENT_BIT: Hint that command buffers are rerecorded with new commands very often (may change memory allocation behavior)
-			VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT: Allow command buffers to be rerecorded individually, without this flag they all have to be reset together
-		*/
+		int32_t Index = Utility::ctz( static_cast<uint32_t>( Type ) );
+		auto& Free = _FreeCommandPools[ Index ];
 
-		if ( vkCreateCommandPool( GraphicsContext::LogicalDevice, &poolInfo, GraphicsContext::GlobalAllocator.Get(), &tl_CommandPool ) != VK_SUCCESS )
+		if ( Free.empty() )
 		{
-			ASSERT_FAIL( "failed to create command pool!" );
-		}
-		else
-		{
-			std::scoped_lock<Mutex> Lock( _Mutex );
-
-			_AllCommandPools.push_back( tl_CommandPool );
+			ASSERT_FAIL( "Not enough command pools allocated" );
+			return VK_NULL_HANDLE;
 		}
 
+		AccessThreadLocal( Type ) = Utility::PopBack( Free )._pPool;
 	}
 
-	return tl_CommandPool;
+	return AccessThreadLocal( Type );
 }
 
-VkCommandPool CommandBufferPool::GetNative() const
+VkCommandPool CommandBufferPool::GetNative( CommandBufferType Type ) const
 {
-	ASSERT( tl_CommandPool != nullptr );
-	return tl_CommandPool;
+	ASSERT( AccessThreadLocal( Type ) != nullptr );
+	return AccessThreadLocal( Type );
 }
 
 /*
@@ -63,21 +103,21 @@ VK_COMMAND_BUFFER_LEVEL_SECONDARY :
 	Cannot be submitted directly, but can be called from primary command buffers.
 */
 
-void CommandBufferPool::Create( std::vector<CommandBuffer*>& result, int count )
+void CommandBufferPool::Create( std::vector<CommandBuffer*>& result, int count, CommandBufferType Type )
 {
 	result.reserve( count );
 	for ( size_t i = 0; i < count; i++ )
 	{
-		result.push_back( Create() );
+		result.push_back( Create( Type ) );
 	}
 }
 
-CommandBuffer* CommandBufferPool::Create()
+CommandBuffer* CommandBufferPool::Create( CommandBufferType Type )
 {
-	AccessOrCreateCommandPool();
+	VkCommandPool ThreadLocalPool = AccessOrCreateCommandPool( Type );
 	//Note: needs to be synchronized as it can be called from multiple threads.
 	std::scoped_lock<Mutex> Lock( _Mutex );
-	commandBuffers.emplace_back( std::make_unique<CommandBuffer>( this ) );
+	commandBuffers.emplace_back( std::make_unique<CommandBuffer>( ThreadLocalPool ) );
 
 	return commandBuffers.back().get();
 }

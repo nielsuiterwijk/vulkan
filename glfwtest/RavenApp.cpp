@@ -1,11 +1,19 @@
 #include "RavenApp.h"
 
+#include <iostream>
+#include <thread>
+#include <vector>
+
+#include "core/FirstPersonCamera.h"
 #include "core/Frame.h"
+#include "ecs/World.h"
+#include "graphics/GameObject.h"
 #include "graphics/GraphicsDevice.h"
+#include "graphics/RenderSystem.h"
 #include "graphics/VulkanInstance.h"
 #include "graphics/memory/GPUAllocator.h"
-#include "graphics/model.h"
 #include "graphics/models/Mesh.h"
+#include "graphics/models/SkinnedMesh.h"
 #include "graphics/textures/TextureLoader.h"
 #include "graphics\PipelineStateObject.h"
 #include "graphics\VulkanSwapChain.h"
@@ -14,15 +22,6 @@
 #include "helpers/Helpers.h"
 #include "imgui/imgui.h"
 #include "raven/DebugUI.h"
-#include "core/FirstPersonCamera.h"
-
-
-#include "graphics/models/SkinnedMesh.h"
-#include "ecs/World.h"
-
-#include <iostream>
-#include <thread>
-#include <vector>
 
 std::vector<std::function<void( int, int )>> RavenApp::OnWindowResized = {};
 
@@ -36,7 +35,7 @@ RavenApp::RavenApp()
 
 RavenApp::~RavenApp()
 {
-	_Models.clear();
+	_GameObjects.clear();
 
 	delete _pImguiVulkan;
 
@@ -116,10 +115,7 @@ bool RavenApp::Initialize()
 	std::shared_ptr<VulkanSwapChain> vulkanSwapChain = std::make_shared<VulkanSwapChain>();
 
 	GraphicsContext::GlobalAllocator.PrintStats();
-	VkResult result = glfwCreateWindowSurface( GraphicsContext::VulkanInstance->GetNative(),
-											   _pWindow,
-											   vulkanSwapChain->GetSurface().AllocationCallbacks(),
-											   vulkanSwapChain->GetSurface().Replace() );
+	VkResult result = glfwCreateWindowSurface( GraphicsContext::VulkanInstance->GetNative(), _pWindow, vulkanSwapChain->GetSurface().AllocationCallbacks(), vulkanSwapChain->GetSurface().Replace() );
 	assert( result == VK_SUCCESS );
 
 	GraphicsDevice::Instance().Initialize( glm::u32vec2( 1280, 720 ), vulkanSwapChain );
@@ -131,10 +127,10 @@ bool RavenApp::Initialize()
 	_pImguiVulkan = new IMGUIVulkan( _pWindow );
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext( nullptr );
-	_pImguiVulkan->Initialize( );
+	_pImguiVulkan->Initialize();
 
-	std::shared_ptr<Model> model = std::make_shared<Model>( "cesiumman" ); //"boy"
-	_Models.push_back( model );
+	std::shared_ptr<GameObject> model = std::make_shared<GameObject>( "cesiumman" ); //"boy"
+	_GameObjects.push_back( model );
 
 	return true;
 }
@@ -159,6 +155,7 @@ void RavenApp::Run()
 	bool DoQuit = false;
 
 	AnimationSystem AnimationUpdater;
+	RenderSystem ECSRenderer;
 
 	Ecs::World World;
 
@@ -169,17 +166,20 @@ void RavenApp::Run()
 	std::string MemoryStats1 = {};
 	std::string MemoryStats2 = {};
 
-	Sleep( 1000 );
-
-	Ecs::Entity ModelEntity = _Models[ 0 ]->GetMesh()->CreateEntity( World );
+	while ( !_GameObjects[ 0 ]->IsLoaded() )
+	{
+		Sleep( 1 );
+	}
+	
+	Ecs::Entity Instance = _GameObjects[ 0 ]->CreateInstance( World );
 
 
 	while ( !DoQuit )
 	{
-		//update		
+		//update
 		glfwPollEvents();
 		DoQuit = glfwWindowShouldClose( _pWindow );
-			   
+
 
 		while ( updateFrameIndex > _RenderThread.GetRenderFrame() )
 		{
@@ -190,13 +190,14 @@ void RavenApp::Run()
 		UpdateTimer.Stop();
 		Frame::DeltaTime = UpdateTimer.GetTimeInSeconds();
 		UpdateTimer.Start();
-		
+
 
 		StatsTimer += Frame::DeltaTime;
 
 		if ( StatsTimer > 30.0f )
 		{
-			MemoryStats1 = "CPU Memory: " + Helpers::MemorySizeToString( GraphicsContext::GlobalAllocator.BytesAllocated() ); ;
+			MemoryStats1 = "CPU Memory: " + Helpers::MemorySizeToString( GraphicsContext::GlobalAllocator.BytesAllocated() );
+			;
 			MemoryStats2 = "GPU Memory: " + Helpers::MemorySizeToString( GraphicsContext::DeviceAllocator->BytesAllocated() );
 			StatsTimer = 0;
 		}
@@ -222,15 +223,13 @@ void RavenApp::Run()
 				if ( rotation < 0 )
 					rotation = 360.0f;
 
-				for ( std::shared_ptr<Model>& pModel : _Models )
+				for ( std::shared_ptr<GameObject>& pModel : _GameObjects )
 				{
 					pModel->Update();
 
-					auto RenderCallback = [&]( CommandBuffer* pBuffer ) {
-						pModel->Render( pBuffer );
-					};
+					auto RenderCallback = [&]( CommandBuffer* pBuffer ) { pModel->Render( pBuffer ); };
 
-					_RenderThread.QueueRender( RenderCallback );
+					CRenderThread::QueueRender( RenderCallback );
 
 					Camera::Buffer& camera = pModel->AccessUBO();
 
@@ -264,18 +263,20 @@ void RavenApp::Run()
 				UI.TimingGraph( Frame::DeltaTime, _RenderThread._TotalTimer.GetTimeInSeconds() );
 
 				ImGui::Begin( "MemoryStats" );
-				
+
 				ImGui::TextWrapped( MemoryStats1.c_str() );
 				ImGui::TextWrapped( MemoryStats2.c_str() );
 
 				ImGui::End();
 
-				auto RenderCallback = [&]( CommandBuffer* pBuffer ) {
-					_pImguiVulkan->Render( pBuffer );
-				};
+				auto RenderCallback = [&]( CommandBuffer* pBuffer ) { _pImguiVulkan->Render( pBuffer ); };
 
-				_RenderThread.QueueRender( RenderCallback );
+				CRenderThread::QueueRender( RenderCallback );
 			}
+
+			auto EcsRenderCallback = [&]( CommandBuffer* pBuffer ) { ECSRenderer.Tick( World, pBuffer ); };
+
+			CRenderThread::QueueRender( EcsRenderCallback );
 
 			++updateFrameIndex;
 
@@ -318,7 +319,7 @@ void RavenApp::WindowResizedCallback( GLFWwindow* window, int width, int height 
 
 	RavenApp* app = reinterpret_cast<RavenApp*>( glfwGetWindowUserPointer( window ) );
 
-	for ( std::shared_ptr<Model> pModel : app->_Models )
+	for ( std::shared_ptr<GameObject> pModel : app->_GameObjects )
 	{
 		pModel->WindowResized( width, height );
 	}

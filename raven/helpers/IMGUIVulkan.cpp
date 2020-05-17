@@ -1,5 +1,6 @@
 #include "IMGUIVulkan.h"
 
+#include "graphics/PipelineStateCache.h"
 #include "graphics/buffers/CommandBuffer.h"
 #include "graphics/buffers/UniformBuffer.h"
 #include "graphics/buffers/VulkanBuffer.h"
@@ -17,22 +18,21 @@
 #include <GLFW/glfw3native.h>
 #endif
 
-IMGUIVulkan::IMGUIVulkan( GLFWwindow* pWindow ) :
-	psoBasic2D(),
-	_MousePressed(),
-	mouseCursors(),
-	cpuVertex( nullptr ),
-	cpuIndex( nullptr ),
-	showDemoWindow( true ),
-	didRender( true ),
-	sampler( nullptr ),
-	imguiFont( nullptr ),
-	vulkanUbo( nullptr ),
-	_pWindow( pWindow ),
-	sizeOfVertexBuffer( 0 ),
-	sizeOfIndexBuffer( 0 ), 
-	indexBuffer( nullptr ),
-	vertexBuffer( nullptr )
+IMGUIVulkan::IMGUIVulkan( GLFWwindow* pWindow )
+	: _MousePressed()
+	, mouseCursors()
+	, cpuVertex( nullptr )
+	, cpuIndex( nullptr )
+	, showDemoWindow( true )
+	, didRender( true )
+	, sampler( nullptr )
+	, imguiFont( nullptr )
+	, vulkanUbo( nullptr )
+	, _pWindow( pWindow )
+	, sizeOfVertexBuffer( 0 )
+	, sizeOfIndexBuffer( 0 )
+	, indexBuffer( nullptr )
+	, vertexBuffer( nullptr )
 
 {
 }
@@ -42,7 +42,7 @@ IMGUIVulkan::~IMGUIVulkan()
 	Shutdown();
 }
 
-bool IMGUIVulkan::Initialize(  )
+bool IMGUIVulkan::Initialize()
 {
 	ImGuiIO& io = ImGui::GetIO();
 	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors; // We can honor GetMouseCursor() values (optional)
@@ -97,28 +97,28 @@ bool IMGUIVulkan::Initialize(  )
 		InputEvent::OnChar.push_back( std::bind( &IMGUIVulkan::CharCallback, this, _1 ) );
 	}
 
-	material = std::make_shared<Material>( "imgui" );
-	material->AddUniformBuffer( new UniformBuffer( { static_cast<void*>( &ubo ), sizeof( ScaleTranslateUBO ) } ) );
+	_Material = std::make_shared<Material>( "imgui" );
+	_Material->AddUniformBuffer( new UniformBuffer( { static_cast<void*>( &ubo ), sizeof( ScaleTranslateUBO ) } ) );
 
-	binding_desc = {};
-	binding_desc.stride = sizeof( ImDrawVert );
-	binding_desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-	attribute_desc.resize( 3 );
-	attribute_desc[ 0 ].location = 0;
-	attribute_desc[ 0 ].binding = binding_desc.binding;
-	attribute_desc[ 0 ].format = VK_FORMAT_R32G32_SFLOAT;
-	attribute_desc[ 0 ].offset = ( size_t )( &( (ImDrawVert*)0 )->pos );
-
-	attribute_desc[ 1 ].location = 1;
-	attribute_desc[ 1 ].binding = binding_desc.binding;
-	attribute_desc[ 1 ].format = VK_FORMAT_R32G32_SFLOAT;
-	attribute_desc[ 1 ].offset = ( size_t )( &( (ImDrawVert*)0 )->uv );
-
-	attribute_desc[ 2 ].location = 2;
-	attribute_desc[ 2 ].binding = binding_desc.binding;
-	attribute_desc[ 2 ].format = VK_FORMAT_R8G8B8A8_UNORM;
-	attribute_desc[ 2 ].offset = ( size_t )( &( (ImDrawVert*)0 )->col );
+	//binding_desc = {};
+	//binding_desc.stride = sizeof( ImDrawVert );
+	//binding_desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	//
+	//attribute_desc.resize( 3 );
+	//attribute_desc[ 0 ].location = 0;
+	//attribute_desc[ 0 ].binding = binding_desc.binding;
+	//attribute_desc[ 0 ].format = VK_FORMAT_R32G32_SFLOAT;
+	//attribute_desc[ 0 ].offset = ( size_t )( &( (ImDrawVert*)0 )->pos );
+	//
+	//attribute_desc[ 1 ].location = 1;
+	//attribute_desc[ 1 ].binding = binding_desc.binding;
+	//attribute_desc[ 1 ].format = VK_FORMAT_R32G32_SFLOAT;
+	//attribute_desc[ 1 ].offset = ( size_t )( &( (ImDrawVert*)0 )->uv );
+	//
+	//attribute_desc[ 2 ].location = 2;
+	//attribute_desc[ 2 ].binding = binding_desc.binding;
+	//attribute_desc[ 2 ].format = VK_FORMAT_R8G8B8A8_UNORM;
+	//attribute_desc[ 2 ].offset = ( size_t )( &( (ImDrawVert*)0 )->col );
 
 	unsigned char* pixels;
 	int width, height;
@@ -129,7 +129,13 @@ bool IMGUIVulkan::Initialize(  )
 	VulkanBuffer buffer( VK_BUFFER_USAGE_TRANSFER_SRC_BIT, BufferType::Staging, pixels, upload_size );
 
 	imguiFont = new Texture2D();
-	imguiFont->AllocateImage( width, height, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, ( VkImageUsageFlagBits )( VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT ), VMA_MEMORY_USAGE_GPU_ONLY );
+	imguiFont->AllocateImage( width,
+							  height,
+							  1,
+							  VK_FORMAT_R8G8B8A8_UNORM,
+							  VK_IMAGE_TILING_OPTIMAL,
+							  ( VkImageUsageFlagBits )( VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT ),
+							  VMA_MEMORY_USAGE_GPU_ONLY );
 	imguiFont->Transition( VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL ); //Setup image data so it can be transfered to.
 	buffer.CopyToImageAndClear( imguiFont->GetImage(), width, height );
 	imguiFont->Transition( VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ); //move data to shader readable
@@ -151,7 +157,7 @@ void IMGUIVulkan::Shutdown()
 	delete sampler;
 	sampler = nullptr;
 
-	material = nullptr;
+	_Material = nullptr;
 
 	delete indexBuffer;
 	delete vertexBuffer;
@@ -164,19 +170,38 @@ void IMGUIVulkan::NewFrame( float deltaTime )
 	if ( !didRender )
 		return;
 
-	if ( material->IsLoaded() && psoBasic2D.IsDirty() )
+	if ( _Material->IsLoaded() && _Basic2d == nullptr )
 	{
 		ASSERT( shaderStages.size() == 0 );
-		shaderStages.push_back( material->GetVertex()->GetShaderStageCreateInfo() );
-		shaderStages.push_back( material->GetFragment()->GetShaderStageCreateInfo() );
+		
+		auto VertexShader = _Material->GetVertex();
+		auto& VertexInputs = VertexShader->AccessInputs();
 
-		std::vector<VkDynamicState> states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
-		psoBasic2D.Create( material, states, false );
-		psoBasic2D.SetShader( shaderStages );
-		psoBasic2D.SetVertexLayout( binding_desc, attribute_desc );
-		psoBasic2D.Build( material );
+		ASSERT( VertexInputs.size() == 3 );
+
+		ASSERT( VertexInputs[ 0 ].offset == ( size_t )( &( (ImDrawVert*)0 )->pos ) );
+		ASSERT( VertexInputs[ 1 ].offset == ( size_t )( &( (ImDrawVert*)0 )->uv ) );
+		ASSERT( VertexInputs[ 2 ].offset == ( size_t )( &( (ImDrawVert*)0 )->col ) );
+
+		ASSERT( VertexInputs[ 0 ].typeFormat == VK_FORMAT_R32G32_SFLOAT );
+		ASSERT( VertexInputs[ 1 ].typeFormat == VK_FORMAT_R32G32_SFLOAT );
+
+		//We give the input as a packed integer, and the shader will automatically transform it into a 0..1 floating point range for us
+		//There is no way for us to hint this in the shader language, thus it requires a 'manual' override
+		VertexInputs[ 2 ].typeFormat = VK_FORMAT_R8G8B8A8_UNORM;
+		ASSERT( VertexInputs[ 2 ].typeFormat == VK_FORMAT_R8G8B8A8_UNORM );
+
+		VertexShader->SetInputSize( sizeof( ImDrawVert ) );
+		ASSERT( VertexShader->GetInputSize() == sizeof( ImDrawVert ) );
+		
+		shaderStages.push_back( _Material->GetVertex()->GetShaderStageCreateInfo() );
+		shaderStages.push_back( _Material->GetFragment()->GetShaderStageCreateInfo() );
+
+		std::vector<VkDynamicState> States = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+
+		_Basic2d = PipelineStateCache::GetOrCreatePipeline( GraphicsContext::RenderPass, _Material, States, EDepthTest::Disabled );
 	}
-	else if ( psoBasic2D.IsDirty() )
+	else if ( _Basic2d == nullptr )
 	{
 		return;
 	}
@@ -210,7 +235,8 @@ void IMGUIVulkan::NewFrame( float deltaTime )
 
 	for ( int i = 0; i < _MousePressed.size(); i++ )
 	{
-		io.MouseDown[ i ] = _MousePressed[ i ];// || glfwGetMouseButton( window, i ) != 0; // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+		io.MouseDown[ i ] = _MousePressed
+			[ i ]; // || glfwGetMouseButton( window, i ) != 0; // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
 		//_MousePressed[ i ] = false;
 	}
 
@@ -240,7 +266,7 @@ void IMGUIVulkan::NewFrame( float deltaTime )
 	didRender = false;
 }
 
-void IMGUIVulkan::Render(CommandBuffer* commandBuffer )
+void IMGUIVulkan::Render( CommandBuffer* commandBuffer )
 {
 	if ( didRender )
 		return;
@@ -262,7 +288,7 @@ void IMGUIVulkan::Render(CommandBuffer* commandBuffer )
 
 		constexpr int MemoryAlignment = 256;
 		VkDeviceSize AlignedVertexBufferSize = ( ( VertexBufferSize - 1 ) / MemoryAlignment + 1 ) * MemoryAlignment;
-		
+
 		vertexBuffer = new VulkanBuffer( VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, BufferType::Dynamic, nullptr, AlignedVertexBufferSize );
 		ASSERT( vertexBuffer != nullptr );
 	}
@@ -318,9 +344,9 @@ void IMGUIVulkan::Render(CommandBuffer* commandBuffer )
 
 	// Bind pipeline and descriptor sets:
 	{
-		vkCmdBindPipeline( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, psoBasic2D.GetPipeLine() );
-		VkDescriptorSet set = material->AccessDescriptorPool().RetrieveDescriptorSet( material, imguiFont, sampler );
-		vkCmdBindDescriptorSets( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, NULL );
+		vkCmdBindPipeline( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, _Basic2d );
+		VkDescriptorSet set = _Material->AccessDescriptorPool().RetrieveDescriptorSet( _Material, imguiFont, sampler );
+		vkCmdBindDescriptorSets( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, _Material->GetDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, NULL );
 	}
 
 	// Bind Vertex And Index Buffer:
@@ -349,7 +375,7 @@ void IMGUIVulkan::Render(CommandBuffer* commandBuffer )
 		ubo.translate.x = -1.0f;
 		ubo.translate.y = -1.0f;
 
-		material->GetUniformBuffers()[ 0 ]->Upload();
+		_Material->GetUniformBuffers()[ 0 ]->Upload();
 	}
 
 	// Render the command lists:

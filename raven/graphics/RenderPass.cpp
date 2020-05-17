@@ -1,17 +1,21 @@
 #include "RenderPass.h"
+
+#include <vulkan\vulkan.h>
+
 #include "graphics\GraphicsContext.h"
 #include "graphics\GraphicsDevice.h"
 #include "graphics\VulkanSwapChain.h"
 
-#include <vulkan\vulkan.h>
+#include "helpers/Murmur3.h"
 
-RenderPass::RenderPass( VkFormat frameBufferFormat, VkFormat depthFormat ) :
-	renderPass( GraphicsContext::LogicalDevice, vkDestroyRenderPass, GraphicsContext::GlobalAllocator.Get() ),
-	subpass(),
-	colorAttachment(),
-	colorAttachmentRef(),
-	depthAttachment(),
-	depthAttachmentRef()
+RenderPass::RenderPass( VkFormat frameBufferFormat, VkFormat depthFormat )
+	: renderPass( GraphicsContext::LogicalDevice, vkDestroyRenderPass, GraphicsContext::GlobalAllocator.Get() )
+	, subpass()
+	, colorAttachment()
+	, colorAttachmentRef()
+	, depthAttachment()
+	, depthAttachmentRef()
+	, _Hash( 0 )
 {
 	colorAttachment.format = frameBufferFormat;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -66,6 +70,11 @@ RenderPass::RenderPass( VkFormat frameBufferFormat, VkFormat depthFormat ) :
 	{
 		ASSERT_FAIL( "failed to create render pass!" );
 	}
+
+	_Hash = Murmur3::Hash( &colorAttachment, sizeof( VkAttachmentDescription ), _Hash );
+	_Hash = Murmur3::Hash( &depthAttachment, sizeof( VkAttachmentDescription ), _Hash );
+	_Hash = Murmur3::Hash( &dependency, sizeof( VkSubpassDependency ), _Hash );
+	_Hash = Murmur3::Hash( this, sizeof( this ), _Hash ); //Hash the existing pointer into it.
 }
 
 RenderPass::~RenderPass()

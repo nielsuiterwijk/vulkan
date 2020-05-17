@@ -92,7 +92,7 @@ void Texture2D::Transition( VkFormat format, VkImageLayout oldLayout, VkImageLay
 {
 	ASSERT( format != VK_FORMAT_UNDEFINED );
 
-	CommandBuffer* commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
+	CommandBuffer* commandBuffer = GraphicsContext::CommandBufferPool->Create( CommandBufferType::Transient );
 
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -179,12 +179,12 @@ void Texture2D::Transition( VkFormat format, VkImageLayout oldLayout, VkImageLay
 	ASSERT( result == VK_SUCCESS );
 	GraphicsContext::QueueLock.unlock();
 
-	GraphicsContext::CommandBufferPoolTransient->Free( commandBuffer );
+	GraphicsContext::CommandBufferPool->Free( commandBuffer );
 }
 
 void Texture2D::GenerateMipMaps()
 {
-	CommandBuffer* commandBuffer = GraphicsContext::CommandBufferPoolTransient->Create();
+	CommandBuffer* commandBuffer = GraphicsContext::CommandBufferPool->Create( CommandBufferType::Transient );
 
 	commandBuffer->StartRecording( VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT );
 
@@ -311,7 +311,7 @@ void Texture2D::GenerateMipMaps()
 		GraphicsContext::QueueLock.unlock();
 		ASSERT( result == VK_SUCCESS );
 
-		GraphicsContext::CommandBufferPoolTransient->Free( commandBuffer );
+		GraphicsContext::CommandBufferPool->Free( commandBuffer );
 	}
 }
 

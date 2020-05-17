@@ -37,9 +37,13 @@ public:
 
 	const std::vector<ResourceLayout>& GetResourceLayout() { return resourceLayouts; }
 
+	const std::string& GetFileName() const { return _ShaderFileName; }
+
 protected:
 	VkPipelineShaderStageCreateInfo shaderInfo = {};
 	InstanceWrapper<VkShaderModule> shaderModule;
 
 	std::vector<ResourceLayout> resourceLayouts;
+
+	std::string _ShaderFileName;
 };
