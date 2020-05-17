@@ -57,5 +57,10 @@ struct MaterialComponent
 {
 	std::shared_ptr<Material> _Material;
 
+	~MaterialComponent()
+	{
+		_Material = nullptr;
+	}
+
 	operator std::shared_ptr<Material>() const { return _Material; }
 };

@@ -140,6 +140,12 @@ namespace Ecs
 		using iterator = Iterator;
 		using SizeType = uint32_t;
 
+		virtual ~SparseSet()
+		{
+			_Dense.clear();
+			_Sparse.clear();
+		}
+
 		virtual int32_t GetSize() const { return -1; }
 
 		void Emplace( const EntityT Entity )
@@ -182,6 +188,11 @@ namespace Ecs
 		using BaseType = SparseSet<EntityT>;
 
 	public:
+		virtual ~Storage() final
+		{
+			_Container.clear();
+		}
+
 		template <typename... ArgsT>
 		ComponentT& Emplace( EntityT Entity, ArgsT&&... Args )
 		{

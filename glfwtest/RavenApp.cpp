@@ -293,6 +293,8 @@ void RavenApp::Run()
 
 	_Run = false;
 
+	World.End();
+
 	//updateThread.join();                // pauses until first finishes
 #if MULTITHREADED_RENDERING
 	_RenderThread.Stop();

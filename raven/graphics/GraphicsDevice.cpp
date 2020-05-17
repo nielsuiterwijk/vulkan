@@ -1,19 +1,16 @@
 #include "GraphicsDevice.h"
 
-
+#include <set>
 
 #include "GraphicsContext.h"
 #include "PipelineStateObject.h"
 #include "RenderPass.h"
 #include "VulkanInstance.h"
 #include "VulkanSwapChain.h"
+#include "graphics\PipelineStateCache.h"
 #include "helpers/VulkanHelpers.h"
-#include "shaders\ShaderCache.h"
-
 #include "memory/GPUAllocator.h"
-
-#include <iostream>
-#include <set>
+#include "shaders\ShaderCache.h"
 
 GraphicsDevice::GraphicsDevice()
 {
@@ -24,8 +21,10 @@ void GraphicsDevice::Finalize()
 	if ( GraphicsContext::SwapChain == nullptr )
 		return;
 
+	PipelineStateCache::Destroy();
+
 	GraphicsContext::SwapChain->DestroyFrameBuffers();
-	
+
 	GraphicsContext::CommandBufferPool->Clear();
 	GraphicsContext::CommandBufferPool = nullptr;
 
@@ -55,7 +54,7 @@ void GraphicsDevice::Initialize( const glm::u32vec2& windowSize, std::shared_ptr
 	GraphicsContext::SwapChain = vulkanSwapChain;
 
 	CreatePhysicalDevice( GraphicsContext::SwapChain->GetSurface() );
-	
+
 	GraphicsContext::FamilyIndices = FindQueueFamilies( GraphicsContext::PhysicalDevice, GraphicsContext::SwapChain->GetSurface() );
 
 	CreateLogicalDevice();

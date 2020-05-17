@@ -23,6 +23,7 @@ GameObject::GameObject( const std::string& objectFile )
 
 GameObject::~GameObject()
 {
+	material = nullptr;
 }
 
 void GameObject::FileLoaded( std::vector<char> fileData )

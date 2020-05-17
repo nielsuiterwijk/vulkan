@@ -106,6 +106,12 @@ namespace Ecs
 			return _Entities.emplace_back( static_cast<EntityType>( _Entities.size() ) );
 		}
 
+		void End()
+		{
+			_Storage.clear();
+			_Entities.clear();
+		}
+
 		bool IsValid( const EntityType Entity ) const
 		{
 			const IdType Index = ToPrimitive( Entity ) & TraitsType::index_mask;

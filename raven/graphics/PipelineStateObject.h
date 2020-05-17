@@ -11,7 +11,6 @@ class PipelineStateObject
 {
 public:
 	PipelineStateObject();
-	PipelineStateObject( std::shared_ptr<Material> material );
 	~PipelineStateObject();
 
 	//Invalidates the previous objects

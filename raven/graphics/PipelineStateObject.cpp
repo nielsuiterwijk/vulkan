@@ -18,23 +18,6 @@ PipelineStateObject::PipelineStateObject()
 {
 }
 
-PipelineStateObject::PipelineStateObject( std::shared_ptr<Material> material )
-	: //_GraphicsPipeline( GraphicsContext::LogicalDevice, vkDestroyPipeline, GraphicsContext::GlobalAllocator.Get() )
-	 isDirty( true )
-	, vertexInputInfo()
-	, colorBlending()
-	, colorBlendAttachment()
-	, multisampling()
-	, rasterizer()
-	, viewportState()
-	, inputAssembly()
-	, depthStencil()
-{
-	Create( material, std::vector<VkDynamicState>(), true );
-
-	GraphicsDevice::Instance().OnSwapchainInvalidated( std::bind( &PipelineStateObject::Reload, this ) );
-}
-
 PipelineStateObject::~PipelineStateObject()
 {
 	//_GraphicsPipeline = nullptr;
