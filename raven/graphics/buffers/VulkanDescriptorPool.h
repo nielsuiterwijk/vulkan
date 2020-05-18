@@ -27,11 +27,11 @@ private:
 
 private:
 	InstanceWrapper<VkDescriptorPool> descriptorPool;
-	InstanceWrapper<VkDescriptorSetLayout> descriptorSetLayout;
+	InstanceWrapper<VkDescriptorSetLayout> _DescriptorSetLayout;
 	InstanceWrapper<VkPipelineLayout> pipelineLayout;
 
-	std::vector<VkDescriptorSet> descriptorSets;
-	std::vector<VkDescriptorPoolSize> poolSizes;
+	std::vector<VkDescriptorSet> _DescriptorSets;
+	std::vector<VkDescriptorPoolSize> _PoolSizes;
 
 	size_t currentIndex;
 };

@@ -24,8 +24,8 @@ public:
 
 	virtual bool IsLoaded() const override { return filesLeft.load( std::memory_order_relaxed ) == 0; }
 
-	void GetBindingDescription( VkVertexInputBindingDescription& bindingDescription );
-	void GetAttributeDescriptions( std::vector<VkVertexInputAttributeDescription>& attributeDescriptions );
+	void FillBindingDescription( VkVertexInputBindingDescription& bindingDescription ) const;
+	void FillAttributeDescriptions( std::vector<VkVertexInputAttributeDescription>& attributeDescriptions ) const;
 
 	const std::vector<VkDescriptorBufferInfo>& GetBufferDescriptors() const { return _BufferDescriptors; }
 	std::vector<ShaderInput>& AccessInputs() { return _Inputs; }

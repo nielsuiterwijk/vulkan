@@ -85,7 +85,7 @@ public:
 	const VkVertexInputBindingDescription& GetBindingDescription() const { return bindingDescription; }
 	const std::vector<VkVertexInputAttributeDescription>& GetAttributeDescriptions() const { return attributeDescriptions; }
 
-	void BuildDescriptors( std::shared_ptr<Material> material );
+	void BuildDescriptors( Material* material );
 
 	bool IsLoaded() const;
 

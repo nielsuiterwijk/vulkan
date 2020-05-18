@@ -12,7 +12,7 @@ static constexpr int32_t VULKAN_NUM_SETS_PER_POOL = 90;
 
 VulkanDescriptorPool::VulkanDescriptorPool() :
 	descriptorPool( GraphicsContext::LogicalDevice, vkDestroyDescriptorPool, GraphicsContext::GlobalAllocator.Get() ),
-	descriptorSetLayout( GraphicsContext::LogicalDevice, vkDestroyDescriptorSetLayout, GraphicsContext::GlobalAllocator.Get() ),
+	_DescriptorSetLayout( GraphicsContext::LogicalDevice, vkDestroyDescriptorSetLayout, GraphicsContext::GlobalAllocator.Get() ),
 	pipelineLayout( GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::GlobalAllocator.Get() ),
 	currentIndex( 0 )
 {
@@ -22,7 +22,7 @@ VulkanDescriptorPool::~VulkanDescriptorPool()
 {
 	descriptorPool = nullptr;
 	pipelineLayout = nullptr;
-	descriptorSetLayout = nullptr;
+	_DescriptorSetLayout = nullptr;
 }
 
 VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( std::shared_ptr<Material> material, Texture2D* texture, TextureSampler* sampler )
@@ -31,11 +31,12 @@ VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( std::shared_ptr<Mat
 	ASSERT( texture != nullptr );
 	ASSERT( sampler != nullptr );
 
-	std::shared_ptr<VertexShader> pVertexShader = material->GetVertex();
-	std::shared_ptr<FragmentShader> pFragmentShader = material->GetFragment();
+	const VertexShader* pVertexShader = material->GetVertex();
+	const FragmentShader* pFragmentShader = material->GetFragment();
 
-	VkDescriptorSet destinationDescriptorSet = descriptorSets[ currentIndex ];
-	currentIndex = ( currentIndex + 1 ) % descriptorSets.size();
+	//todo: use atomic?
+	VkDescriptorSet destinationDescriptorSet = _DescriptorSets[ currentIndex ];
+	currentIndex = ( currentIndex + 1 ) % _DescriptorSets.size();
 
 	std::vector<VkWriteDescriptorSet> sets;
 	sets.reserve( pVertexShader->GetResourceLayout().size() + pFragmentShader->GetResourceLayout().size() );
@@ -96,7 +97,7 @@ void VulkanDescriptorPool::SetupBindings( std::shared_ptr<VertexShader> pVertexS
 
 	std::vector<VkDescriptorSetLayoutBinding> bindings;
 	bindings.reserve( resourceLayouts.size() );
-	poolSizes.reserve( resourceLayouts.size() );
+	_PoolSizes.reserve( resourceLayouts.size() );
 	for ( const ResourceLayout& resourceLayout : resourceLayouts )
 	{
 		uint32_t ArraySize = resourceLayout.ArraySize;
@@ -111,7 +112,7 @@ void VulkanDescriptorPool::SetupBindings( std::shared_ptr<VertexShader> pVertexS
 							  resourceLayout.ShaderStage,
 							  sampler != VK_NULL_HANDLE ? &sampler : nullptr } );
 
-		poolSizes.push_back( { resourceLayout.Type, Size } );
+		_PoolSizes.push_back( { resourceLayout.Type, Size } );
 	}
 
 	VkDescriptorSetLayoutCreateInfo info = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
@@ -123,8 +124,8 @@ void VulkanDescriptorPool::SetupBindings( std::shared_ptr<VertexShader> pVertexS
 
 	VkResult result = vkCreateDescriptorSetLayout( GraphicsContext::LogicalDevice,
 												   &info,
-												   descriptorSetLayout.AllocationCallbacks(),
-												   descriptorSetLayout.Replace() );
+												   _DescriptorSetLayout.AllocationCallbacks(),
+												   _DescriptorSetLayout.Replace() );
 	ASSERT( result == VK_SUCCESS );
 
 	// https://www.khronos.org/registry/vulkan/specs/1.0/man/html/VkPipelineLayout.html
@@ -135,7 +136,7 @@ void VulkanDescriptorPool::SetupBindings( std::shared_ptr<VertexShader> pVertexS
 		pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutCreateInfo.pNext = nullptr;
 		pipelineLayoutCreateInfo.setLayoutCount = 1;
-		pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
+		pipelineLayoutCreateInfo.pSetLayouts = &_DescriptorSetLayout;
 
 		result = vkCreatePipelineLayout( GraphicsContext::LogicalDevice,
 										 &pipelineLayoutCreateInfo,
@@ -152,8 +153,8 @@ void VulkanDescriptorPool::CreatePoolAndSets()
 	VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 	descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	descriptorPoolInfo.pNext = nullptr;
-	descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>( poolSizes.size() );
-	descriptorPoolInfo.pPoolSizes = poolSizes.data();
+	descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>( _PoolSizes.size() );
+	descriptorPoolInfo.pPoolSizes = _PoolSizes.data();
 	descriptorPoolInfo.maxSets = VULKAN_NUM_SETS_PER_POOL;
 	descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
@@ -163,10 +164,10 @@ void VulkanDescriptorPool::CreatePoolAndSets()
 											  descriptorPool.Replace() );
 	ASSERT( result == VK_SUCCESS );
 
-	descriptorSets.resize( VULKAN_NUM_SETS_PER_POOL );
+	_DescriptorSets.resize( VULKAN_NUM_SETS_PER_POOL );
 
 	VkDescriptorSetLayout layouts[ VULKAN_NUM_SETS_PER_POOL ];
-	std::fill( std::begin( layouts ), std::end( layouts ), descriptorSetLayout );
+	std::fill( std::begin( layouts ), std::end( layouts ), _DescriptorSetLayout );
 
 	VkDescriptorSetAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
 	allocInfo.descriptorPool = descriptorPool;
@@ -175,6 +176,6 @@ void VulkanDescriptorPool::CreatePoolAndSets()
 
 	result = vkAllocateDescriptorSets( GraphicsContext::LogicalDevice,
 									   &allocInfo,
-									   descriptorSets.data() );
+									   _DescriptorSets.data() );
 	ASSERT( result == VK_SUCCESS );
 }

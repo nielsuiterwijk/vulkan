@@ -35,7 +35,7 @@ public:
 
 	virtual bool IsLoaded() const = 0;
 
-	const std::vector<ResourceLayout>& GetResourceLayout() { return resourceLayouts; }
+	const std::vector<ResourceLayout>& GetResourceLayout() const { return resourceLayouts; }
 
 	const std::string& GetFileName() const { return _ShaderFileName; }
 

@@ -36,10 +36,10 @@ PipelineBuilder::PipelineBuilder()
 	viewportState.scissorCount = 1;
 	viewportState.pScissors = &scissor;*/
 
-	dynamicState = {};
+	/*dynamicState = {};
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamicState.pDynamicStates = nullptr;
-	dynamicState.dynamicStateCount = 0;
+	dynamicState.dynamicStateCount = 0;*/
 
 	rasterizer = {};
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -105,7 +105,8 @@ void PipelineBuilder::SetViewport( uint32_t Width, uint32_t Height )
 	viewport.height = static_cast<float>( Height );
 }
 
-void PipelineBuilder::SetScissor( uint32_t Width, uint32_t Height ) {
+void PipelineBuilder::SetScissor( uint32_t Width, uint32_t Height )
+{
 
 	scissor.extent.width = static_cast<uint32_t>( Width );
 	scissor.extent.height = static_cast<uint32_t>( Height );
@@ -159,14 +160,14 @@ void PipelineStateCache::Destroy()
 	Cache.clear();
 }
 
-VkPipeline PipelineStateCache::BuildPipeline( PipelineBuilder& Builder, const std::vector<VkDynamicState>& DynamicStates )
+VkPipeline PipelineStateCache::BuildPipeline( const PipelineBuilder& Builder, const std::vector<VkDynamicState>& DynamicStates, EDepthTest DepthTest )
 {
-	VkPipelineVertexInputStateCreateInfo vertexInputInfo;
-	VkPipelineColorBlendStateCreateInfo colorBlending;
-	VkPipelineViewportStateCreateInfo viewportState;
-	VkPipelineDepthStencilStateCreateInfo depthStencil;
-	VkPipelineDynamicStateCreateInfo dynamicState;
-		
+	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
+	VkPipelineColorBlendStateCreateInfo colorBlending = {};
+	VkPipelineViewportStateCreateInfo viewportState = {};
+	VkPipelineDepthStencilStateCreateInfo depthStencil = {};
+	VkPipelineDynamicStateCreateInfo dynamicState = {};
+
 	viewportState = {};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	viewportState.viewportCount = 1;
@@ -191,8 +192,8 @@ VkPipeline PipelineStateCache::BuildPipeline( PipelineBuilder& Builder, const st
 	colorBlending.blendConstants[ 2 ] = 0.0f; // Optional
 	colorBlending.blendConstants[ 3 ] = 0.0f; // Optional
 
-	/*depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	if ( enableDepthTest )
+	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	if ( DepthTest != EDepthTest::Disabled )
 	{
 		depthStencil.depthTestEnable = VK_TRUE;
 		depthStencil.depthWriteEnable = VK_TRUE;
@@ -201,16 +202,51 @@ VkPipeline PipelineStateCache::BuildPipeline( PipelineBuilder& Builder, const st
 		depthStencil.minDepthBounds = 0.0f;
 		depthStencil.maxDepthBounds = 1.0f;
 		//Stencil operations
-		depthStencil.stencilTestEnable = VK_FALSE;
-		depthStencil.front = {};
-		depthStencil.back = {};
-	}*/
+		if ( DepthTest == EDepthTest::EnabledWithStencil )
+		{
+			ASSERT_FAIL( "Unsupported" );
+		}
+		else
+		{
+			depthStencil.stencilTestEnable = VK_FALSE;
+			depthStencil.front = {};
+			depthStencil.back = {};
+		}
+	}
 
-	//TODO: BUILD PIPELINE MANUALLY
+	{
+		VkGraphicsPipelineCreateInfo pipelineInfo = {};
+
+		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipelineInfo.pVertexInputState = &vertexInputInfo;
+		pipelineInfo.pInputAssemblyState = &Builder.inputAssembly;
+		pipelineInfo.pViewportState = &viewportState;
+		pipelineInfo.pRasterizationState = &Builder.rasterizer;
+		pipelineInfo.pMultisampleState = &Builder.multisampling;
+		pipelineInfo.pDepthStencilState = &depthStencil;
+		pipelineInfo.pColorBlendState = &colorBlending;
+		pipelineInfo.pDynamicState = dynamicState.dynamicStateCount == 0 ? nullptr : &dynamicState;
+		//pipelineInfo.layout = pMaterial->GetDescriptorPool().GetPipelineLayout();
+		pipelineInfo.renderPass = GraphicsContext::RenderPass->GetNative();
+		pipelineInfo.subpass = 0;
+		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
+		pipelineInfo.basePipelineIndex = -1; // Optional
+
+		VkPipeline Result;
+
+		if ( vkCreateGraphicsPipelines( GraphicsContext::LogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, GraphicsContext::GlobalAllocator.Get(), &Result ) != VK_SUCCESS )
+		{
+			ASSERT_FAIL( "failed to create graphics pipeline!" );
+		}
+
+
+		return Result;
+	}
 }
 
-VkPipeline PipelineStateCache::GetOrCreatePipeline( PipelineBuilder Builder, std::shared_ptr<Material> Material )
+VkPipeline PipelineStateCache::GetOrCreatePipeline( const PipelineBuilder& Builder, std::shared_ptr<Material> Material )
 {
+	return nullptr;
 }
 
 VkPipeline
@@ -220,7 +256,7 @@ PipelineStateCache::GetOrCreatePipeline( std::shared_ptr<RenderPass> RenderPass,
 	uint32_t Hash = Murmur3::Hash( RenderPass->GetHash() );
 	Hash = Murmur3::Hash( Material->Hash(), Hash );
 	Hash = Murmur3::Hash( (uint32_t)DepthTest, Hash );
-	Hash = Murmur3::Hash( &ViewPort, Hash );
+	Hash = Murmur3::Hash( &ViewPort, sizeof(glm::ivec4), Hash );
 
 	auto It = Cache.find( Hash );
 	if ( It != Cache.end() )
@@ -234,14 +270,14 @@ PipelineStateCache::GetOrCreatePipeline( std::shared_ptr<RenderPass> RenderPass,
 	VkVertexInputBindingDescription bindingDescription;
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
-	std::shared_ptr<VertexShader>& vertexShader = Material->GetVertex();
-	vertexShader->GetAttributeDescriptions( attributeDescriptions );
-	vertexShader->GetBindingDescription( bindingDescription );
+	const VertexShader* vertexShader = Material->GetVertex();
+	vertexShader->FillAttributeDescriptions( attributeDescriptions );
+	vertexShader->FillBindingDescription( bindingDescription );
 
 	Pso.SetVertexLayout( bindingDescription, attributeDescriptions );
 
-	Cache[ Hash ] = BuildPipeline();
-	;
+	Cache[ Hash ] = Pso.Build( Material );
+	//Cache[ Hash ] = BuildPipeline();
 
 	return Cache[ Hash ];
 }

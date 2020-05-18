@@ -12,9 +12,9 @@
 
 void MeshComponent::BuildDescriptors( std::shared_ptr<Material> material )
 {
-	std::shared_ptr<VertexShader> vertexShader = material->GetVertex();
-	vertexShader->GetAttributeDescriptions( attributeDescriptions );
-	vertexShader->GetBindingDescription( bindingDescription );
+	const VertexShader* vertexShader = material->GetVertex();
+	vertexShader->FillAttributeDescriptions( attributeDescriptions );
+	vertexShader->FillBindingDescription( bindingDescription );
 }
 
 Mesh::Mesh() :
@@ -44,11 +44,11 @@ SubMesh* Mesh::AllocateBuffers( void* vertexData, const uint64_t& vertexDataSize
 	return subMesh;
 }
 
-void Mesh::BuildDescriptors( std::shared_ptr<Material> material )
+void Mesh::BuildDescriptors( Material* material )
 {
-	std::shared_ptr<VertexShader> vertexShader = material->GetVertex();
-	vertexShader->GetAttributeDescriptions( attributeDescriptions );
-	vertexShader->GetBindingDescription( bindingDescription );
+	const VertexShader* vertexShader = material->GetVertex();
+	vertexShader->FillAttributeDescriptions( attributeDescriptions );
+	vertexShader->FillBindingDescription( bindingDescription );
 }
 
 bool Mesh::IsLoaded() const

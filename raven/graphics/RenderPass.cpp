@@ -5,7 +5,6 @@
 #include "graphics\GraphicsContext.h"
 #include "graphics\GraphicsDevice.h"
 #include "graphics\VulkanSwapChain.h"
-
 #include "helpers/Murmur3.h"
 
 RenderPass::RenderPass( VkFormat frameBufferFormat, VkFormat depthFormat )
@@ -71,10 +70,14 @@ RenderPass::RenderPass( VkFormat frameBufferFormat, VkFormat depthFormat )
 		ASSERT_FAIL( "failed to create render pass!" );
 	}
 
+	VkRenderPass tmp = renderPass;
+	size_t a = sizeof( tmp );
+	size_t b = sizeof( VkRenderPass );
+
 	_Hash = Murmur3::Hash( &colorAttachment, sizeof( VkAttachmentDescription ), _Hash );
 	_Hash = Murmur3::Hash( &depthAttachment, sizeof( VkAttachmentDescription ), _Hash );
 	_Hash = Murmur3::Hash( &dependency, sizeof( VkSubpassDependency ), _Hash );
-	_Hash = Murmur3::Hash( this, sizeof( this ), _Hash ); //Hash the existing pointer into it.
+	_Hash = Murmur3::Hash( reinterpret_cast<uint64_t>(tmp), _Hash ); //Hash the existing pointer into it.
 }
 
 RenderPass::~RenderPass()

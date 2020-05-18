@@ -73,6 +73,7 @@ namespace Murmur3
 	constexpr uint32_t Hash( std::string_view Input, uint32_t Seed = 0 ) { return Hash( Input.data(), static_cast<uint32_t>( Input.size() ), Seed ); }
 	constexpr uint32_t Hash( const void* pInput, uint32_t Length, uint32_t Seed = 0 ) { return Hash( (const char*)pInput, Length, Seed ); }
 	constexpr uint32_t Hash( const uint32_t Input, uint32_t Seed = 0 ) { return Hash( (const char*)&Input, sizeof( uint32_t ), Seed ); }
+	constexpr uint32_t Hash( const uint64_t Input, uint32_t Seed = 0 ) { return Hash( (const char*)&Input, sizeof( uint64_t ), Seed ); }
 
 	static_assert( Hash( "Hello World" ) == 427197390 );
 }

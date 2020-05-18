@@ -98,7 +98,7 @@ void VertexShader::MetaLoaded( std::vector<char> fileData )
 	filesLeft.fetch_sub( 1, std::memory_order_relaxed );
 }
 
-void VertexShader::GetBindingDescription( VkVertexInputBindingDescription& bindingDescription )
+void VertexShader::FillBindingDescription( VkVertexInputBindingDescription& bindingDescription ) const
 {
 	bindingDescription.binding = 0;
 	//bindingDescription.stride = sizeof( Vertex );
@@ -106,7 +106,7 @@ void VertexShader::GetBindingDescription( VkVertexInputBindingDescription& bindi
 	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 }
 
-void VertexShader::GetAttributeDescriptions( std::vector<VkVertexInputAttributeDescription>& attributeDescriptions )
+void VertexShader::FillAttributeDescriptions( std::vector<VkVertexInputAttributeDescription>& attributeDescriptions ) const
 {
 	attributeDescriptions.resize( _Inputs.size() );
 

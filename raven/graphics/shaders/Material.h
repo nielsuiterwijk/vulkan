@@ -25,8 +25,11 @@ public:
 	std::shared_ptr<TextureSampler> GetSampler() const { return sampler; }
 	std::shared_ptr<Texture2D> GetTexture() const { return texture; }
 
-	std::shared_ptr<VertexShader> GetVertex() const { return vertex; }
-	std::shared_ptr<FragmentShader> GetFragment() const { return fragment; }
+	const VertexShader* GetVertex() const { return vertex.get(); }
+	const FragmentShader* GetFragment() const { return fragment.get(); }
+
+	VertexShader* AccessVertex() { return vertex.get(); }
+	FragmentShader* AccessFragment() { return fragment.get(); }
 
 	const VulkanDescriptorPool& GetDescriptorPool() const { return descriptorPool; }
 	VulkanDescriptorPool& AccessDescriptorPool() { return descriptorPool; }

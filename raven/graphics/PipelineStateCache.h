@@ -4,10 +4,12 @@
 
 class Material;
 class RenderPass;
+class PipelineBuilder;
 
 enum class EDepthTest
 {
 	Enabled,
+	EnabledWithStencil,
 	Disabled
 };
 
@@ -15,11 +17,11 @@ class PipelineStateCache
 {
 public:
 	static VkPipeline GetOrCreatePipeline( std::shared_ptr<RenderPass> RenderPass, std::shared_ptr<Material> Material, const std::vector<VkDynamicState>& dynamicStates, EDepthTest Test, glm::ivec4 ViewPort );
-	static VkPipeline GetOrCreatePipeline( PipelineBuilder Builder, std::shared_ptr<Material> Material );
+	static VkPipeline GetOrCreatePipeline( const PipelineBuilder& Builder, std::shared_ptr<Material> Material );
 
 	static void Destroy();
 private:
-	static VkPipeline BuildPipeline( PipelineBuilder& Builder, const std::vector<VkDynamicState>& DynamicStates );
+	static VkPipeline BuildPipeline( const PipelineBuilder& Builder, const std::vector<VkDynamicState>& DynamicStates, EDepthTest Test );
 };
 
 //With this helper object you have an easy way to fully customize the pipeline object. Without you will get a default pipeline object.
@@ -47,12 +49,10 @@ private:
 	VkRect2D scissor;
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo;
-	VkPipelineColorBlendStateCreateInfo colorBlending;
 	VkPipelineColorBlendAttachmentState colorBlendAttachment;
 	VkPipelineMultisampleStateCreateInfo multisampling;
 	VkPipelineRasterizationStateCreateInfo rasterizer;
-	VkPipelineViewportStateCreateInfo viewportState;
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly;
 	VkPipelineDepthStencilStateCreateInfo depthStencil;
-	VkPipelineDynamicStateCreateInfo dynamicState;
+	//VkPipelineDynamicStateCreateInfo dynamicState;
 };
