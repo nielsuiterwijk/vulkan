@@ -14,7 +14,7 @@ public:
 	~PipelineStateObject();
 
 	//Invalidates the previous objects
-	void Create( std::shared_ptr<Material> material, const std::vector<VkDynamicState>& dynamicStates, bool enableDepthTest );
+	void Create( const Material* pMaterial, const std::vector<VkDynamicState>& dynamicStates, bool enableDepthTest );
 	void Reload();
 
 	void SetViewPort( int width, int height );
@@ -23,7 +23,7 @@ public:
 
 	//const InstanceWrapper<VkPipeline>& GetPipeLine() const;
 
-	VkPipeline Build( std::shared_ptr<Material> pMaterial );
+	VkPipeline Build( const Material* pMaterial );
 
 	bool IsDirty() const { return isDirty; }
 

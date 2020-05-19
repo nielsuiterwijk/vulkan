@@ -199,7 +199,7 @@ void IMGUIVulkan::NewFrame( float deltaTime )
 
 		std::vector<VkDynamicState> States = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 
-		_Basic2d = PipelineStateCache::GetOrCreatePipeline( GraphicsContext::RenderPass, _Material, States, EDepthTest::Disabled, { 0, 0, GraphicsContext::WindowSize } );
+		_Basic2d = PipelineStateCache::GetOrCreatePipeline( GraphicsContext::RenderPass.get(), _Material.get(), States, EDepthTest::Disabled, { 0, 0, GraphicsContext::WindowSize } );
 	}
 	else if ( _Basic2d == nullptr )
 	{

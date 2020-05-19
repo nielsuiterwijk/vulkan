@@ -18,7 +18,7 @@ public:
 	void AddUniformBuffer( UniformBuffer* uniformBuffer );
 	void UpdateUniformBuffers();
 
-	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages();
+	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages() const;
 
 	const std::vector<UniformBuffer*>& GetUniformBuffers() const { return uniformBuffers; }
 
@@ -36,7 +36,7 @@ public:
 
 	bool IsLoaded() const;
 
-	uint32_t Hash() const;
+	uint32_t CalcHash() const;
 
 private:
 	void FileLoaded( std::vector<char> fileData );

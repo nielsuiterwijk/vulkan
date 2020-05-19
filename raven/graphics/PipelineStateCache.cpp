@@ -96,6 +96,15 @@ PipelineBuilder::PipelineBuilder()
 	vertexInputInfo.pVertexAttributeDescriptions = nullptr;
 
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	depthStencil.depthTestEnable = VK_FALSE;
+	depthStencil.depthWriteEnable = VK_FALSE;
+	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+	depthStencil.depthBoundsTestEnable = VK_FALSE;
+	depthStencil.minDepthBounds = 0.0f;
+	depthStencil.maxDepthBounds = 1.0f;
+	depthStencil.stencilTestEnable = VK_FALSE;
+	depthStencil.front = {};
+	depthStencil.back = {};
 }
 
 
@@ -148,11 +157,26 @@ void PipelineBuilder::SetPrimitive( VkPrimitiveTopology Topology )
 	inputAssembly.topology = Topology;
 }
 
+void PipelineBuilder::SetDepthTest( bool Result )
+{
+	depthStencil.depthTestEnable = Result ? VK_TRUE:VK_FALSE;
+}
+
+void PipelineBuilder::SetDepthWrite( bool Result )
+{
+	depthStencil.depthWriteEnable = Result ? VK_TRUE : VK_FALSE;
+}
+
+void PipelineBuilder::SetStencilTest( bool Result )
+{
+	ASSERT( Result == false );
+	depthStencil.stencilTestEnable = Result ? VK_TRUE : VK_FALSE;
+	depthStencil.front = {};
+	depthStencil.back = {};
+}
+
 void PipelineStateCache::Destroy()
 {
-	//ffs
-	//Cache.clear();
-
 	for ( auto& it : Cache )
 	{
 		vkDestroyPipeline( GraphicsContext::LogicalDevice, it.second, GraphicsContext::GlobalAllocator.Get() );
@@ -160,12 +184,11 @@ void PipelineStateCache::Destroy()
 	Cache.clear();
 }
 
-VkPipeline PipelineStateCache::BuildPipeline( const PipelineBuilder& Builder, const std::vector<VkDynamicState>& DynamicStates, EDepthTest DepthTest )
+VkPipeline PipelineStateCache::BuildPipeline( const PipelineBuilder& Builder, const std::vector<VkDynamicState>& DynamicStates, Material* pMaterial)
 {
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 	VkPipelineColorBlendStateCreateInfo colorBlending = {};
 	VkPipelineViewportStateCreateInfo viewportState = {};
-	VkPipelineDepthStencilStateCreateInfo depthStencil = {};
 	VkPipelineDynamicStateCreateInfo dynamicState = {};
 
 	viewportState = {};
@@ -192,28 +215,6 @@ VkPipeline PipelineStateCache::BuildPipeline( const PipelineBuilder& Builder, co
 	colorBlending.blendConstants[ 2 ] = 0.0f; // Optional
 	colorBlending.blendConstants[ 3 ] = 0.0f; // Optional
 
-	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	if ( DepthTest != EDepthTest::Disabled )
-	{
-		depthStencil.depthTestEnable = VK_TRUE;
-		depthStencil.depthWriteEnable = VK_TRUE;
-		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-		depthStencil.depthBoundsTestEnable = VK_FALSE;
-		depthStencil.minDepthBounds = 0.0f;
-		depthStencil.maxDepthBounds = 1.0f;
-		//Stencil operations
-		if ( DepthTest == EDepthTest::EnabledWithStencil )
-		{
-			ASSERT_FAIL( "Unsupported" );
-		}
-		else
-		{
-			depthStencil.stencilTestEnable = VK_FALSE;
-			depthStencil.front = {};
-			depthStencil.back = {};
-		}
-	}
-
 	{
 		VkGraphicsPipelineCreateInfo pipelineInfo = {};
 
@@ -223,10 +224,10 @@ VkPipeline PipelineStateCache::BuildPipeline( const PipelineBuilder& Builder, co
 		pipelineInfo.pViewportState = &viewportState;
 		pipelineInfo.pRasterizationState = &Builder.rasterizer;
 		pipelineInfo.pMultisampleState = &Builder.multisampling;
-		pipelineInfo.pDepthStencilState = &depthStencil;
+		pipelineInfo.pDepthStencilState = &Builder.depthStencil;
 		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = dynamicState.dynamicStateCount == 0 ? nullptr : &dynamicState;
-		//pipelineInfo.layout = pMaterial->GetDescriptorPool().GetPipelineLayout();
+		pipelineInfo.layout = pMaterial->GetDescriptorPool().GetPipelineLayout();
 		pipelineInfo.renderPass = GraphicsContext::RenderPass->GetNative();
 		pipelineInfo.subpass = 0;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
@@ -244,19 +245,19 @@ VkPipeline PipelineStateCache::BuildPipeline( const PipelineBuilder& Builder, co
 	}
 }
 
-VkPipeline PipelineStateCache::GetOrCreatePipeline( const PipelineBuilder& Builder, std::shared_ptr<Material> Material )
+VkPipeline PipelineStateCache::GetOrCreatePipeline( const PipelineBuilder& Builder, Material* pMaterial )
 {
 	return nullptr;
 }
 
 VkPipeline
-PipelineStateCache::GetOrCreatePipeline( std::shared_ptr<RenderPass> RenderPass, std::shared_ptr<Material> Material, const std::vector<VkDynamicState>& DynamicStates, EDepthTest DepthTest, glm::ivec4 ViewPort )
+PipelineStateCache::GetOrCreatePipeline( const RenderPass* pRenderPass, const Material* pMaterial, const std::vector<VkDynamicState>& DynamicStates, EDepthTest DepthTest, glm::ivec4 ViewPort )
 {
 	//NU TODO: Lock this for thread safety?
-	uint32_t Hash = Murmur3::Hash( RenderPass->GetHash() );
-	Hash = Murmur3::Hash( Material->Hash(), Hash );
+	uint32_t Hash = Murmur3::Hash( pRenderPass->GetHash() );
+	Hash = Murmur3::Hash( pMaterial->CalcHash(), Hash );
 	Hash = Murmur3::Hash( (uint32_t)DepthTest, Hash );
-	Hash = Murmur3::Hash( &ViewPort, sizeof(glm::ivec4), Hash );
+	Hash = Murmur3::Hash( &ViewPort, sizeof( glm::ivec4 ), Hash );
 
 	auto It = Cache.find( Hash );
 	if ( It != Cache.end() )
@@ -265,18 +266,18 @@ PipelineStateCache::GetOrCreatePipeline( std::shared_ptr<RenderPass> RenderPass,
 	}
 
 	PipelineStateObject Pso;
-	Pso.Create( Material, DynamicStates, DepthTest == EDepthTest::Enabled );
+	Pso.Create( pMaterial, DynamicStates, DepthTest == EDepthTest::Enabled );
 
 	VkVertexInputBindingDescription bindingDescription;
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
-	const VertexShader* vertexShader = Material->GetVertex();
+	const VertexShader* vertexShader = pMaterial->GetVertex();
 	vertexShader->FillAttributeDescriptions( attributeDescriptions );
 	vertexShader->FillBindingDescription( bindingDescription );
 
 	Pso.SetVertexLayout( bindingDescription, attributeDescriptions );
 
-	Cache[ Hash ] = Pso.Build( Material );
+	Cache[ Hash ] = Pso.Build( pMaterial );
 	//Cache[ Hash ] = BuildPipeline();
 
 	return Cache[ Hash ];

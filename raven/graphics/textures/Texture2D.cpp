@@ -25,6 +25,7 @@ Texture2D::~Texture2D()
 void Texture2D::AllocateImage( uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlagBits imageUsage,
 							   VmaMemoryUsage Usage )
 {
+	ASSERT( _Resource.Image == nullptr );
 	ASSERT( width < 16384 );
 	ASSERT( height < 16384 );
 	ASSERT( mipLevels < 14 );
@@ -61,6 +62,7 @@ void Texture2D::SetupView( VkFormat format, VkImageAspectFlags aspectFlags )
 {
 	this->_Format = format;
 	ASSERT( format != VK_FORMAT_UNDEFINED );
+	ASSERT( _Resource.Image != nullptr );
 
 	VkImageViewCreateInfo viewInfo = {};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

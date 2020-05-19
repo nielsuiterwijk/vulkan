@@ -41,7 +41,7 @@ Material::~Material()
 	std::cout << "Destroyed material" << std::endl;
 }
 
-uint32_t Material::Hash() const
+uint32_t Material::CalcHash() const
 {
 	ASSERT( IsLoaded() );
 	uint32_t Hash = Murmur3::Hash( vertex->GetFileName() );
@@ -65,6 +65,18 @@ void Material::FileLoaded( std::vector<char> fileData )
 
 	sampler = std::make_shared<TextureSampler>();
 	sampler->Initialize( VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, 0 );
+
+	while ( !vertex->IsLoaded() || !fragment->IsLoaded() )
+	{
+		Sleep( 1 );
+	}
+
+	std::cout << "Initializing shader stages" << std::endl;
+	shaderStages.push_back( vertex->GetShaderStageCreateInfo() );
+	shaderStages.push_back( fragment->GetShaderStageCreateInfo() );
+
+	descriptorPool.SetupBindings( vertex, fragment );
+
 }
 
 void Material::AddUniformBuffer( UniformBuffer* pUniformBuffer )
@@ -81,18 +93,8 @@ void Material::UpdateUniformBuffers()
 	}
 }
 
-const std::vector<VkPipelineShaderStageCreateInfo>& Material::GetShaderStages()
+const std::vector<VkPipelineShaderStageCreateInfo>& Material::GetShaderStages() const
 {
-	//TODO: Not the right place, should be done on a callback of some sorts.
-	if ( IsLoaded() && shaderStages.size() == 0 )
-	{
-		std::cout << "Initializing shader stages" << std::endl;
-		shaderStages.push_back( vertex->GetShaderStageCreateInfo() );
-		shaderStages.push_back( fragment->GetShaderStageCreateInfo() );
-
-		descriptorPool.SetupBindings( vertex, fragment );
-	}
-
 	return shaderStages;
 }
 

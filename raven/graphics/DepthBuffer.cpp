@@ -14,7 +14,14 @@ DepthBuffer::~DepthBuffer()
 
 void DepthBuffer::Destroy()
 {
-	//parent will destroy resource
+	//(destroy) Order: view -> image -> memory
+	_View = nullptr;
+
+	vmaDestroyImage( GraphicsContext::DeviceAllocator->Get(), _Resource.Image,
+					 _Resource.Allocation ); //TODO: Maybe also have this go through the GPUAllocator class?
+
+	_Resource.Image = nullptr;
+	_Resource.Allocation = nullptr;
 }
 
 void DepthBuffer::Initialize( uint32_t width, uint32_t height )

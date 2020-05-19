@@ -7,14 +7,14 @@
 
 struct SAllocatedBuffer
 {
-	VkBuffer Buffer;
-	VmaAllocation Allocation;
+	VkBuffer Buffer = nullptr;
+	VmaAllocation Allocation = nullptr;
 };
 
 struct SAllocatedImage
 {
-	VkImage Image;
-	VmaAllocation Allocation;
+	VkImage Image = nullptr;
+	VmaAllocation Allocation = nullptr;
 };
 
 class GPUAllocator

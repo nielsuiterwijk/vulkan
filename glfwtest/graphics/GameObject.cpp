@@ -165,7 +165,7 @@ void GameObject::Render( CommandBuffer* pCommandBuffer )
 	{
 		material->GetSampler()->Initialize( VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, textures[ 0 ]->GetMipLevels() );
 
-		_Pipeline = PipelineStateCache::GetOrCreatePipeline( GraphicsContext::RenderPass, material, {}, EDepthTest::Enabled, { 0, 0, GraphicsContext::WindowSize } );
+		_Pipeline = PipelineStateCache::GetOrCreatePipeline( GraphicsContext::RenderPass.get(), material.get(), {}, EDepthTest::Enabled, { 0, 0, GraphicsContext::WindowSize } );
 	}
 
 	vkCmdBindPipeline( pCommandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, _Pipeline );

@@ -40,7 +40,7 @@ void PipelineStateObject::Reload()
 				  GfxDevice::PrimitiveTopology topology, 
 				  std::uint64_t hash ) 
 */
-void PipelineStateObject::Create( std::shared_ptr<Material> material, const std::vector<VkDynamicState>& dynamicStates, bool enableDepthTest )
+void PipelineStateObject::Create( const Material* pMaterial, const std::vector<VkDynamicState>& dynamicStates, bool enableDepthTest )
 {
 	inputAssembly = {};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -148,9 +148,9 @@ void PipelineStateObject::Create( std::shared_ptr<Material> material, const std:
 	}
 
 	pipelineInfo = {};
-	if ( material != nullptr )
+	if ( pMaterial != nullptr )
 	{
-		SetShader( material->GetShaderStages() );
+		SetShader( pMaterial->GetShaderStages() );
 	}
 	isDirty = true;
 }
@@ -203,7 +203,7 @@ void PipelineStateObject::SetShader( const std::vector<VkPipelineShaderStageCrea
 	isDirty = true;
 }
 
-VkPipeline PipelineStateObject::Build( std::shared_ptr<Material> pMaterial )
+VkPipeline PipelineStateObject::Build( const Material* pMaterial )
 {
 	ASSERT( isDirty );
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

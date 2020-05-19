@@ -16,12 +16,12 @@ enum class EDepthTest
 class PipelineStateCache
 {
 public:
-	static VkPipeline GetOrCreatePipeline( std::shared_ptr<RenderPass> RenderPass, std::shared_ptr<Material> Material, const std::vector<VkDynamicState>& dynamicStates, EDepthTest Test, glm::ivec4 ViewPort );
-	static VkPipeline GetOrCreatePipeline( const PipelineBuilder& Builder, std::shared_ptr<Material> Material );
+	static VkPipeline GetOrCreatePipeline( const RenderPass* pRenderPass, const Material* pMaterial, const std::vector<VkDynamicState>& dynamicStates, EDepthTest Test, glm::ivec4 ViewPort );
+	static VkPipeline GetOrCreatePipeline( const PipelineBuilder& Builder, Material* Material );
 
 	static void Destroy();
 private:
-	static VkPipeline BuildPipeline( const PipelineBuilder& Builder, const std::vector<VkDynamicState>& DynamicStates, EDepthTest Test );
+	static VkPipeline BuildPipeline( const PipelineBuilder& Builder, const std::vector<VkDynamicState>& DynamicStates, Material* pMaterial );
 };
 
 //With this helper object you have an easy way to fully customize the pipeline object. Without you will get a default pipeline object.
@@ -43,6 +43,10 @@ public:
 	void SetPolygonMode( VkPolygonMode Mode );
 
 	void SetPrimitive( VkPrimitiveTopology Topology );
+
+	void SetDepthTest( bool Result );
+	void SetDepthWrite( bool Result );
+	void SetStencilTest( bool Result );
 
 private:
 	VkViewport viewport;
