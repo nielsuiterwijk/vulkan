@@ -59,11 +59,12 @@ private:
 struct MaterialComponent
 {
 	std::shared_ptr<Material> _Material;
+	uint32_t _PipelineHash = 0;
 
 	~MaterialComponent()
 	{
 		_Material = nullptr;
 	}
 
-	operator std::shared_ptr<Material>() const { return _Material; }
+	operator Material*() const { return _Material.get(); }
 };

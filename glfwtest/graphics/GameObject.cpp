@@ -1,18 +1,16 @@
 #include "GameObject.h"
 
-#include "io/FileSystem.h"
-
-#include "graphics/models/MeshFileLoader.h"
-#include "graphics/textures/TextureLoader.h"
-
+#include "graphics/PipelineStateCache.h"
 #include "graphics/buffers/UniformBuffer.h"
+#include "graphics/models/MeshFileLoader.h"
 #include "graphics/models/SkinnedMesh.h"
 #include "graphics/models/SubMesh.h"
 #include "graphics/shaders/Material.h"
 #include "graphics/shaders/VertexShader.h"
 #include "graphics/textures/Texture2D.h"
+#include "graphics/textures/TextureLoader.h"
 #include "graphics/textures/TextureSampler.h"
-#include "graphics/PipelineStateCache.h"
+#include "io/FileSystem.h"
 
 GameObject::GameObject( const std::string& objectFile )
 	: material( nullptr )
@@ -34,11 +32,11 @@ void GameObject::FileLoaded( std::vector<char> fileData )
 
 	std::string meshFileName = jsonObject[ "mesh" ];
 	std::string materialFileName = jsonObject[ "material" ];
-	
+
 	mesh = MeshFileLoader::Dynamic( meshFileName );
 	material = std::make_shared<Material>( materialFileName );
 	material->AddUniformBuffer( new UniformBuffer( { static_cast<void*>( &camera ), sizeof( Camera::Buffer ) } ) );
-	  
+
 	std::vector<std::string> texturesJson = jsonObject[ "textures" ];
 
 	std::vector<std::string> textureFileNames;
@@ -74,7 +72,7 @@ Ecs::Entity GameObject::CreateInstance( Ecs::World& World, int32_t Count )
 	//ASSERT( material->GetUniformBuffers().size() == 0 );
 
 	if ( material == nullptr )
-		ASSERT_FAIL("GameObject withour material");
+		ASSERT_FAIL( "GameObject withour material" );
 	if ( mesh == nullptr )
 		ASSERT_FAIL( "GameObject withour material" );
 
@@ -83,8 +81,9 @@ Ecs::Entity GameObject::CreateInstance( Ecs::World& World, int32_t Count )
 		Sleep( 1 );
 	}
 
-	Ecs::Entity Instance = mesh->CreateEntity( World );
-	World.Assign<MaterialComponent>( Instance, MaterialComponent{ material } );
+	Ecs::Entity Instance = World.Create();
+	mesh->Assign( World, Instance );
+	World.Assign<MaterialComponent>( Instance, MaterialComponent { material } );
 
 	return Instance;
 }
@@ -116,7 +115,7 @@ bool GameObject::IsLoaded() const
 	return material != nullptr && material->IsLoaded() && mesh->IsLoaded() && TexturesLoaded();
 }
 
-void GameObject::Update( )
+void GameObject::Update()
 {
 	if ( !IsLoaded() )
 		return;
@@ -138,11 +137,11 @@ void GameObject::Render( CommandBuffer* pCommandBuffer )
 
 
 	//TODO: Create ubo for material
-	if ( mesh->GetMeshType() == MeshType::Skinned && material->GetUniformBuffers().size() == 1)
+	if ( mesh->GetMeshType() == MeshType::Skinned && material->GetUniformBuffers().size() == 1 )
 	{
 		std::shared_ptr<SkinnedMesh> pSkinnedMesh = std::static_pointer_cast<SkinnedMesh>( mesh );
 
-		SkinnedMeshBuffer* _ResultBuffer = new SkinnedMeshBuffer{};
+		SkinnedMeshBuffer* _ResultBuffer = new SkinnedMeshBuffer {};
 
 		auto localMeshUniformBuffer = new UniformBuffer( { _ResultBuffer, sizeof( SkinnedMeshBuffer ) } );
 		material->AddUniformBuffer( localMeshUniformBuffer );
@@ -165,7 +164,12 @@ void GameObject::Render( CommandBuffer* pCommandBuffer )
 	{
 		material->GetSampler()->Initialize( VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, textures[ 0 ]->GetMipLevels() );
 
-		_Pipeline = PipelineStateCache::GetOrCreatePipeline( GraphicsContext::RenderPass.get(), material.get(), {}, EDepthTest::Enabled, { 0, 0, GraphicsContext::WindowSize } );
+
+		PipelineBuilder Builder( GraphicsContext::RenderPass );
+		Builder.SetDepthTest( true );
+		Builder.SetDepthWrite( true );
+
+		_Pipeline = PipelineStateCache::GetOrCreatePipeline( Builder, material.get(), {} );
 	}
 
 	vkCmdBindPipeline( pCommandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, _Pipeline );

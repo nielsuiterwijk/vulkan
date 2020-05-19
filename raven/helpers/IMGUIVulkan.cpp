@@ -172,34 +172,34 @@ void IMGUIVulkan::NewFrame( float deltaTime )
 
 	if ( _Material->IsLoaded() && _Basic2d == nullptr )
 	{
-		ASSERT( shaderStages.size() == 0 );
-		
 		VertexShader* VertexShader = _Material->AccessVertex();
-		auto& VertexInputs = VertexShader->AccessInputs();
 
-		ASSERT( VertexInputs.size() == 3 );
+		{
+			auto& VertexInputs = VertexShader->AccessInputs();
 
-		ASSERT( VertexInputs[ 0 ].offset == ( size_t )( &( (ImDrawVert*)0 )->pos ) );
-		ASSERT( VertexInputs[ 1 ].offset == ( size_t )( &( (ImDrawVert*)0 )->uv ) );
-		ASSERT( VertexInputs[ 2 ].offset == ( size_t )( &( (ImDrawVert*)0 )->col ) );
+			ASSERT( VertexInputs.size() == 3 );
 
-		ASSERT( VertexInputs[ 0 ].typeFormat == VK_FORMAT_R32G32_SFLOAT );
-		ASSERT( VertexInputs[ 1 ].typeFormat == VK_FORMAT_R32G32_SFLOAT );
+			ASSERT( VertexInputs[ 0 ].offset == ( size_t )( &( (ImDrawVert*)0 )->pos ) );
+			ASSERT( VertexInputs[ 1 ].offset == ( size_t )( &( (ImDrawVert*)0 )->uv ) );
+			ASSERT( VertexInputs[ 2 ].offset == ( size_t )( &( (ImDrawVert*)0 )->col ) );
 
-		//We give the input as a packed integer, and the shader will automatically transform it into a 0..1 floating point range for us
-		//There is no way for us to hint this in the shader language, thus it requires a 'manual' override
-		VertexInputs[ 2 ].typeFormat = VK_FORMAT_R8G8B8A8_UNORM;
-		ASSERT( VertexInputs[ 2 ].typeFormat == VK_FORMAT_R8G8B8A8_UNORM );
+			ASSERT( VertexInputs[ 0 ].typeFormat == VK_FORMAT_R32G32_SFLOAT );
+			ASSERT( VertexInputs[ 1 ].typeFormat == VK_FORMAT_R32G32_SFLOAT );
 
-		VertexShader->SetInputSize( sizeof( ImDrawVert ) );
-		ASSERT( VertexShader->GetInputSize() == sizeof( ImDrawVert ) );
-		
-		shaderStages.push_back( _Material->GetVertex()->GetShaderStageCreateInfo() );
-		shaderStages.push_back( _Material->GetFragment()->GetShaderStageCreateInfo() );
+			//We give the input as a packed integer, and the shader will automatically transform it into a 0..1 floating point range for us
+			//There is no way for us to hint this in the shader language, thus it requires a 'manual' override
+			VertexInputs[ 2 ].typeFormat = VK_FORMAT_R8G8B8A8_UNORM;
+			ASSERT( VertexInputs[ 2 ].typeFormat == VK_FORMAT_R8G8B8A8_UNORM );
+
+			VertexShader->SetInputSize( sizeof( ImDrawVert ) );
+			ASSERT( VertexShader->GetInputSize() == sizeof( ImDrawVert ) );
+		}
+
+		PipelineBuilder Builder( GraphicsContext::RenderPass );
 
 		std::vector<VkDynamicState> States = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 
-		_Basic2d = PipelineStateCache::GetOrCreatePipeline( GraphicsContext::RenderPass.get(), _Material.get(), States, EDepthTest::Disabled, { 0, 0, GraphicsContext::WindowSize } );
+		_Basic2d = PipelineStateCache::GetOrCreatePipeline( Builder, _Material.get(), States );
 	}
 	else if ( _Basic2d == nullptr )
 	{

@@ -57,9 +57,7 @@ private:
 	ScaleTranslateUBO ubo;
 
 	std::shared_ptr<Material> _Material;
-
-	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-
+	
 	//PipelineStateObject psoBasic2D;
 	VkPipeline _Basic2d = nullptr;
 

@@ -94,15 +94,14 @@ SkinnedMesh::~SkinnedMesh()
 	//delete localMeshUniformBuffer;
 }
 
-Ecs::Entity SkinnedMesh::CreateEntity( Ecs::World& World ) const
+void SkinnedMesh::Assign( Ecs::World& World, Ecs::Entity e ) const
 {
 	using namespace Ecs;
 
-	Entity e = World.Create();
+	Mesh::Assign( World, e );
+
 	World.Assign<AnimationComponent>( e, AnimationComponent { animations, nullptr, 0.0f } );
 	World.Assign<SkinnedMeshComponent>( e, SkinnedMeshComponent { bones, skins } );
-
-	return e;
 }
 
 

@@ -67,7 +67,7 @@ public:
 	SkinnedMesh();
 	virtual ~SkinnedMesh();
 	
-	virtual Ecs::Entity CreateEntity( Ecs::World& World ) const final;
+	virtual void Assign( Ecs::World& World, Ecs::Entity Entity ) const final;
 
 private:
 	void AddBone( BoneInfo boneInfo ) { bones.emplace_back( boneInfo ); }

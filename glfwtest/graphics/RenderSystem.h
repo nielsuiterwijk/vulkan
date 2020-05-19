@@ -1,14 +1,16 @@
 #pragma once
 
-#include "ecs/World.h"
-#include "ecs/SystemInterface.h"
-#include "graphics/models/Mesh.h"
 #include "RenderThread.h"
+#include "ecs/SystemInterface.h"
+#include "ecs/World.h"
+#include "graphics/PipelineStateCache.h"
+#include "graphics/models/Mesh.h"
+#include "graphics/models/SubMesh.h"
 #include "graphics/shaders/Material.h"
 #include "graphics/textures/TextureSampler.h"
 
 
-class RenderSystem// : Ecs::SystemInterface
+class RenderSystem // : Ecs::SystemInterface
 {
 public:
 	virtual void Tick( Ecs::World& World, CommandBuffer* pCommandBuffer ) final
@@ -18,8 +20,17 @@ public:
 		for ( auto& Entity : View )
 		{
 			MeshComponent& MeshData = View.Get<MeshComponent>( Entity );
-			std::shared_ptr<Material> pMaterial = View.Get<MaterialComponent>( Entity );
-			
+			MaterialComponent& MaterialData = View.Get<MaterialComponent>( Entity );
+
+			Material* pMaterial = MaterialData;
+			if ( MaterialData._PipelineHash == 0 )
+			{
+				continue;
+				MaterialData._PipelineHash = 1337;
+			}
+
+			VkPipeline Pipeline = PipelineStateCache::GetPipeline( MaterialData._PipelineHash );
+			ASSERT( Pipeline );
 
 			//if ( material == nullptr )
 			//	return;
@@ -49,17 +60,15 @@ public:
 			//	pso.Build( material );
 			//}
 			//
-			//vkCmdBindPipeline( pCommandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pso.GetPipeLine() );
+			vkCmdBindPipeline( pCommandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, Pipeline );
 			//
-			//const std::vector<SubMesh*>& meshes = mesh->GetSubMeshes();
-			//for ( int i = 0; i < meshes.size(); i++ )
-			//{
-			//	VkDescriptorSet set = material->AccessDescriptorPool().RetrieveDescriptorSet( material, textures[ i ].get(), material->GetSampler().get() );
-			//	vkCmdBindDescriptorSets( pCommandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, material->AccessDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, nullptr );
-			//
-			//	meshes[ i ]->Draw( pCommandBuffer );
-			//}
+			for ( int i = 0; i < MeshData.subMeshes.size(); i++ )
+			{
+				//VkDescriptorSet set = pMaterial->AccessDescriptorPool().RetrieveDescriptorSet( material, textures[ i ].get(), material->GetSampler().get() );
+				//vkCmdBindDescriptorSets( pCommandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pMaterial->AccessDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, nullptr );
 
+				MeshData.subMeshes[ i ]->Draw( pCommandBuffer );
+			}
 		}
 	}
 };

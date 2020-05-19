@@ -58,12 +58,13 @@ struct MeshComponent
 	uint32_t triangleCount;
 	uint32_t vertexFormatFlags;
 
+	std::vector<SubMesh*> subMeshes; //todo use shared_ptr as submeshes can be shared between components?
+
 	VkVertexInputBindingDescription bindingDescription;
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
-	std::vector<SubMesh*> subMeshes;
 
-	void BuildDescriptors( std::shared_ptr<Material> material );
+	void BuildDescriptors( const Material* pMaterial );
 };
 
 class AABBComponent
@@ -85,12 +86,12 @@ public:
 	const VkVertexInputBindingDescription& GetBindingDescription() const { return bindingDescription; }
 	const std::vector<VkVertexInputAttributeDescription>& GetAttributeDescriptions() const { return attributeDescriptions; }
 
-	void BuildDescriptors( Material* material );
+	void BuildDescriptors( const Material* pMaterial );
 
 	bool IsLoaded() const;
 
 	virtual MeshType GetMeshType() const { return MeshType::Static; }
-	virtual Ecs::Entity CreateEntity( Ecs::World& World ) const { return {}; };
+	virtual void Assign( Ecs::World& World, Ecs::Entity Entity ) const;
 
 protected:
 	SubMesh* AllocateBuffers( void* vertexData, const uint64_t& vertexDataSize, void* indexData, const uint64_t& indexDataSize, uint32_t triangles );

@@ -9,7 +9,14 @@
 
 static std::unordered_map<uint32_t, VkPipeline> Cache;
 
-PipelineBuilder::PipelineBuilder()
+
+PipelineBuilder::PipelineBuilder( const std::shared_ptr<RenderPass>& RenderPass )
+	: PipelineBuilder( RenderPass.get() )
+{
+}
+
+PipelineBuilder::PipelineBuilder( const RenderPass* pRenderPass )
+	: _pRenderPass( pRenderPass )
 {
 	inputAssembly = {};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -87,14 +94,7 @@ PipelineBuilder::PipelineBuilder()
 	colorBlending.blendConstants[ 2 ] = 0.0f; // Optional
 	colorBlending.blendConstants[ 3 ] = 0.0f; // Optional*/
 
-	vertexInputInfo.flags = 0; //reserved for future use.
-	vertexInputInfo.pNext = nullptr;
-	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.pVertexBindingDescriptions = nullptr;
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputInfo.pVertexAttributeDescriptions = nullptr;
-
+	depthStencil = {};
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencil.depthTestEnable = VK_FALSE;
 	depthStencil.depthWriteEnable = VK_FALSE;
@@ -159,7 +159,7 @@ void PipelineBuilder::SetPrimitive( VkPrimitiveTopology Topology )
 
 void PipelineBuilder::SetDepthTest( bool Result )
 {
-	depthStencil.depthTestEnable = Result ? VK_TRUE:VK_FALSE;
+	depthStencil.depthTestEnable = Result ? VK_TRUE : VK_FALSE;
 }
 
 void PipelineBuilder::SetDepthWrite( bool Result )
@@ -175,6 +175,24 @@ void PipelineBuilder::SetStencilTest( bool Result )
 	depthStencil.back = {};
 }
 
+uint32_t PipelineBuilder::CalcHash() const
+{
+	uint32_t Hash = 0;
+	Hash = Murmur3::Hash( &viewport, sizeof( VkViewport ), Hash );
+	Hash = Murmur3::Hash( &scissor, sizeof( VkRect2D ), Hash );
+	Hash = Murmur3::Hash( &colorBlendAttachment, sizeof( VkPipelineColorBlendAttachmentState ), Hash );
+	Hash = Murmur3::Hash( &rasterizer.cullMode, sizeof( VkCullModeFlags ), Hash );
+	Hash = Murmur3::Hash( &rasterizer.frontFace, sizeof( VkFrontFace ), Hash );
+	Hash = Murmur3::Hash( &rasterizer.polygonMode, sizeof( VkPolygonMode ), Hash );
+	Hash = Murmur3::Hash( &inputAssembly.topology, sizeof( VkPrimitiveTopology ), Hash );
+	Hash = Murmur3::Hash( &depthStencil.depthTestEnable, sizeof( VkBool32 ), Hash );
+	Hash = Murmur3::Hash( &depthStencil.depthWriteEnable, sizeof( VkBool32 ), Hash );
+	Hash = Murmur3::Hash( &depthStencil.stencilTestEnable, sizeof( VkBool32 ), Hash );
+	Hash = Murmur3::Hash( _pRenderPass, sizeof( _pRenderPass ), Hash );
+
+	return Hash;
+}
+
 void PipelineStateCache::Destroy()
 {
 	for ( auto& it : Cache )
@@ -184,12 +202,31 @@ void PipelineStateCache::Destroy()
 	Cache.clear();
 }
 
-VkPipeline PipelineStateCache::BuildPipeline( const PipelineBuilder& Builder, const std::vector<VkDynamicState>& DynamicStates, Material* pMaterial)
+VkPipeline PipelineStateCache::BuildPipeline( const PipelineBuilder& Builder, const std::vector<VkDynamicState>& DynamicStates, const Material* pMaterial )
 {
+	ASSERT( pMaterial->IsLoaded() );
+
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 	VkPipelineColorBlendStateCreateInfo colorBlending = {};
 	VkPipelineViewportStateCreateInfo viewportState = {};
 	VkPipelineDynamicStateCreateInfo dynamicState = {};
+
+	VkVertexInputBindingDescription bindingDescription;
+	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+
+	const VertexShader* vertexShader = pMaterial->GetVertex();
+	vertexShader->FillAttributeDescriptions( attributeDescriptions );
+	vertexShader->FillBindingDescription( bindingDescription );
+
+	vertexInputInfo.flags = 0; //reserved for future use.
+	vertexInputInfo.pNext = nullptr;
+	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>( attributeDescriptions.size() );
+
+	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 	viewportState = {};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -218,6 +255,10 @@ VkPipeline PipelineStateCache::BuildPipeline( const PipelineBuilder& Builder, co
 	{
 		VkGraphicsPipelineCreateInfo pipelineInfo = {};
 
+		const auto& ShaderStages = pMaterial->GetShaderStages();
+		pipelineInfo.stageCount = static_cast<uint32_t>( ShaderStages.size() );
+		pipelineInfo.pStages = ShaderStages.data();
+
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.pVertexInputState = &vertexInputInfo;
 		pipelineInfo.pInputAssemblyState = &Builder.inputAssembly;
@@ -228,7 +269,7 @@ VkPipeline PipelineStateCache::BuildPipeline( const PipelineBuilder& Builder, co
 		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = dynamicState.dynamicStateCount == 0 ? nullptr : &dynamicState;
 		pipelineInfo.layout = pMaterial->GetDescriptorPool().GetPipelineLayout();
-		pipelineInfo.renderPass = GraphicsContext::RenderPass->GetNative();
+		pipelineInfo.renderPass = Builder._pRenderPass->GetNative();
 		pipelineInfo.subpass = 0;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 		pipelineInfo.basePipelineIndex = -1; // Optional
@@ -245,19 +286,10 @@ VkPipeline PipelineStateCache::BuildPipeline( const PipelineBuilder& Builder, co
 	}
 }
 
-VkPipeline PipelineStateCache::GetOrCreatePipeline( const PipelineBuilder& Builder, Material* pMaterial )
+VkPipeline PipelineStateCache::GetOrCreatePipeline( const PipelineBuilder& Builder, const Material* pMaterial, const std::vector<VkDynamicState>& DynamicStates )
 {
-	return nullptr;
-}
-
-VkPipeline
-PipelineStateCache::GetOrCreatePipeline( const RenderPass* pRenderPass, const Material* pMaterial, const std::vector<VkDynamicState>& DynamicStates, EDepthTest DepthTest, glm::ivec4 ViewPort )
-{
-	//NU TODO: Lock this for thread safety?
-	uint32_t Hash = Murmur3::Hash( pRenderPass->GetHash() );
+	uint32_t Hash = Murmur3::Hash( Builder.CalcHash() );
 	Hash = Murmur3::Hash( pMaterial->CalcHash(), Hash );
-	Hash = Murmur3::Hash( (uint32_t)DepthTest, Hash );
-	Hash = Murmur3::Hash( &ViewPort, sizeof( glm::ivec4 ), Hash );
 
 	auto It = Cache.find( Hash );
 	if ( It != Cache.end() )
@@ -265,20 +297,18 @@ PipelineStateCache::GetOrCreatePipeline( const RenderPass* pRenderPass, const Ma
 		return It->second;
 	}
 
-	PipelineStateObject Pso;
-	Pso.Create( pMaterial, DynamicStates, DepthTest == EDepthTest::Enabled );
-
-	VkVertexInputBindingDescription bindingDescription;
-	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-
-	const VertexShader* vertexShader = pMaterial->GetVertex();
-	vertexShader->FillAttributeDescriptions( attributeDescriptions );
-	vertexShader->FillBindingDescription( bindingDescription );
-
-	Pso.SetVertexLayout( bindingDescription, attributeDescriptions );
-
-	Cache[ Hash ] = Pso.Build( pMaterial );
-	//Cache[ Hash ] = BuildPipeline();
+	Cache[ Hash ] = BuildPipeline( Builder, DynamicStates, pMaterial );
 
 	return Cache[ Hash ];
+}
+
+
+VkPipeline PipelineStateCache::GetPipeline( uint32_t Hash )
+{
+	auto It = Cache.find( Hash );
+	if ( It != Cache.end() )
+	{
+		return It->second;
+	}
+	return nullptr;
 }

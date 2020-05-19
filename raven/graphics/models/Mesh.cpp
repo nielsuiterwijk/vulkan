@@ -10,9 +10,9 @@
 #include "tinyobj/tiny_obj_loader.h"
 
 
-void MeshComponent::BuildDescriptors( std::shared_ptr<Material> material )
+void MeshComponent::BuildDescriptors( const Material* pMaterial )
 {
-	const VertexShader* vertexShader = material->GetVertex();
+	const VertexShader* vertexShader = pMaterial->GetVertex();
 	vertexShader->FillAttributeDescriptions( attributeDescriptions );
 	vertexShader->FillBindingDescription( bindingDescription );
 }
@@ -44,9 +44,9 @@ SubMesh* Mesh::AllocateBuffers( void* vertexData, const uint64_t& vertexDataSize
 	return subMesh;
 }
 
-void Mesh::BuildDescriptors( Material* material )
+void Mesh::BuildDescriptors( const Material* pMaterial )
 {
-	const VertexShader* vertexShader = material->GetVertex();
+	const VertexShader* vertexShader = pMaterial->GetVertex();
 	vertexShader->FillAttributeDescriptions( attributeDescriptions );
 	vertexShader->FillBindingDescription( bindingDescription );
 }
@@ -60,4 +60,10 @@ bool Mesh::IsLoaded() const
 	}
 
 	return true;
+}
+
+
+void Mesh::Assign( Ecs::World& World, Ecs::Entity e ) const
+{
+	World.Assign<MeshComponent>( e, MeshComponent{ triangleCount, vertexFormatFlags, subMeshes } );
 }
