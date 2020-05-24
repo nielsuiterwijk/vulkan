@@ -17,6 +17,7 @@ class PipelineStateCache
 {
 public:
 	static VkPipeline GetOrCreatePipeline( const PipelineBuilder& Builder, const Material* pMaterial, const std::vector<VkDynamicState>& DynamicStates );
+	static uint32_t CreatePipeline( const PipelineBuilder& Builder, const Material* pMaterial, const std::vector<VkDynamicState>& DynamicStates );
 	static VkPipeline GetPipeline( uint32_t Hash ); //Will return nullptr if not found
 
 	static void Destroy();

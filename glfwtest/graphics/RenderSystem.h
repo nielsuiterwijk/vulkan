@@ -7,29 +7,23 @@
 #include "graphics/models/Mesh.h"
 #include "graphics/models/SubMesh.h"
 #include "graphics/shaders/Material.h"
-#include "graphics/textures/TextureSampler.h"
 
 
 class RenderSystem // : Ecs::SystemInterface
 {
 public:
-	virtual void Tick( Ecs::World& World, CommandBuffer* pCommandBuffer ) final
+	virtual void Tick( Ecs::World& World, CommandBuffer& CommandBuffer ) final
 	{
-		auto View = World.View<MeshComponent, MaterialComponent>();
+		auto View = World.View<MeshComponent, MaterialComponent, Texture2DComponent>();
 
 		for ( auto& Entity : View )
 		{
 			MeshComponent& MeshData = View.Get<MeshComponent>( Entity );
 			MaterialComponent& MaterialData = View.Get<MaterialComponent>( Entity );
+			Texture2DComponent& TextureData = View.Get<Texture2DComponent>( Entity );
 
 			Material* pMaterial = MaterialData;
-			if ( MaterialData._PipelineHash == 0 )
-			{
-				continue;
-				MaterialData._PipelineHash = 1337;
-			}
-
-			VkPipeline Pipeline = PipelineStateCache::GetPipeline( MaterialData._PipelineHash );
+			VkPipeline Pipeline = PipelineStateCache::GetPipeline( pMaterial->GetPipelineHash() );
 			ASSERT( Pipeline );
 
 			//if ( material == nullptr )
@@ -60,14 +54,19 @@ public:
 			//	pso.Build( material );
 			//}
 			//
-			vkCmdBindPipeline( pCommandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, Pipeline );
-			//
+			vkCmdBindPipeline( CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipeline );
+			
+			/*
+				 [ UNASSIGNED-CoreValidation-DrawState-PipelineLayoutsIncompatible ] Object: 0x9a90ce000000002b (Type = 23) | VkDescriptorSet 0x9a90ce000000002b[] bound as set #0 is not compatible with overlapping VkPipelineLayout 0xb3ec550000000090[] due to: 
+				 DescriptorSetLayout 6BBCEA000000008F has 3 descriptors, but DescriptorSetLayout AB46AD0000000028, which comes from pipelineLayout, has 2 descriptors.
+			*/
+
 			for ( int i = 0; i < MeshData.subMeshes.size(); i++ )
 			{
-				//VkDescriptorSet set = pMaterial->AccessDescriptorPool().RetrieveDescriptorSet( material, textures[ i ].get(), material->GetSampler().get() );
-				//vkCmdBindDescriptorSets( pCommandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, pMaterial->AccessDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, nullptr );
+				VkDescriptorSet set = pMaterial->AccessDescriptorPool().RetrieveDescriptorSet( pMaterial, TextureData._TextureRefs[i].get() );
+				vkCmdBindDescriptorSets( CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pMaterial->AccessDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, nullptr );
 
-				MeshData.subMeshes[ i ]->Draw( pCommandBuffer );
+				MeshData.subMeshes[ i ]->Draw( CommandBuffer );
 			}
 		}
 	}

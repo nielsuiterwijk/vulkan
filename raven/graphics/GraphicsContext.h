@@ -12,7 +12,7 @@
 class GraphicsContext
 {
 public:
-	static VulkanAllocator GlobalAllocator;
+	static VulkanAllocator LocalAllocator;
 	static std::unique_ptr<GPUAllocator> DeviceAllocator;
 
 	static std::shared_ptr<CommandBufferPool> CommandBufferPool; //Need to use a different name..

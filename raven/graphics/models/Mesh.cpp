@@ -53,6 +53,9 @@ void Mesh::BuildDescriptors( const Material* pMaterial )
 
 bool Mesh::IsLoaded() const
 {
+	if ( subMeshes.empty() )
+		return false;
+
 	for ( int i = 0; i < subMeshes.size(); i++ )
 	{
 		if ( !subMeshes[ i ]->IsLoaded() )

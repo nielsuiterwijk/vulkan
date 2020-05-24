@@ -29,6 +29,8 @@ public:
 
 	const VkCommandBuffer& GetNative() const;
 
+	operator VkCommandBuffer() const { return commandBuffer; }
+
 private:
 	VkCommandBuffer commandBuffer;
 

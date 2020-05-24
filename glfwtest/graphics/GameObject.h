@@ -50,5 +50,5 @@ private:
 	std::shared_ptr<Mesh> mesh;
 	std::shared_ptr<Material> material;
 
-	std::vector<std::shared_ptr<Texture2D>> textures;
+	std::vector<std::shared_ptr<Texture2D>> _Textures;
 };

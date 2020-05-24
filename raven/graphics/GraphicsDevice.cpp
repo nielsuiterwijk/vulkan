@@ -11,6 +11,7 @@
 #include "helpers/VulkanHelpers.h"
 #include "memory/GPUAllocator.h"
 #include "shaders\ShaderCache.h"
+#include "textures\TextureSamplerCache.h"
 
 GraphicsDevice::GraphicsDevice()
 {
@@ -22,6 +23,7 @@ void GraphicsDevice::Finalize()
 		return;
 
 	PipelineStateCache::Destroy();
+	TextureSamplerCache::Destroy();
 
 	GraphicsContext::SwapChain->DestroyFrameBuffers();
 
@@ -35,7 +37,7 @@ void GraphicsDevice::Finalize()
 	GraphicsContext::SwapChain->DestroySwapchain();
 	GraphicsContext::SwapChain = nullptr;
 
-	vkDestroyEvent( GraphicsContext::LogicalDevice, GraphicsContext::TransportEvent, GraphicsContext::GlobalAllocator.Get() );
+	vkDestroyEvent( GraphicsContext::LogicalDevice, GraphicsContext::TransportEvent, GraphicsContext::LocalAllocator );
 
 	GraphicsContext::DeviceAllocator = nullptr;
 	GraphicsContext::LogicalDevice = nullptr;
@@ -68,7 +70,7 @@ void GraphicsDevice::Initialize( const glm::u32vec2& windowSize, std::shared_ptr
 		eventInfo.flags = 0;
 		eventInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
 
-		VkResult result = vkCreateEvent( GraphicsContext::LogicalDevice, &eventInfo, GraphicsContext::GlobalAllocator.Get(), &GraphicsContext::TransportEvent );
+		VkResult result = vkCreateEvent( GraphicsContext::LogicalDevice, &eventInfo, GraphicsContext::LocalAllocator, &GraphicsContext::TransportEvent );
 		ASSERT( result == VK_SUCCESS );
 	}
 

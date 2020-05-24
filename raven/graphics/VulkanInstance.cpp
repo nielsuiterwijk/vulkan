@@ -9,8 +9,8 @@
 #include <iostream>
 
 VulkanInstance::VulkanInstance() :
-	applicationInfo( vkDestroyInstance, GraphicsContext::GlobalAllocator.Get() ),
-	debugCallback( applicationInfo, VulkanDebug::DestroyDebugReportCallbackEXT, GraphicsContext::GlobalAllocator.Get() )
+	applicationInfo( vkDestroyInstance, GraphicsContext::LocalAllocator ),
+	debugCallback( applicationInfo, VulkanDebug::DestroyDebugReportCallbackEXT, GraphicsContext::LocalAllocator )
 {
 	CacheExtensions();
 	CacheLayers();

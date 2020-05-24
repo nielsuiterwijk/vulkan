@@ -11,6 +11,7 @@
 #include "graphics/GraphicsDevice.h"
 #include "graphics/RenderSystem.h"
 #include "graphics/VulkanInstance.h"
+#include "graphics/animations/AnimationSystem.h"
 #include "graphics/memory/GPUAllocator.h"
 #include "graphics/models/Mesh.h"
 #include "graphics/models/SkinnedMesh.h"
@@ -114,13 +115,13 @@ bool RavenApp::Initialize()
 	//Note: Ownership given to GraphicsDevice
 	std::shared_ptr<VulkanSwapChain> vulkanSwapChain = std::make_shared<VulkanSwapChain>();
 
-	GraphicsContext::GlobalAllocator.PrintStats();
+	GraphicsContext::LocalAllocator.PrintStats();
 	VkResult result = glfwCreateWindowSurface( GraphicsContext::VulkanInstance->GetNative(), _pWindow, vulkanSwapChain->GetSurface().AllocationCallbacks(), vulkanSwapChain->GetSurface().Replace() );
 	assert( result == VK_SUCCESS );
 
 	GraphicsDevice::Instance().Initialize( glm::u32vec2( 1280, 720 ), vulkanSwapChain );
 
-	GraphicsContext::GlobalAllocator.PrintStats();
+	GraphicsContext::LocalAllocator.PrintStats();
 
 	_RenderThread.Initialize();
 
@@ -140,7 +141,7 @@ void RavenApp::Run()
 	_Run = true;
 
 #if MULTITHREADED_RENDERING
-	GraphicsContext::GlobalAllocator.PrintStats();
+	GraphicsContext::LocalAllocator.PrintStats();
 	_RenderThread.Start();
 #endif
 
@@ -170,7 +171,7 @@ void RavenApp::Run()
 	{
 		Sleep( 1 );
 	}
-	
+
 	Ecs::Entity Instance = _GameObjects[ 0 ]->CreateInstance( World );
 
 
@@ -196,7 +197,7 @@ void RavenApp::Run()
 
 		if ( StatsTimer > 30.0f )
 		{
-			MemoryStats1 = "CPU Memory: " + Helpers::MemorySizeToString( GraphicsContext::GlobalAllocator.BytesAllocated() );
+			MemoryStats1 = "CPU Memory: " + Helpers::MemorySizeToString( GraphicsContext::LocalAllocator.BytesAllocated() );
 			;
 			MemoryStats2 = "GPU Memory: " + Helpers::MemorySizeToString( GraphicsContext::DeviceAllocator->BytesAllocated() );
 			StatsTimer = 0;
@@ -274,7 +275,7 @@ void RavenApp::Run()
 				CRenderThread::QueueRender( RenderCallback );
 			}
 
-			auto EcsRenderCallback = [&]( CommandBuffer* pBuffer ) { ECSRenderer.Tick( World, pBuffer ); };
+			auto EcsRenderCallback = [&]( CommandBuffer* pBuffer ) { ECSRenderer.Tick( World, *pBuffer ); };
 
 			CRenderThread::QueueRender( EcsRenderCallback );
 

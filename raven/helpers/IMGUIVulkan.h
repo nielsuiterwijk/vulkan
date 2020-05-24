@@ -51,7 +51,6 @@ private:
 	}
 
 private:
-	TextureSampler* sampler;
 	Texture2D* imguiFont;
 	UniformBuffer* vulkanUbo;
 	ScaleTranslateUBO ubo;

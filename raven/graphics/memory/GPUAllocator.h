@@ -29,7 +29,7 @@ public:
 
 	int64_t BytesAllocated() const;
 
-	VmaAllocator Get() const { return _Allocator; }
+	operator VmaAllocator() const { return _Allocator; }
 
 private:
 	VmaAllocator _Allocator;

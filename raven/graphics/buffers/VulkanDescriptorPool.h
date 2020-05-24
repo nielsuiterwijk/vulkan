@@ -17,8 +17,8 @@ public:
 
 	void SetupBindings( std::shared_ptr<VertexShader> pVertexShader, std::shared_ptr<FragmentShader> pFragmentShader );
 
-	VkDescriptorSet RetrieveDescriptorSet( std::shared_ptr<Material> material, Texture2D* texture, TextureSampler* sampler );
-	VkPipelineLayout GetPipelineLayout() const { return pipelineLayout; }
+	VkDescriptorSet RetrieveDescriptorSet( const Material* pMaterial, Texture2D* texture );
+	VkPipelineLayout GetPipelineLayout() const { ASSERT( pipelineLayout ); return pipelineLayout; }
 
 	size_t GetCurrentIndex() const { return currentIndex; }
 

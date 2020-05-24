@@ -197,7 +197,7 @@ void PipelineStateCache::Destroy()
 {
 	for ( auto& it : Cache )
 	{
-		vkDestroyPipeline( GraphicsContext::LogicalDevice, it.second, GraphicsContext::GlobalAllocator.Get() );
+		vkDestroyPipeline( GraphicsContext::LogicalDevice, it.second, GraphicsContext::LocalAllocator );
 	}
 	Cache.clear();
 }
@@ -261,12 +261,12 @@ VkPipeline PipelineStateCache::BuildPipeline( const PipelineBuilder& Builder, co
 
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.pVertexInputState = &vertexInputInfo;
-		pipelineInfo.pInputAssemblyState = &Builder.inputAssembly;
 		pipelineInfo.pViewportState = &viewportState;
+		pipelineInfo.pColorBlendState = &colorBlending;
+		pipelineInfo.pInputAssemblyState = &Builder.inputAssembly;
 		pipelineInfo.pRasterizationState = &Builder.rasterizer;
 		pipelineInfo.pMultisampleState = &Builder.multisampling;
 		pipelineInfo.pDepthStencilState = &Builder.depthStencil;
-		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = dynamicState.dynamicStateCount == 0 ? nullptr : &dynamicState;
 		pipelineInfo.layout = pMaterial->GetDescriptorPool().GetPipelineLayout();
 		pipelineInfo.renderPass = Builder._pRenderPass->GetNative();
@@ -276,7 +276,7 @@ VkPipeline PipelineStateCache::BuildPipeline( const PipelineBuilder& Builder, co
 
 		VkPipeline Result;
 
-		if ( vkCreateGraphicsPipelines( GraphicsContext::LogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, GraphicsContext::GlobalAllocator.Get(), &Result ) != VK_SUCCESS )
+		if ( vkCreateGraphicsPipelines( GraphicsContext::LogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, GraphicsContext::LocalAllocator, &Result ) != VK_SUCCESS )
 		{
 			ASSERT_FAIL( "failed to create graphics pipeline!" );
 		}
@@ -291,15 +291,34 @@ VkPipeline PipelineStateCache::GetOrCreatePipeline( const PipelineBuilder& Build
 	uint32_t Hash = Murmur3::Hash( Builder.CalcHash() );
 	Hash = Murmur3::Hash( pMaterial->CalcHash(), Hash );
 
-	auto It = Cache.find( Hash );
-	if ( It != Cache.end() )
+	VkPipeline Pipeline = GetPipeline( Hash );
+	
+	if ( Pipeline != nullptr )
 	{
-		return It->second;
+		return Pipeline;		
 	}
 
 	Cache[ Hash ] = BuildPipeline( Builder, DynamicStates, pMaterial );
 
 	return Cache[ Hash ];
+}
+
+
+uint32_t PipelineStateCache::CreatePipeline( const PipelineBuilder& Builder, const Material* pMaterial, const std::vector<VkDynamicState>& DynamicStates )
+{
+	uint32_t Hash = Murmur3::Hash( Builder.CalcHash() );
+	Hash = Murmur3::Hash( pMaterial->CalcHash(), Hash );
+
+	VkPipeline Pipeline = GetPipeline( Hash );
+
+	if ( Pipeline != nullptr )
+	{
+		return Hash;
+	}
+
+	Cache[ Hash ] = BuildPipeline( Builder, DynamicStates, pMaterial );
+	
+	return Hash;
 }
 
 

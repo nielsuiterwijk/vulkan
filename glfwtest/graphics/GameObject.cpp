@@ -9,7 +9,6 @@
 #include "graphics/shaders/VertexShader.h"
 #include "graphics/textures/Texture2D.h"
 #include "graphics/textures/TextureLoader.h"
-#include "graphics/textures/TextureSampler.h"
 #include "io/FileSystem.h"
 
 GameObject::GameObject( const std::string& objectFile )
@@ -50,7 +49,7 @@ void GameObject::FileLoaded( std::vector<char> fileData )
 			if ( textureFileNames[ j ] == textureFileName )
 			{
 				textureFileNames.push_back( textureFileName );
-				textures.push_back( textures[ j ] );
+				_Textures.push_back( _Textures[ j ] );
 				alreadyAdded = true;
 				break;
 			}
@@ -59,7 +58,7 @@ void GameObject::FileLoaded( std::vector<char> fileData )
 		if ( !alreadyAdded )
 		{
 			textureFileNames.push_back( textureFileName );
-			textures.push_back( TextureLoader::Get( textureFileName ) );
+			_Textures.push_back( TextureLoader::Get( textureFileName ) );
 		}
 	}
 }
@@ -84,6 +83,17 @@ Ecs::Entity GameObject::CreateInstance( Ecs::World& World, int32_t Count )
 	Ecs::Entity Instance = World.Create();
 	mesh->Assign( World, Instance );
 	World.Assign<MaterialComponent>( Instance, MaterialComponent { material } );
+	World.Assign<Texture2DComponent>( Instance, Texture2DComponent { _Textures } );
+
+	//TODO: It does not scale well if the material owns the UBO's. This should probably it's own little component.
+	if ( mesh->GetMeshType() == MeshType::Skinned && material->GetUniformBuffers().size() == 1 )
+	{				
+		//TODO: Get `SkinnedMeshComponent` assigned to this entity. Link the buffer of that component to the material.
+		SkinnedMeshBuffer* _ResultBuffer = new SkinnedMeshBuffer {};
+
+		auto localMeshUniformBuffer = new UniformBuffer( { _ResultBuffer, sizeof( SkinnedMeshBuffer ) } );
+		material->AddUniformBuffer( localMeshUniformBuffer );
+	}
 
 	return Instance;
 }
@@ -101,9 +111,9 @@ void GameObject::WindowResized( int w, int h )
 
 bool GameObject::TexturesLoaded() const
 {
-	for ( int i = 0; i < textures.size(); i++ )
+	for ( int i = 0; i < _Textures.size(); i++ )
 	{
-		if ( !textures[ i ]->IsLoaded() )
+		if ( !_Textures[ i ]->IsLoaded() )
 			return false;
 	}
 
@@ -135,19 +145,19 @@ void GameObject::Render( CommandBuffer* pCommandBuffer )
 	if ( !material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded() )
 		return;
 
+	//const Material* pMaterial = material.get();
 
-	//TODO: Create ubo for material
-	if ( mesh->GetMeshType() == MeshType::Skinned && material->GetUniformBuffers().size() == 1 )
-	{
-		std::shared_ptr<SkinnedMesh> pSkinnedMesh = std::static_pointer_cast<SkinnedMesh>( mesh );
+	//if ( mesh->GetMeshType() == MeshType::Skinned && material->GetUniformBuffers().size() == 1 )
+	//{
+	//	std::shared_ptr<SkinnedMesh> pSkinnedMesh = std::static_pointer_cast<SkinnedMesh>( mesh );
+	//
+	//	SkinnedMeshBuffer* _ResultBuffer = new SkinnedMeshBuffer {};
+	//
+	//	auto localMeshUniformBuffer = new UniformBuffer( { _ResultBuffer, sizeof( SkinnedMeshBuffer ) } );
+	//	material->AddUniformBuffer( localMeshUniformBuffer );
+	//}
 
-		SkinnedMeshBuffer* _ResultBuffer = new SkinnedMeshBuffer {};
-
-		auto localMeshUniformBuffer = new UniformBuffer( { _ResultBuffer, sizeof( SkinnedMeshBuffer ) } );
-		material->AddUniformBuffer( localMeshUniformBuffer );
-	}
-
-	material->UpdateUniformBuffers();
+	//material->UpdateUniformBuffers();
 
 	//if ( pso .IsDirty() )
 	//{
@@ -160,26 +170,26 @@ void GameObject::Render( CommandBuffer* pCommandBuffer )
 	//	pso.Build( material );
 	//}
 
-	if ( _Pipeline == nullptr )
-	{
-		material->GetSampler()->Initialize( VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, textures[ 0 ]->GetMipLevels() );
-
-
-		PipelineBuilder Builder( GraphicsContext::RenderPass );
-		Builder.SetDepthTest( true );
-		Builder.SetDepthWrite( true );
-
-		_Pipeline = PipelineStateCache::GetOrCreatePipeline( Builder, material.get(), {} );
-	}
-
-	vkCmdBindPipeline( pCommandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, _Pipeline );
-
-	const std::vector<SubMesh*>& meshes = mesh->GetSubMeshes();
-	for ( int i = 0; i < meshes.size(); i++ )
-	{
-		VkDescriptorSet set = material->AccessDescriptorPool().RetrieveDescriptorSet( material, textures[ i ].get(), material->GetSampler().get() );
-		vkCmdBindDescriptorSets( pCommandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, material->AccessDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, nullptr );
-
-		meshes[ i ]->Draw( pCommandBuffer );
-	}
+	//if ( _Pipeline == nullptr )
+	//{
+	//	//material->GetSampler()->Initialize( VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, _Textures[ 0 ]->GetMipLevels() );
+	//
+	//
+	//	PipelineBuilder Builder( GraphicsContext::RenderPass );
+	//	Builder.SetDepthTest( true );
+	//	Builder.SetDepthWrite( true );
+	//
+	//	_Pipeline = PipelineStateCache::GetOrCreatePipeline( Builder, material.get(), {} );
+	//}
+	//
+	//vkCmdBindPipeline( pCommandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, _Pipeline );
+	//
+	//const std::vector<SubMesh*>& meshes = mesh->GetSubMeshes();
+	//for ( int i = 0; i < meshes.size(); i++ )
+	//{
+	//	VkDescriptorSet set = material->AccessDescriptorPool().RetrieveDescriptorSet( pMaterial, _Textures[ i ].get() );
+	//	vkCmdBindDescriptorSets( pCommandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, material->AccessDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, nullptr );
+	//
+	//	meshes[ i ]->Draw( pCommandBuffer );
+	//}
 }

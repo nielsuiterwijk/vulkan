@@ -8,7 +8,6 @@
 #include "graphics/shaders/ShaderCache.h"
 #include "graphics/shaders/VertexShader.h"
 #include "graphics/shaders/material.h"
-#include "graphics/textures/TextureSampler.h"
 #include "io/InputEvent.h"
 
 #ifdef _WIN32
@@ -25,7 +24,6 @@ IMGUIVulkan::IMGUIVulkan( GLFWwindow* pWindow )
 	, cpuIndex( nullptr )
 	, showDemoWindow( true )
 	, didRender( true )
-	, sampler( nullptr )
 	, imguiFont( nullptr )
 	, vulkanUbo( nullptr )
 	, _pWindow( pWindow )
@@ -142,10 +140,7 @@ bool IMGUIVulkan::Initialize()
 	imguiFont->SetupView( VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT );
 
 	io.Fonts->TexID = (void*)imguiFont->GetImage();
-
-	sampler = new TextureSampler();
-	sampler->Initialize( VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, 0 );
-
+	
 	return true;
 }
 
@@ -153,10 +148,7 @@ void IMGUIVulkan::Shutdown()
 {
 	delete imguiFont;
 	imguiFont = nullptr;
-
-	delete sampler;
-	sampler = nullptr;
-
+	
 	_Material = nullptr;
 
 	delete indexBuffer;
@@ -345,7 +337,7 @@ void IMGUIVulkan::Render( CommandBuffer* commandBuffer )
 	// Bind pipeline and descriptor sets:
 	{
 		vkCmdBindPipeline( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, _Basic2d );
-		VkDescriptorSet set = _Material->AccessDescriptorPool().RetrieveDescriptorSet( _Material, imguiFont, sampler );
+		VkDescriptorSet set = _Material->AccessDescriptorPool().RetrieveDescriptorSet( _Material.get(), imguiFont );
 		vkCmdBindDescriptorSets( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, _Material->GetDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, NULL );
 	}
 

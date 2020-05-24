@@ -2,8 +2,8 @@
 
 #include "graphics/GraphicsContext.h"
 
-DepthBuffer::DepthBuffer() :
-	Texture2D()
+DepthBuffer::DepthBuffer()
+	: Texture2D()
 {
 }
 
@@ -17,7 +17,7 @@ void DepthBuffer::Destroy()
 	//(destroy) Order: view -> image -> memory
 	_View = nullptr;
 
-	vmaDestroyImage( GraphicsContext::DeviceAllocator->Get(), _Resource.Image,
+	vmaDestroyImage( *GraphicsContext::DeviceAllocator, _Resource.Image,
 					 _Resource.Allocation ); //TODO: Maybe also have this go through the GPUAllocator class?
 
 	_Resource.Image = nullptr;

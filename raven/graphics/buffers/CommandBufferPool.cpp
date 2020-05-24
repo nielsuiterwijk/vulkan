@@ -42,7 +42,7 @@ CommandBufferPool::CommandBufferPool( int32_t PoolsRequired )
 		{
 
 			VkCommandPool pCommandPool;
-			if ( vkCreateCommandPool( GraphicsContext::LogicalDevice, &poolInfo, GraphicsContext::GlobalAllocator.Get(), &pCommandPool ) != VK_SUCCESS )
+			if ( vkCreateCommandPool( GraphicsContext::LogicalDevice, &poolInfo, GraphicsContext::LocalAllocator, &pCommandPool ) != VK_SUCCESS )
 			{
 				ASSERT_FAIL( "failed to create command pool!" );
 			}
@@ -64,7 +64,7 @@ CommandBufferPool::~CommandBufferPool()
 	{
 		for ( auto& PoolInfo : PoolPerType )
 		{
-			vkDestroyCommandPool( GraphicsContext::LogicalDevice, PoolInfo._pPool, GraphicsContext::GlobalAllocator.Get() );
+			vkDestroyCommandPool( GraphicsContext::LogicalDevice, PoolInfo._pPool, GraphicsContext::LocalAllocator );
 		}
 	}
 }

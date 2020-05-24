@@ -501,6 +501,7 @@ public:
 
 	static uint32_t GetSizeFromFormat( VkFormat format )
 	{
+		//Sizes in bytes
 		constexpr uint32_t SFLOAT = 4;
 		constexpr uint32_t UNORM = 1;
 

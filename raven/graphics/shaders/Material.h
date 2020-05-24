@@ -9,6 +9,7 @@ class FragmentShader;
 class TextureSampler;
 
 //.material file, which is a meta file to the textures and shaders needed.
+//TODO: This file should support changing sampler at runtime
 class Material
 {
 public:
@@ -21,10 +22,7 @@ public:
 	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages() const;
 
 	const std::vector<UniformBuffer*>& GetUniformBuffers() const { return uniformBuffers; }
-
-	std::shared_ptr<TextureSampler> GetSampler() const { return sampler; }
-	std::shared_ptr<Texture2D> GetTexture() const { return texture; }
-
+	
 	const VertexShader* GetVertex() const { return vertex.get(); }
 	const FragmentShader* GetFragment() const { return fragment.get(); }
 
@@ -38,6 +36,9 @@ public:
 
 	uint32_t CalcHash() const;
 
+	uint32_t GetPipelineHash() const { return _PipelineHash; }
+	uint32_t GetSamplerHash() const { return _TextureSamplerHash; }
+
 private:
 	void FileLoaded( std::vector<char> fileData );
 
@@ -47,19 +48,21 @@ private:
 
 	VulkanDescriptorPool descriptorPool;
 
-	std::shared_ptr<Texture2D> texture;
-	std::shared_ptr<TextureSampler> sampler;
+	//std::shared_ptr<TextureSampler> sampler;
+	
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
 	std::vector<UniformBuffer*> uniformBuffers;
+
+	uint32_t _TextureSamplerHash = 0;
+	uint32_t _PipelineHash = 0;
 };
 
 
 struct MaterialComponent
 {
 	std::shared_ptr<Material> _Material;
-	uint32_t _PipelineHash = 0;
 
 	~MaterialComponent()
 	{

@@ -51,7 +51,7 @@ void VulkanBuffer::Free()
 	{
 		std::cout << "freeing device buffer of " << Helpers::MemorySizeToString( _Size ) << " bytes" << std::endl;
 
-		vmaDestroyBuffer( GraphicsContext::DeviceAllocator->Get(), _NativeBuffer.Buffer, _NativeBuffer.Allocation ); //TODO: Maybe also have this go through the GPUAllocator class?
+		vmaDestroyBuffer( *GraphicsContext::DeviceAllocator, _NativeBuffer.Buffer, _NativeBuffer.Allocation ); //TODO: Maybe also have this go through the GPUAllocator class?
 
 		_NativeBuffer.Buffer = nullptr;
 		_NativeBuffer.Allocation = nullptr;
@@ -177,7 +177,7 @@ void VulkanBuffer::Map( void* bufferData, VkDeviceSize sizeToMap ) const //TODO:
 	VkResult result = VK_SUCCESS;
 	void* vulkanVirtualMappedMemoryAddress;
 
-	VmaAllocator DeviceAllocator = GraphicsContext::DeviceAllocator->Get();
+	VmaAllocator DeviceAllocator = *GraphicsContext::DeviceAllocator;
 
 	switch ( _BufferType )
 	{

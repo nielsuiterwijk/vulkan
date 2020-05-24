@@ -17,7 +17,7 @@ class Shader
 {
 protected:
 	Shader() :
-		shaderModule( GraphicsContext::LogicalDevice, vkDestroyShaderModule, GraphicsContext::GlobalAllocator.Get() ),
+		shaderModule( GraphicsContext::LogicalDevice, vkDestroyShaderModule, GraphicsContext::LocalAllocator ),
 		shaderInfo()
 	{
 	}

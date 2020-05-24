@@ -3,7 +3,7 @@
 #include "graphics\GraphicsContext.h"
 
 VulkanSemaphore::VulkanSemaphore() :
-	semaphore( GraphicsContext::LogicalDevice, vkDestroySemaphore, GraphicsContext::GlobalAllocator.Get() )
+	semaphore( GraphicsContext::LogicalDevice, vkDestroySemaphore, GraphicsContext::LocalAllocator )
 {
 	VkSemaphoreCreateInfo semaphoreInfo = {};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

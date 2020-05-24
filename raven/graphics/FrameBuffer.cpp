@@ -3,8 +3,8 @@
 
 FrameBuffer::FrameBuffer()
 	: semaphore( nullptr )
-	, imageView( GraphicsContext::LogicalDevice, vkDestroyImageView, GraphicsContext::GlobalAllocator.Get() )
-	, framebuffer( GraphicsContext::LogicalDevice, vkDestroyFramebuffer, GraphicsContext::GlobalAllocator.Get() )
+	, imageView( GraphicsContext::LogicalDevice, vkDestroyImageView, GraphicsContext::LocalAllocator )
+	, framebuffer( GraphicsContext::LogicalDevice, vkDestroyFramebuffer, GraphicsContext::LocalAllocator )
 {
 }
 

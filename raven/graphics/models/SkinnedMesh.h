@@ -1,13 +1,10 @@
 #pragma once
 
 #include "Mesh.h"
-#include "graphics/animations/Animation.h"
-
-
-#include "graphics/buffers/UniformBufferDefinition.h"
-
-#include "ecs/SystemInterface.h"
 #include "ecs/Entity.h"
+#include "ecs/SystemInterface.h"
+#include "graphics/animations/Animation.h"
+#include "graphics/buffers/UniformBufferDefinition.h"
 
 class UniformBuffer;
 
@@ -50,12 +47,6 @@ struct AnimationComponent
 	float _Time;
 };
 
-class AnimationSystem : Ecs::SystemInterface
-{
-public:
-	virtual void Tick( Ecs::World& World, float Delta ) final;
-};
-
 //TODO: Don't make this inherit from mesh, better to make a 'SkinComponent' and a 'Animation' component
 class SkinnedMesh : public Mesh
 {
@@ -66,8 +57,9 @@ public:
 
 	SkinnedMesh();
 	virtual ~SkinnedMesh();
-	
+
 	virtual void Assign( Ecs::World& World, Ecs::Entity Entity ) const final;
+	virtual bool IsLoaded() const final { return Mesh::IsLoaded() && animations.size() > 0; }
 
 private:
 	void AddBone( BoneInfo boneInfo ) { bones.emplace_back( boneInfo ); }

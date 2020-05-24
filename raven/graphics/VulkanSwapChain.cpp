@@ -9,7 +9,7 @@
 #include <algorithm>
 
 VulkanSwapChain::VulkanSwapChain() :
-	surface( GraphicsContext::VulkanInstance->GetNative(), vkDestroySurfaceKHR, GraphicsContext::GlobalAllocator.Get() ),
+	surface( GraphicsContext::VulkanInstance->GetNative(), vkDestroySurfaceKHR, GraphicsContext::LocalAllocator ),
 	swapChain(),
 	nextBackBufferIndex( 0 ),
 	depthBuffer()
@@ -75,7 +75,7 @@ void VulkanSwapChain::Connect( const glm::u32vec2& windowSize, const QueueFamily
 	else
 		createInfo.oldSwapchain = *swapChain.Replace();
 
-	swapChain.Initialize( GraphicsContext::LogicalDevice, vkDestroySwapchainKHR, GraphicsContext::GlobalAllocator.Get() );
+	swapChain.Initialize( GraphicsContext::LogicalDevice, vkDestroySwapchainKHR, GraphicsContext::LocalAllocator );
 
 	if ( vkCreateSwapchainKHR( GraphicsContext::LogicalDevice, &createInfo, swapChain.AllocationCallbacks(), swapChain.Replace() ) != VK_SUCCESS )
 	{

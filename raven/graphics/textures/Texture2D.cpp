@@ -17,7 +17,7 @@ Texture2D::~Texture2D()
 	//_Image = nullptr;
 	//_ImageAllocation = nullptr;
 
-	vmaDestroyImage( GraphicsContext::DeviceAllocator->Get(),
+	vmaDestroyImage( *GraphicsContext::DeviceAllocator,
 					 _Resource.Image,
 					 _Resource.Allocation ); //TODO: Maybe also have this go through the GPUAllocator class?
 }
@@ -81,7 +81,7 @@ void Texture2D::SetupView( VkFormat format, VkImageAspectFlags aspectFlags )
 	viewInfo.subresourceRange.baseArrayLayer = 0;
 	viewInfo.subresourceRange.layerCount = 1;
 
-	_View.Initialize( GraphicsContext::LogicalDevice, vkDestroyImageView, GraphicsContext::GlobalAllocator.Get() );
+	_View.Initialize( GraphicsContext::LogicalDevice, vkDestroyImageView, GraphicsContext::LocalAllocator );
 
 	if ( vkCreateImageView( GraphicsContext::LogicalDevice, &viewInfo, _View.AllocationCallbacks(), _View.Replace() ) != VK_SUCCESS )
 	{

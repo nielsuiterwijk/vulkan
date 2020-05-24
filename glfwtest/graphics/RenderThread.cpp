@@ -20,7 +20,7 @@ void CRenderThread::Initialize()
 	FenceInfo.pNext = VK_NULL_HANDLE;
 	FenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	VkResult result = vkCreateFence( GraphicsContext::LogicalDevice, &FenceInfo, GraphicsContext::GlobalAllocator.Get(), &_RenderFence );
+	VkResult result = vkCreateFence( GraphicsContext::LogicalDevice, &FenceInfo, GraphicsContext::LocalAllocator, &_RenderFence );
 	assert( result == VK_SUCCESS );
 
 	_pRenderSemaphore.reset( new VulkanSemaphore() );
@@ -42,7 +42,7 @@ void CRenderThread::Destroy()
 	ASSERT( CRenderThread::pInstance != nullptr );
 	CRenderThread::pInstance = nullptr;
 	_pRenderSemaphore = nullptr;
-	vkDestroyFence( GraphicsContext::LogicalDevice, _RenderFence, GraphicsContext::GlobalAllocator.Get() );
+	vkDestroyFence( GraphicsContext::LogicalDevice, _RenderFence, GraphicsContext::LocalAllocator );
 }
 
 void CRenderThread::ThreadRunner()

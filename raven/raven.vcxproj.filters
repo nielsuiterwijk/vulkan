@@ -31,7 +31,6 @@
     <ClCompile Include="graphics\FrameBuffer.cpp" />
     <ClCompile Include="io\FileSystem.cpp" />
     <ClCompile Include="graphics\textures\TextureLoader.cpp" />
-    <ClCompile Include="graphics\textures\TextureSampler.cpp" />
     <ClCompile Include="helpers\IMGUIVulkan.cpp" />
     <ClCompile Include="graphics\GraphicsContext.cpp" />
     <ClCompile Include="graphics\models\MeshFileLoader.cpp" />
@@ -54,6 +53,7 @@
     <ClCompile Include="io\InputEvent.cpp" />
     <ClCompile Include="ecs\Entity.cpp" />
     <ClCompile Include="graphics\PipelineStateCache.cpp" />
+    <ClCompile Include="graphics\textures\TextureSamplerCache.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -145,7 +145,6 @@
     <ClInclude Include="graphics\textures\Texture2D.h" />
     <ClInclude Include="graphics\FrameBuffer.h" />
     <ClInclude Include="graphics\textures\TextureLoader.h" />
-    <ClInclude Include="graphics\textures\TextureSampler.h" />
     <ClInclude Include="helpers\IMGUIVulkan.h" />
     <ClInclude Include="graphics\models\MeshFileLoader.h" />
     <ClInclude Include="graphics\models\importers\stl_loader.h" />
@@ -192,5 +191,7 @@
     <ClInclude Include="ecs\View.h" />
     <ClInclude Include="ecs\Storage.h" />
     <ClInclude Include="graphics\PipelineStateCache.h" />
+    <ClInclude Include="graphics\textures\TextureSamplerCache.h" />
+    <ClInclude Include="graphics\animations\AnimationSystem.h" />
   </ItemGroup>
 </Project>

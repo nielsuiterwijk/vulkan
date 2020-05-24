@@ -151,11 +151,7 @@ public:
 		std::cout << "" << std::endl;
 	}
 
-
-	VkAllocationCallbacks* Get()
-	{
-		return &vulkanAllocator;
-	}
+	operator VkAllocationCallbacks*() { return &vulkanAllocator; }
 
 private:
 	static void* VKAPI_CALL Allocate( void* userData, size_t size, size_t alignment, VkSystemAllocationScope scope )

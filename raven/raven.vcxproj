@@ -314,7 +314,7 @@
     <ClCompile Include="graphics\shaders\VertexShader.cpp" />
     <ClCompile Include="graphics\textures\Texture2D.cpp" />
     <ClCompile Include="graphics\textures\TextureLoader.cpp" />
-    <ClCompile Include="graphics\textures\TextureSampler.cpp" />
+    <ClCompile Include="graphics\textures\TextureSamplerCache.cpp" />
     <ClCompile Include="graphics\VulkanSwapChain.cpp" />
     <ClCompile Include="helpers\DebugAssert.cpp" />
     <ClCompile Include="graphics\GraphicsDevice.cpp" />
@@ -342,6 +342,7 @@
     <ClInclude Include="ecs\World.h" />
     <ClInclude Include="events\EventSystem.h" />
     <ClInclude Include="graphics\animations\Animation.h" />
+    <ClInclude Include="graphics\animations\AnimationSystem.h" />
     <ClInclude Include="graphics\buffers\CommandBuffer.h" />
     <ClInclude Include="graphics\buffers\CommandBufferPool.h" />
     <ClInclude Include="graphics\buffers\UniformBuffer.h" />
@@ -353,6 +354,7 @@
     <ClInclude Include="graphics\GraphicsContext.h" />
     <ClInclude Include="graphics\helpers\Color.h" />
     <ClInclude Include="graphics\PipelineStateCache.h" />
+    <ClInclude Include="graphics\textures\TextureSamplerCache.h" />
     <ClInclude Include="helpers\Murmur3.h" />
     <ClInclude Include="helpers\SystemInfo.h" />
     <ClInclude Include="helpers\Utility.h" />
@@ -373,7 +375,6 @@
     <ClInclude Include="graphics\shaders\VertexShader.h" />
     <ClInclude Include="graphics\textures\Texture2D.h" />
     <ClInclude Include="graphics\textures\TextureLoader.h" />
-    <ClInclude Include="graphics\textures\TextureSampler.h" />
     <ClInclude Include="graphics\VulkanSwapChain.h" />
     <ClInclude Include="helpers\DebugAssert.h" />
     <ClInclude Include="graphics\helpers\VulkanDebugHook.h" />

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "graphics/helpers/InstanceWrapper.h"
+#include "graphics/memory/GPUAllocator.h"
 #include "vma/vk_mem_alloc.h"
 
-#include "graphics/memory/GPUAllocator.h"
 
 class Texture2D
 {
@@ -12,7 +12,7 @@ public:
 	virtual ~Texture2D();
 
 	void AllocateImage( uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlagBits imageUsage, VmaMemoryUsage Usage );
-	
+
 	void SetupView( VkFormat format, VkImageAspectFlags aspectFlags );
 
 	void Transition( VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout );
@@ -38,4 +38,9 @@ protected:
 	uint32_t _Height;
 
 	VkFormat _Format;
+};
+
+struct Texture2DComponent
+{
+	std::vector<std::shared_ptr<Texture2D>> _TextureRefs;
 };

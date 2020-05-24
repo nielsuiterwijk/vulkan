@@ -9,7 +9,7 @@ GPUAllocator::GPUAllocator()
 	allocatorInfo.physicalDevice = GraphicsContext::PhysicalDevice;
 	allocatorInfo.device = GraphicsContext::LogicalDevice;
 	allocatorInfo.instance = GraphicsContext::VulkanInstance->GetNative();
-	allocatorInfo.pAllocationCallbacks = GraphicsContext::GlobalAllocator.Get();
+	allocatorInfo.pAllocationCallbacks = GraphicsContext::LocalAllocator;
 
 	vmaCreateAllocator( &allocatorInfo, &_Allocator );
 

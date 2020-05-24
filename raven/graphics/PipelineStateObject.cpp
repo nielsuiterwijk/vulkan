@@ -230,7 +230,7 @@ VkPipeline PipelineStateObject::Build( const Material* pMaterial )
 
 	VkPipeline Result;
 
-	if ( vkCreateGraphicsPipelines( GraphicsContext::LogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, GraphicsContext::GlobalAllocator.Get(), &Result ) != VK_SUCCESS )
+	if ( vkCreateGraphicsPipelines( GraphicsContext::LogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, GraphicsContext::LocalAllocator, &Result ) != VK_SUCCESS )
 	{
 		ASSERT_FAIL( "failed to create graphics pipeline!" );
 	}

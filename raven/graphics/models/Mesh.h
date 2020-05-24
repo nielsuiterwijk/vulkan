@@ -88,7 +88,7 @@ public:
 
 	void BuildDescriptors( const Material* pMaterial );
 
-	bool IsLoaded() const;
+	virtual bool IsLoaded() const;
 
 	virtual MeshType GetMeshType() const { return MeshType::Static; }
 	virtual void Assign( Ecs::World& World, Ecs::Entity Entity ) const;

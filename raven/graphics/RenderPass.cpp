@@ -8,7 +8,7 @@
 #include "helpers/Murmur3.h"
 
 RenderPass::RenderPass( VkFormat frameBufferFormat, VkFormat depthFormat )
-	: renderPass( GraphicsContext::LogicalDevice, vkDestroyRenderPass, GraphicsContext::GlobalAllocator.Get() )
+	: renderPass( GraphicsContext::LogicalDevice, vkDestroyRenderPass, GraphicsContext::LocalAllocator )
 	, subpass()
 	, colorAttachment()
 	, colorAttachmentRef()

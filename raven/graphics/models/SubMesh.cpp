@@ -34,13 +34,13 @@ bool SubMesh::AllocateBuffers( void* vertexData, const uint64_t& vertexDataSize,
 	return true;
 }
 
-void SubMesh::Draw( CommandBuffer* commandBuffer )
+void SubMesh::Draw( CommandBuffer& commandBuffer )
 {
 	VkBuffer vertexBuffers[] = { vertexBuffer->GetNative() };
 	VkDeviceSize offsets[] = { 0 };
-	vkCmdBindVertexBuffers( commandBuffer->GetNative(), 0, 1, vertexBuffers, offsets );
+	vkCmdBindVertexBuffers( commandBuffer, 0, 1, vertexBuffers, offsets );
 
-	vkCmdBindIndexBuffer( commandBuffer->GetNative(), indexBuffer->GetNative(), 0, VK_INDEX_TYPE_UINT32 );
+	vkCmdBindIndexBuffer( commandBuffer, indexBuffer->GetNative(), 0, VK_INDEX_TYPE_UINT32 );
 
-	vkCmdDrawIndexed( commandBuffer->GetNative(), triangleCount * 3, 1, 0, 0, 0 );
+	vkCmdDrawIndexed( commandBuffer, triangleCount * 3, 1, 0, 0, 0 );
 }

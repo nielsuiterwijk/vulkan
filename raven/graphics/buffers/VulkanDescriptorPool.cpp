@@ -6,15 +6,15 @@
 #include "graphics/shaders/Material.h"
 #include "graphics/shaders/VertexShader.h"
 #include "graphics/textures/Texture2D.h"
-#include "graphics/textures/TextureSampler.h"
+#include "graphics/textures/TextureSamplerCache.h"
 
 static constexpr int32_t VULKAN_NUM_SETS_PER_POOL = 90;
 
-VulkanDescriptorPool::VulkanDescriptorPool() :
-	descriptorPool( GraphicsContext::LogicalDevice, vkDestroyDescriptorPool, GraphicsContext::GlobalAllocator.Get() ),
-	_DescriptorSetLayout( GraphicsContext::LogicalDevice, vkDestroyDescriptorSetLayout, GraphicsContext::GlobalAllocator.Get() ),
-	pipelineLayout( GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::GlobalAllocator.Get() ),
-	currentIndex( 0 )
+VulkanDescriptorPool::VulkanDescriptorPool()
+	: descriptorPool( GraphicsContext::LogicalDevice, vkDestroyDescriptorPool, GraphicsContext::LocalAllocator )
+	, _DescriptorSetLayout( GraphicsContext::LogicalDevice, vkDestroyDescriptorSetLayout, GraphicsContext::LocalAllocator )
+	, pipelineLayout( GraphicsContext::LogicalDevice, vkDestroyPipelineLayout, GraphicsContext::LocalAllocator )
+	, currentIndex( 0 )
 {
 }
 
@@ -25,14 +25,13 @@ VulkanDescriptorPool::~VulkanDescriptorPool()
 	_DescriptorSetLayout = nullptr;
 }
 
-VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( std::shared_ptr<Material> material, Texture2D* texture, TextureSampler* sampler )
+VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( const Material* pMaterial, Texture2D* texture )
 {
-	ASSERT( material != nullptr );
+	ASSERT( pMaterial != nullptr );
 	ASSERT( texture != nullptr );
-	ASSERT( sampler != nullptr );
 
-	const VertexShader* pVertexShader = material->GetVertex();
-	const FragmentShader* pFragmentShader = material->GetFragment();
+	const VertexShader* pVertexShader = pMaterial->GetVertex();
+	const FragmentShader* pFragmentShader = pMaterial->GetFragment();
 
 	//todo: use atomic?
 	VkDescriptorSet destinationDescriptorSet = _DescriptorSets[ currentIndex ];
@@ -41,12 +40,12 @@ VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( std::shared_ptr<Mat
 	std::vector<VkWriteDescriptorSet> sets;
 	sets.reserve( pVertexShader->GetResourceLayout().size() + pFragmentShader->GetResourceLayout().size() );
 
-	ASSERT( pVertexShader->GetResourceLayout().size() == material->GetUniformBuffers().size() );
+	ASSERT( pVertexShader->GetResourceLayout().size() == pMaterial->GetUniformBuffers().size() );
 	for ( int32_t i = 0; i < pVertexShader->GetResourceLayout().size(); i++ )
 	{
 		const ResourceLayout& resourceLayout = pVertexShader->GetResourceLayout()[ i ];
 
-		const UniformBuffer* pUbo = material->GetUniformBuffers()[ i ];
+		const UniformBuffer* pUbo = pMaterial->GetUniformBuffers()[ i ];
 		ASSERT( pUbo->GetDescriptorInfo().range == pVertexShader->GetBufferDescriptors()[ i ].range );
 
 		VkWriteDescriptorSet writeDescriptorSet = {};
@@ -65,22 +64,25 @@ VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( std::shared_ptr<Mat
 	{
 		const ResourceLayout& resourceLayout = pFragmentShader->GetResourceLayout()[ i ];
 
-		VkDescriptorImageInfo samplerDescription = {};
-		samplerDescription.sampler = sampler->GetNative();
-		samplerDescription.imageView = texture->GetImageView();
-		samplerDescription.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		{
+			//TODO: How does this even work? Object goes out of scope and should be cleared from stack.
+			VkDescriptorImageInfo samplerDescription = {};
+			samplerDescription.sampler = TextureSamplerCache::GetSampler( pMaterial->GetSamplerHash() );
+			samplerDescription.imageView = texture->GetImageView();
+			samplerDescription.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			ASSERT( samplerDescription.sampler );
+			ASSERT( samplerDescription.imageView );
 
-		VkWriteDescriptorSet imageSet = {};
-		imageSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		imageSet.dstSet = destinationDescriptorSet;
-		imageSet.descriptorCount = 1;
-		imageSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		imageSet.pImageInfo = &samplerDescription;
-		imageSet.dstBinding = resourceLayout.BindingSlot;
+			VkWriteDescriptorSet imageSet = {};
+			imageSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			imageSet.dstSet = destinationDescriptorSet;
+			imageSet.descriptorCount = 1;
+			imageSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			imageSet.pImageInfo = &samplerDescription;
+			imageSet.dstBinding = resourceLayout.BindingSlot;
 
-		sets.push_back( imageSet );
-
-		break;
+			sets.push_back( imageSet );
+		}
 	}
 
 	vkUpdateDescriptorSets( GraphicsContext::LogicalDevice, static_cast<uint32_t>( sets.size() ), sets.data(), 0, nullptr );
@@ -106,11 +108,7 @@ void VulkanDescriptorPool::SetupBindings( std::shared_ptr<VertexShader> pVertexS
 
 		uint32_t Size = static_cast<uint32_t>( ArraySize * VULKAN_NUM_SETS_PER_POOL );
 
-		bindings.push_back( { resourceLayout.BindingSlot,
-							  resourceLayout.Type,
-							  ArraySize,
-							  resourceLayout.ShaderStage,
-							  sampler != VK_NULL_HANDLE ? &sampler : nullptr } );
+		bindings.push_back( { resourceLayout.BindingSlot, resourceLayout.Type, ArraySize, resourceLayout.ShaderStage, sampler != VK_NULL_HANDLE ? &sampler : nullptr } );
 
 		_PoolSizes.push_back( { resourceLayout.Type, Size } );
 	}
@@ -122,11 +120,10 @@ void VulkanDescriptorPool::SetupBindings( std::shared_ptr<VertexShader> pVertexS
 		info.pBindings = bindings.data();
 	}
 
-	VkResult result = vkCreateDescriptorSetLayout( GraphicsContext::LogicalDevice,
-												   &info,
-												   _DescriptorSetLayout.AllocationCallbacks(),
-												   _DescriptorSetLayout.Replace() );
+	VkResult result = vkCreateDescriptorSetLayout( GraphicsContext::LogicalDevice, &info, _DescriptorSetLayout.AllocationCallbacks(), _DescriptorSetLayout.Replace() );
 	ASSERT( result == VK_SUCCESS );
+
+	std::cout << "Pool layout: " << (VkDescriptorSetLayout)_DescriptorSetLayout << std::endl;
 
 	// https://www.khronos.org/registry/vulkan/specs/1.0/man/html/VkPipelineLayout.html
 	//`a pipeline layout object which describes the complete set of resources that CAN be accessed by a pipeline.`
@@ -138,12 +135,11 @@ void VulkanDescriptorPool::SetupBindings( std::shared_ptr<VertexShader> pVertexS
 		pipelineLayoutCreateInfo.setLayoutCount = 1;
 		pipelineLayoutCreateInfo.pSetLayouts = &_DescriptorSetLayout;
 
-		result = vkCreatePipelineLayout( GraphicsContext::LogicalDevice,
-										 &pipelineLayoutCreateInfo,
-										 pipelineLayout.AllocationCallbacks(),
-										 pipelineLayout.Replace() );
+		result = vkCreatePipelineLayout( GraphicsContext::LogicalDevice, &pipelineLayoutCreateInfo, pipelineLayout.AllocationCallbacks(), pipelineLayout.Replace() );
 		ASSERT( result == VK_SUCCESS );
 	}
+
+	std::cout << "Pool pipeline: " << (VkPipelineLayout)pipelineLayout << std::endl;
 
 	CreatePoolAndSets();
 }
@@ -158,10 +154,7 @@ void VulkanDescriptorPool::CreatePoolAndSets()
 	descriptorPoolInfo.maxSets = VULKAN_NUM_SETS_PER_POOL;
 	descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
-	VkResult result = vkCreateDescriptorPool( GraphicsContext::LogicalDevice,
-											  &descriptorPoolInfo,
-											  descriptorPool.AllocationCallbacks(),
-											  descriptorPool.Replace() );
+	VkResult result = vkCreateDescriptorPool( GraphicsContext::LogicalDevice, &descriptorPoolInfo, descriptorPool.AllocationCallbacks(), descriptorPool.Replace() );
 	ASSERT( result == VK_SUCCESS );
 
 	_DescriptorSets.resize( VULKAN_NUM_SETS_PER_POOL );
@@ -174,8 +167,6 @@ void VulkanDescriptorPool::CreatePoolAndSets()
 	allocInfo.descriptorSetCount = VULKAN_NUM_SETS_PER_POOL;
 	allocInfo.pSetLayouts = layouts;
 
-	result = vkAllocateDescriptorSets( GraphicsContext::LogicalDevice,
-									   &allocInfo,
-									   _DescriptorSets.data() );
+	result = vkAllocateDescriptorSets( GraphicsContext::LogicalDevice, &allocInfo, _DescriptorSets.data() );
 	ASSERT( result == VK_SUCCESS );
 }
