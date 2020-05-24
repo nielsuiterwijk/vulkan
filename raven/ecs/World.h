@@ -128,6 +128,15 @@ namespace Ecs
 		}
 
 		template <typename ComponentT>
+		ComponentT& Get( const EntityType Entity )
+		{
+			ASSERT( IsValid( Entity ) );
+			Storage<EntityType, ComponentT>& Storage = GetOrCreatePool<ComponentT>(); // .emplace( *this, entity, std::forward<Args>( args )... );
+
+			return Storage.Get( Entity );
+		}
+
+		template <typename ComponentT>
 		Ecs::Storage<EntityType, ComponentT>& GetOrCreatePool() const
 		{
 			static_assert( std::is_same_v<ComponentT, std::decay_t<ComponentT>> );

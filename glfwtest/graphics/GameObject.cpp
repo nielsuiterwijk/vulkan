@@ -88,10 +88,9 @@ Ecs::Entity GameObject::CreateInstance( Ecs::World& World, int32_t Count )
 	//TODO: It does not scale well if the material owns the UBO's. This should probably it's own little component.
 	if ( mesh->GetMeshType() == MeshType::Skinned && material->GetUniformBuffers().size() == 1 )
 	{				
-		//TODO: Get `SkinnedMeshComponent` assigned to this entity. Link the buffer of that component to the material.
-		SkinnedMeshBuffer* _ResultBuffer = new SkinnedMeshBuffer {};
+		SkinnedMeshComponent& SkinnedMeshData = World.Get<SkinnedMeshComponent>( Instance );
 
-		auto localMeshUniformBuffer = new UniformBuffer( { _ResultBuffer, sizeof( SkinnedMeshBuffer ) } );
+		auto localMeshUniformBuffer = new UniformBuffer( { &SkinnedMeshData._ResultBuffer, sizeof( SkinnedMeshBuffer ) } );
 		material->AddUniformBuffer( localMeshUniformBuffer );
 	}
 
