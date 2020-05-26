@@ -25,10 +25,21 @@ VulkanDescriptorPool::~VulkanDescriptorPool()
 	_DescriptorSetLayout = nullptr;
 }
 
-VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( const Material* pMaterial, Texture2D* texture )
+VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( const Material* pMaterial, const std::vector<std::shared_ptr<Texture2D>>& textures, const std::vector<UniformBuffer*>& buffers )
+{
+	std::vector<Texture2D*> texturePtrs;
+
+	for ( const std::shared_ptr<Texture2D>& Texture : textures )
+	{
+		texturePtrs.push_back( Texture.get() );
+	}
+
+	return RetrieveDescriptorSet( pMaterial, texturePtrs, buffers );
+}
+
+VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( const Material* pMaterial, const std::vector<Texture2D*>& textures, const std::vector<UniformBuffer*>& buffers )
 {
 	ASSERT( pMaterial != nullptr );
-	ASSERT( texture != nullptr );
 
 	const VertexShader* pVertexShader = pMaterial->GetVertex();
 	const FragmentShader* pFragmentShader = pMaterial->GetFragment();
@@ -40,12 +51,12 @@ VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( const Material* pMa
 	std::vector<VkWriteDescriptorSet> sets;
 	sets.reserve( pVertexShader->GetResourceLayout().size() + pFragmentShader->GetResourceLayout().size() );
 
-	ASSERT( pVertexShader->GetResourceLayout().size() == pMaterial->GetUniformBuffers().size() );
+	ASSERT( pVertexShader->GetResourceLayout().size() == buffers.size() );
 	for ( int32_t i = 0; i < pVertexShader->GetResourceLayout().size(); i++ )
 	{
 		const ResourceLayout& resourceLayout = pVertexShader->GetResourceLayout()[ i ];
+		const UniformBuffer* pUbo = buffers[ i ];
 
-		const UniformBuffer* pUbo = pMaterial->GetUniformBuffers()[ i ];
 		ASSERT( pUbo->GetDescriptorInfo().range == pVertexShader->GetBufferDescriptors()[ i ].range );
 
 		VkWriteDescriptorSet writeDescriptorSet = {};
@@ -59,7 +70,7 @@ VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( const Material* pMa
 		sets.push_back( writeDescriptorSet );
 	}
 
-	ASSERT( pFragmentShader->GetResourceLayout().size() == 1 );
+	ASSERT( pFragmentShader->GetResourceLayout().size() == textures.size() );
 	for ( int32_t i = 0; i < pFragmentShader->GetResourceLayout().size(); i++ )
 	{
 		const ResourceLayout& resourceLayout = pFragmentShader->GetResourceLayout()[ i ];
@@ -68,7 +79,7 @@ VkDescriptorSet VulkanDescriptorPool::RetrieveDescriptorSet( const Material* pMa
 			//TODO: How does this even work? Object goes out of scope and should be cleared from stack.
 			VkDescriptorImageInfo samplerDescription = {};
 			samplerDescription.sampler = TextureSamplerCache::GetSampler( pMaterial->GetSamplerHash() );
-			samplerDescription.imageView = texture->GetImageView();
+			samplerDescription.imageView = textures[ i ]->GetImageView();
 			samplerDescription.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			ASSERT( samplerDescription.sampler );
 			ASSERT( samplerDescription.imageView );

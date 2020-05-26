@@ -15,14 +15,9 @@ class Material
 public:
 	Material( const std::string& fileName );
 	~Material();
-
-	void AddUniformBuffer( UniformBuffer* uniformBuffer );
-	void UpdateUniformBuffers();
-
-	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages() const;
-
-	const std::vector<UniformBuffer*>& GetUniformBuffers() const { return uniformBuffers; }
 	
+	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages() const;
+		
 	const VertexShader* GetVertex() const { return vertex.get(); }
 	const FragmentShader* GetFragment() const { return fragment.get(); }
 
@@ -49,11 +44,8 @@ private:
 	VulkanDescriptorPool descriptorPool;
 
 	//std::shared_ptr<TextureSampler> sampler;
-	
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-
-	std::vector<UniformBuffer*> uniformBuffers;
 
 	uint32_t _TextureSamplerHash = 0;
 	uint32_t _PipelineHash = 0;
@@ -64,9 +56,12 @@ struct MaterialComponent
 {
 	std::shared_ptr<Material> _Material;
 
+	std::vector<UniformBuffer*> _Buffers;
+
 	~MaterialComponent()
 	{
 		_Material = nullptr;
+		_Buffers.clear(); //todo delete
 	}
 
 	operator Material*() const { return _Material.get(); }

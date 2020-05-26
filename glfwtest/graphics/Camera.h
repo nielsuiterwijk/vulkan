@@ -1,5 +1,7 @@
 #pragma once
 
+class UniformBuffer;
+
 class Camera
 {
 public:
@@ -16,6 +18,8 @@ public:
 
 public:
 
+	Camera();
+
 	void CalculateProjection( float AngleInDegrees );
 
 	void CalculateOrientation( float HorizontalAngleInDegrees, float VerticalAngleIndegrees );
@@ -30,6 +34,7 @@ public:
 	// m_up is glm::vec3(0, 1, 0) for a first person camera
 
 	const Buffer& Data() const { return _Data; }
+	UniformBuffer* GetUBO() const { return _pUBO; }
 
 protected:
 	void CalculateView( );
@@ -42,6 +47,6 @@ protected:
 	float ZFar = 100.0f;
 	float AspectRatio = 16.0f / 9.0f;
 		
-
 	Buffer _Data;
+	UniformBuffer* _pUBO;
 };

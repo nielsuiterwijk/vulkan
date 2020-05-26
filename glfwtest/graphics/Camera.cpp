@@ -1,4 +1,10 @@
 #include "Camera.h"
+#include "graphics/buffers/UniformBuffer.h"
+
+Camera::Camera()
+{
+	_pUBO = new UniformBuffer( { static_cast<void*>( &_Data ), sizeof( Camera::Buffer ) } ); //todo: delete
+}
 
 void Camera::CalculateView()
 {
@@ -8,6 +14,7 @@ void Camera::CalculateView()
 void Camera::CalculateProjection( float AngleInDegrees )
 {
 	_Data.proj = glm::perspective( glm::radians( AngleInDegrees ), AspectRatio, ZNear, ZFar );
+	_Data.proj[ 1 ][ 1 ] *= -1;
 }
 
 void Camera::CalculateOrientation( float HorizontalAngleInDegrees, float VerticalAngleIndegrees )

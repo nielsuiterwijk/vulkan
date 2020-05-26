@@ -52,8 +52,8 @@ private:
 
 private:
 	Texture2D* imguiFont;
-	UniformBuffer* vulkanUbo;
-	ScaleTranslateUBO ubo;
+	UniformBuffer* _VulkanUbo;
+	ScaleTranslateUBO _UboData;
 
 	std::shared_ptr<Material> _Material;
 	
@@ -62,6 +62,7 @@ private:
 
 	VulkanBuffer* indexBuffer;
 	VulkanBuffer* vertexBuffer; //TODO: unique_ptr?
+
 
 	ImDrawVert* cpuVertex; // = new ImDrawVert[draw_data->TotalVtxCount];
 	size_t sizeOfVertexBuffer;

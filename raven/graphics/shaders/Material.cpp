@@ -27,12 +27,6 @@ Material::~Material()
 	vertex = nullptr;
 	fragment = nullptr;
 
-	for ( int i = 0; i < uniformBuffers.size(); i++ )
-	{
-		delete uniformBuffers[ i ];
-	}
-	uniformBuffers.clear();
-
 	std::cout << "Destroyed material" << std::endl;
 }
 
@@ -87,20 +81,6 @@ void Material::FileLoaded( std::vector<char> fileData )
 	//TODO: Maybe it should only store the Pipeline builder instead of the hash.
 	_PipelineHash = PipelineStateCache::CreatePipeline( Builder, this, {} );
 	ASSERT( _PipelineHash != 0 );
-}
-
-void Material::AddUniformBuffer( UniformBuffer* pUniformBuffer )
-{
-	ASSERT( pUniformBuffer != nullptr );
-	uniformBuffers.push_back( pUniformBuffer );
-}
-
-void Material::UpdateUniformBuffers()
-{
-	for ( UniformBuffer* buffer : uniformBuffers )
-	{
-		buffer->Upload();
-	}
 }
 
 const std::vector<VkPipelineShaderStageCreateInfo>& Material::GetShaderStages() const

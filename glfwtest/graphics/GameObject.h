@@ -29,11 +29,7 @@ public:
 
 	Ecs::Entity CreateInstance( Ecs::World& World, int32_t Count = 1);
 
-
-	std::shared_ptr<Mesh> GetMesh() const { return mesh; }
-
-	const Camera::Buffer& GetUBO() const { return camera; }
-	Camera::Buffer& AccessUBO() { return camera; }
+		std::shared_ptr<Mesh> GetMesh() const { return mesh; }
 
 	bool IsLoaded() const;
 
@@ -46,7 +42,6 @@ private:
 	//PipelineStateObject pso;
 	VkPipeline _Pipeline = nullptr;
 
-	Camera::Buffer camera;
 	std::shared_ptr<Mesh> mesh;
 	std::shared_ptr<Material> material;
 

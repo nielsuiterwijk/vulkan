@@ -34,7 +34,6 @@ void GameObject::FileLoaded( std::vector<char> fileData )
 
 	mesh = MeshFileLoader::Dynamic( meshFileName );
 	material = std::make_shared<Material>( materialFileName );
-	material->AddUniformBuffer( new UniformBuffer( { static_cast<void*>( &camera ), sizeof( Camera::Buffer ) } ) );
 
 	std::vector<std::string> texturesJson = jsonObject[ "textures" ];
 
@@ -82,16 +81,22 @@ Ecs::Entity GameObject::CreateInstance( Ecs::World& World, int32_t Count )
 
 	Ecs::Entity Instance = World.Create();
 	mesh->Assign( World, Instance );
-	World.Assign<MaterialComponent>( Instance, MaterialComponent { material } );
+	MaterialComponent& MaterialData = World.Assign<MaterialComponent>( Instance, MaterialComponent { material } );
 	World.Assign<Texture2DComponent>( Instance, Texture2DComponent { _Textures } );
 
 	//TODO: It does not scale well if the material owns the UBO's. This should probably it's own little component.
-	if ( mesh->GetMeshType() == MeshType::Skinned && material->GetUniformBuffers().size() == 1 )
+	if ( mesh->GetMeshType() == MeshType::Skinned )
 	{				
 		SkinnedMeshComponent& SkinnedMeshData = World.Get<SkinnedMeshComponent>( Instance );
 
+		//TODO: now.. we have to store this somewhere that is accessable.
 		auto localMeshUniformBuffer = new UniformBuffer( { &SkinnedMeshData._ResultBuffer, sizeof( SkinnedMeshBuffer ) } );
-		material->AddUniformBuffer( localMeshUniformBuffer );
+		//auto localCameraBuffer = new UniformBuffer( { static_cast<void*>( &camera ), sizeof( Camera::Buffer ) } );
+
+		MaterialData._Buffers.push_back( localMeshUniformBuffer );
+
+
+		//material->AddUniformBuffer( localMeshUniformBuffer );
 	}
 
 	return Instance;

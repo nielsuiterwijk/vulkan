@@ -25,7 +25,7 @@ IMGUIVulkan::IMGUIVulkan( GLFWwindow* pWindow )
 	, showDemoWindow( true )
 	, didRender( true )
 	, imguiFont( nullptr )
-	, vulkanUbo( nullptr )
+	, _VulkanUbo( nullptr )
 	, _pWindow( pWindow )
 	, sizeOfVertexBuffer( 0 )
 	, sizeOfIndexBuffer( 0 )
@@ -96,7 +96,10 @@ bool IMGUIVulkan::Initialize()
 	}
 
 	_Material = std::make_shared<Material>( "imgui" );
-	_Material->AddUniformBuffer( new UniformBuffer( { static_cast<void*>( &ubo ), sizeof( ScaleTranslateUBO ) } ) );
+
+	_VulkanUbo = new UniformBuffer( { static_cast<void*>( &_UboData ), sizeof( ScaleTranslateUBO ) } );
+
+	//_Material->AddUniformBuffer( new UniformBuffer( { static_cast<void*>( &ubo ), sizeof( ScaleTranslateUBO ) } ) );
 
 	//binding_desc = {};
 	//binding_desc.stride = sizeof( ImDrawVert );
@@ -150,6 +153,9 @@ void IMGUIVulkan::Shutdown()
 	imguiFont = nullptr;
 	
 	_Material = nullptr;
+
+	delete _VulkanUbo;
+	_VulkanUbo = nullptr;
 
 	delete indexBuffer;
 	delete vertexBuffer;
@@ -337,7 +343,7 @@ void IMGUIVulkan::Render( CommandBuffer* commandBuffer )
 	// Bind pipeline and descriptor sets:
 	{
 		vkCmdBindPipeline( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, _Basic2d );
-		VkDescriptorSet set = _Material->AccessDescriptorPool().RetrieveDescriptorSet( _Material.get(), imguiFont );
+		VkDescriptorSet set = _Material->AccessDescriptorPool().RetrieveDescriptorSet( _Material.get(), { imguiFont }, { _VulkanUbo } );
 		vkCmdBindDescriptorSets( commandBuffer->GetNative(), VK_PIPELINE_BIND_POINT_GRAPHICS, _Material->GetDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, NULL );
 	}
 
@@ -362,12 +368,12 @@ void IMGUIVulkan::Render( CommandBuffer* commandBuffer )
 
 	// Setup scale and translation:
 	{
-		ubo.scale.x = 2.0f / io.DisplaySize.x;
-		ubo.scale.y = 2.0f / io.DisplaySize.y;
-		ubo.translate.x = -1.0f;
-		ubo.translate.y = -1.0f;
+		_UboData.scale.x = 2.0f / io.DisplaySize.x;
+		_UboData.scale.y = 2.0f / io.DisplaySize.y;
+		_UboData.translate.x = -1.0f;
+		_UboData.translate.y = -1.0f;
 
-		_Material->GetUniformBuffers()[ 0 ]->Upload();
+		_VulkanUbo->Upload();
 	}
 
 	// Render the command lists:

@@ -3,6 +3,7 @@
 #include "RenderThread.h"
 #include "ecs/SystemInterface.h"
 #include "ecs/World.h"
+#include "graphics/Camera.h"
 #include "graphics/PipelineStateCache.h"
 #include "graphics/models/Mesh.h"
 #include "graphics/models/SubMesh.h"
@@ -12,7 +13,7 @@
 class RenderSystem // : Ecs::SystemInterface
 {
 public:
-	virtual void Tick( Ecs::World& World, CommandBuffer& CommandBuffer ) final
+	virtual void Tick( Ecs::World& World, CommandBuffer& CommandBuffer, Camera& Cam ) final
 	{
 		auto View = World.View<MeshComponent, MaterialComponent, Texture2DComponent>();
 
@@ -32,6 +33,8 @@ public:
 			//if ( !material->IsLoaded() || !mesh->IsLoaded() || !TexturesLoaded() )
 			//	return;
 
+			MaterialData._Buffers[ 0 ]->Upload();
+
 
 			//TODO: Create ubo for material
 			//if ( mesh->GetMeshType() == MeshType::Skinned )
@@ -42,7 +45,7 @@ public:
 			//	material->AddUniformBuffer( localMeshUniformBuffer );
 			//}
 
-			pMaterial->UpdateUniformBuffers();
+			//pMaterial->UpdateUniformBuffers();
 			//
 			//if ( pso.IsDirty() )
 			//{
@@ -55,15 +58,20 @@ public:
 			//}
 			//
 			vkCmdBindPipeline( CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipeline );
-			
+
 			/*
 				 [ UNASSIGNED-CoreValidation-DrawState-PipelineLayoutsIncompatible ] Object: 0x9a90ce000000002b (Type = 23) | VkDescriptorSet 0x9a90ce000000002b[] bound as set #0 is not compatible with overlapping VkPipelineLayout 0xb3ec550000000090[] due to: 
 				 DescriptorSetLayout 6BBCEA000000008F has 3 descriptors, but DescriptorSetLayout AB46AD0000000028, which comes from pipelineLayout, has 2 descriptors.
 			*/
 
+			std::vector<UniformBuffer*> Buffers;
+			Buffers.push_back( Cam.GetUBO() );
+			Buffers.insert( end( Buffers ), begin( MaterialData._Buffers ), end( MaterialData._Buffers ) );
+			//Buffers.insert( MaterialData._Buffers );
+
 			for ( int i = 0; i < MeshData.subMeshes.size(); i++ )
 			{
-				VkDescriptorSet set = pMaterial->AccessDescriptorPool().RetrieveDescriptorSet( pMaterial, TextureData._TextureRefs[i].get() );
+				VkDescriptorSet set = pMaterial->AccessDescriptorPool().RetrieveDescriptorSet( pMaterial, TextureData._TextureRefs, Buffers );
 				vkCmdBindDescriptorSets( CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pMaterial->AccessDescriptorPool().GetPipelineLayout(), 0, 1, &set, 0, nullptr );
 
 				MeshData.subMeshes[ i ]->Draw( CommandBuffer );

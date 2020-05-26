@@ -198,7 +198,6 @@ void RavenApp::Run()
 		if ( StatsTimer > 30.0f )
 		{
 			MemoryStats1 = "CPU Memory: " + Helpers::MemorySizeToString( GraphicsContext::LocalAllocator.BytesAllocated() );
-			;
 			MemoryStats2 = "GPU Memory: " + Helpers::MemorySizeToString( GraphicsContext::DeviceAllocator->BytesAllocated() );
 			StatsTimer = 0;
 		}
@@ -217,6 +216,7 @@ void RavenApp::Run()
 			//if (renderobject->standardMaterial != nullptr)
 			{
 				FPVCamera.Update();
+				FPVCamera.GetUBO()->Upload();
 
 				if ( autoRotate )
 					rotation -= Frame::DeltaTime * 45.0f;
@@ -226,13 +226,13 @@ void RavenApp::Run()
 
 				for ( std::shared_ptr<GameObject>& pModel : _GameObjects )
 				{
-					pModel->Update();
+					//pModel->Update();
+					//
+					//auto RenderCallback = [&]( CommandBuffer* pBuffer ) { pModel->Render( pBuffer ); };
+					//
+					//CRenderThread::QueueRender( RenderCallback );
 
-					auto RenderCallback = [&]( CommandBuffer* pBuffer ) { pModel->Render( pBuffer ); };
-
-					CRenderThread::QueueRender( RenderCallback );
-
-					Camera::Buffer& camera = pModel->AccessUBO();
+					/*Camera::Buffer& camera = pModel->AccessUBO();
 
 					camera.model = glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, translationY, 0.0f ) );
 					camera.model = glm::rotate( camera.model, glm::radians( rotation ), Camera::Up );
@@ -242,7 +242,7 @@ void RavenApp::Run()
 					camera.view = FPVCamera.Data().view;
 
 					camera.proj = FPVCamera.Data().proj;
-					camera.proj[ 1 ][ 1 ] *= -1;
+					camera.proj[ 1 ][ 1 ] *= -1;*/
 				}
 			}
 
@@ -270,12 +270,12 @@ void RavenApp::Run()
 
 				ImGui::End();
 
-				auto RenderCallback = [&]( CommandBuffer* pBuffer ) { _pImguiVulkan->Render( pBuffer ); };
+				auto RenderIMGUI = [&]( CommandBuffer* pBuffer ) { _pImguiVulkan->Render( pBuffer ); };
 
-				CRenderThread::QueueRender( RenderCallback );
+				CRenderThread::QueueRender( RenderIMGUI );
 			}
 
-			auto EcsRenderCallback = [&]( CommandBuffer* pBuffer ) { ECSRenderer.Tick( World, *pBuffer ); };
+			auto EcsRenderCallback = [&]( CommandBuffer* pBuffer ) { ECSRenderer.Tick( World, *pBuffer, FPVCamera ); };
 
 			CRenderThread::QueueRender( EcsRenderCallback );
 
