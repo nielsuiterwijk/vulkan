@@ -255,3 +255,4 @@ external_libs/lib/x64/external_libs_d.lib
 *.lib
 external_libs/lib/x64/external_libs_d.lib
 glfwtest/imgui.ini
+shaders/intermediate/
