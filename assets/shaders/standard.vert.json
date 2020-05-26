@@ -6,7 +6,7 @@
         }
     ],
     "types" : {
-        "_8" : {
+        "_9" : {
             "name" : "gl_PerVertex",
             "members" : [
                 {
@@ -15,23 +15,26 @@
                 }
             ]
         },
-        "_14" : {
+        "_15" : {
             "name" : "UniformBufferObject",
             "members" : [
                 {
                     "name" : "model",
                     "type" : "mat4",
-                    "offset" : 0
+                    "offset" : 0,
+                    "matrix_stride" : 16
                 },
                 {
                     "name" : "view",
                     "type" : "mat4",
-                    "offset" : 64
+                    "offset" : 64,
+                    "matrix_stride" : 16
                 },
                 {
                     "name" : "proj",
                     "type" : "mat4",
-                    "offset" : 128
+                    "offset" : 128,
+                    "matrix_stride" : 16
                 }
             ]
         }
@@ -67,7 +70,7 @@
     ],
     "ubos" : [
         {
-            "type" : "_14",
+            "type" : "_15",
             "name" : "UniformBufferObject",
             "block_size" : 192,
             "set" : 0,

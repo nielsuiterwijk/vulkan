@@ -6,13 +6,14 @@
         }
     ],
     "types" : {
-        "_49" : {
+        "_51" : {
             "name" : "Bones",
             "members" : [
                 {
                     "name" : "rootTransform",
                     "type" : "mat4",
-                    "offset" : 0
+                    "offset" : 0,
+                    "matrix_stride" : 16
                 },
                 {
                     "name" : "bones",
@@ -20,31 +21,39 @@
                     "array" : [
                         64
                     ],
-                    "offset" : 64
+                    "array_size_is_literal" : [
+                        true
+                    ],
+                    "offset" : 64,
+                    "array_stride" : 64,
+                    "matrix_stride" : 16
                 }
             ]
         },
-        "_141" : {
+        "_143" : {
             "name" : "CameraBuffer",
             "members" : [
                 {
                     "name" : "model",
                     "type" : "mat4",
-                    "offset" : 0
+                    "offset" : 0,
+                    "matrix_stride" : 16
                 },
                 {
                     "name" : "view",
                     "type" : "mat4",
-                    "offset" : 64
+                    "offset" : 64,
+                    "matrix_stride" : 16
                 },
                 {
                     "name" : "proj",
                     "type" : "mat4",
-                    "offset" : 128
+                    "offset" : 128,
+                    "matrix_stride" : 16
                 }
             ]
         },
-        "_204" : {
+        "_206" : {
             "name" : "gl_PerVertex",
             "members" : [
                 {
@@ -115,14 +124,14 @@
     ],
     "ubos" : [
         {
-            "type" : "_49",
+            "type" : "_51",
             "name" : "Bones",
             "block_size" : 4160,
             "set" : 0,
             "binding" : 1
         },
         {
-            "type" : "_141",
+            "type" : "_143",
             "name" : "CameraBuffer",
             "block_size" : 192,
             "set" : 0,

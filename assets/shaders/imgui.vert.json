@@ -6,7 +6,7 @@
         }
     ],
     "types" : {
-        "_19" : {
+        "_20" : {
             "name" : "gl_PerVertex",
             "members" : [
                 {
@@ -15,7 +15,7 @@
                 }
             ]
         },
-        "_26" : {
+        "_27" : {
             "name" : "UniformBufferObject",
             "members" : [
                 {
@@ -62,7 +62,7 @@
     ],
     "ubos" : [
         {
-            "type" : "_26",
+            "type" : "_27",
             "name" : "UniformBufferObject",
             "block_size" : 16,
             "set" : 0,
